@@ -1,0 +1,240 @@
+---
+import type { Locale } from '../../config/site';
+import type { MessageTree } from '../../lib/i18n';
+import { localizedPath, translate } from '../../lib/i18n';
+import type { ServiceMenuGroup } from '../../lib/site-data';
+
+interface Props {
+  locale: Locale;
+  path: string;
+  messages: MessageTree;
+  categories?: ServiceMenuGroup[];
+}
+
+const { locale, path, messages, categories = [] } = Astro.props;
+const navItems = [
+  { key: 'about', href: '/tentang-kami' },
+  { key: 'services', href: '/layanan', services: true },
+  { key: 'articles', href: '/info-bisnis' },
+  { key: 'tools', href: '/tools', literal: 'TOOLS' },
+  { key: 'tracking', href: '/lacak' },
+];
+
+const isActive = (href: string) => href === '/'
+  ? path === '/'
+  : path === href || path.startsWith(`${href}/`);
+---
+
+<div id="site-nav-overlay" class="pointer-events-none fixed inset-0 z-30 hidden bg-black/50 opacity-0 transition-opacity duration-300 lg:block"></div>
+
+<header id="site-header" class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-3 transition-transform duration-300 ease-in-out lg:px-7">
+  <nav
+    id="site-navbar"
+    class="relative mx-auto flex w-full max-w-5xl items-center justify-between rounded-full px-4 py-1.5 transition-[backdrop-filter,box-shadow,background-color] duration-500"
+    aria-label="Main Navigation"
+  >
+    <a href={localizedPath('/', locale)} class="relative z-50 flex items-center gap-1 focus:outline-none" aria-label="Awan Kusuma Legalitas">
+      <img
+        src="/assets/image/logo.png"
+        alt="Awan Kusuma Legalitas Logo"
+        width="64"
+        height="64"
+        fetchpriority="high"
+        class="h-12 w-12 object-contain transition-[filter] duration-300 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+      />
+    </a>
+
+    <ul class="ml-auto mr-4 hidden items-center gap-4 text-[11px] font-bold tracking-wider text-black lg:flex xl:mr-8 xl:gap-6 xl:text-xs">
+      {
+        navItems.map((item) => (
+          <li class:list={['group py-4', item.services && 'site-services-trigger']}>
+            <a
+              href={localizedPath(item.href, locale)}
+              class:list={['relative inline-block transition-colors focus:outline-none hover:text-elm', isActive(item.href) && 'text-elm']}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+            >
+              <span class="flex items-center gap-2">
+                {item.key === 'tools' && <span class="h-1.5 w-1.5 rotate-45 bg-orange-400"></span>}
+                {item.literal ?? translate(messages, `navbar.${item.key}`)}
+              </span>
+              <span class:list={[
+                'absolute -bottom-0.5 left-1/2 h-0.5 -translate-x-1/2 bg-elm transition-[width] duration-300 group-hover:w-full',
+                isActive(item.href) ? 'w-full' : 'w-0',
+              ]}></span>
+            </a>
+
+            {
+              item.services && (
+                <div class="site-services-menu invisible absolute left-0 top-full z-50 w-full translate-y-2 pt-6 opacity-0 transition-[opacity,visibility,transform] duration-300">
+                  <div class="max-h-[75vh] w-full overflow-y-auto rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl">
+                    <div class="grid grid-cols-1 items-start gap-8 md:grid-cols-3 lg:grid-cols-5">
+                      {categories.map((group) => {
+                        const visibleItems = group.items.filter((service) => !service.hide_from_menu && service.name);
+                        if (!group.category || visibleItems.length === 0) return null;
+
+                        return (
+                          <div class="flex flex-col gap-3">
+                            <h2 class="mb-2 border-b border-gray-100 pb-2 text-[11px] font-extrabold uppercase tracking-wider text-slate-800 lg:text-[13px]">
+                              {group.category}
+                            </h2>
+                            <ul class="flex flex-col gap-2">
+                              {visibleItems.map((service) => (
+                                <li>
+                                  <a
+                                    href={localizedPath(`/layanan/${service.slug.split('#')[0]}`, locale)}
+                                    class="flex items-start gap-2 text-[11px] font-semibold leading-relaxed text-slate-500 transition-colors hover:text-elm lg:text-xs"
+                                  >
+                                    <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-slate-300" aria-hidden="true"></span>
+                                    <span>{service.name}</span>
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="relative z-50 hidden items-center gap-2 lg:flex xl:gap-3">
+      <div class="flex items-center gap-1 text-[10px] font-bold text-slate-600" aria-label="Language">
+        {(['id', 'en', 'zh'] as Locale[]).map((targetLocale) => (
+          <a
+            href={localizedPath(path, targetLocale)}
+            class:list={['rounded-full px-2 py-2 transition-colors hover:text-elm', locale === targetLocale && 'text-elm underline underline-offset-4']}
+            lang={targetLocale}
+            hreflang={targetLocale}
+          >
+            {targetLocale.toUpperCase()}
+          </a>
+        ))}
+      </div>
+      <a
+        href={localizedPath('/login', locale)}
+        class="whitespace-nowrap rounded-full border border-elm px-4 py-2 text-[11px] font-bold text-elm transition-colors hover:bg-elm hover:text-white xl:px-5 xl:py-2.5 xl:text-xs"
+      >
+        {translate(messages, 'navbar.login')}
+      </a>
+      <a
+        href={localizedPath('/kontak', locale)}
+        class="whitespace-nowrap rounded-full bg-big-stone px-5 py-2 text-[11px] font-bold text-white transition-colors hover:bg-elm xl:px-6 xl:py-2.5 xl:text-xs"
+      >
+        {translate(messages, 'navbar.contactUs')}
+      </a>
+    </div>
+
+    <button
+      id="site-menu-toggle"
+      type="button"
+      class="relative z-50 ml-auto flex size-12 items-center justify-center rounded-full bg-[#1C2D3C] text-white transition-[background-color,color,transform] duration-500 lg:hidden"
+      aria-label="Toggle Menu"
+      aria-controls="site-mobile-menu"
+      aria-expanded="false"
+    >
+      <span class="relative flex h-5 w-6 items-center justify-center" aria-hidden="true">
+        <span class="site-menu-line absolute block h-px w-full -translate-y-1.5 rounded-full bg-current transition-transform duration-500"></span>
+        <span class="site-menu-line absolute block h-px w-4 translate-y-1.5 rounded-full bg-current transition-[width,transform] duration-500"></span>
+      </span>
+    </button>
+  </nav>
+</header>
+
+<aside id="site-mobile-menu" class="invisible fixed inset-0 z-40 flex translate-y-3 flex-col overflow-y-auto bg-big-stone px-7 pb-10 pt-28 text-white opacity-0 transition-[opacity,visibility,transform] duration-500 lg:hidden" aria-hidden="true">
+  <nav aria-label="Mobile Navigation">
+    <ul class="flex flex-col gap-2">
+      {navItems.map((item) => (
+        <li>
+          <a href={localizedPath(item.href, locale)} class="block border-b border-white/10 py-4 text-xl font-black tracking-wide">
+            {item.literal ?? translate(messages, `navbar.${item.key}`)}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <details class="mt-5 rounded-xl border border-white/10 p-4">
+      <summary class="cursor-pointer text-sm font-bold">{translate(messages, 'navbar.services')}</summary>
+      <div class="mt-4 flex flex-col gap-5">
+        {categories.map((group) => (
+          <div>
+            <p class="mb-2 text-[10px] font-black uppercase tracking-widest text-white/50">{group.category}</p>
+            <ul class="flex flex-col gap-2">
+              {group.items.filter((service) => !service.hide_from_menu).map((service) => (
+                <li><a class="text-sm text-white/80" href={localizedPath(`/layanan/${service.slug.split('#')[0]}`, locale)}>{service.name}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </details>
+
+    <div class="mt-8 flex items-center gap-2">
+      {(['id', 'en', 'zh'] as Locale[]).map((targetLocale) => (
+        <a href={localizedPath(path, targetLocale)} class:list={['rounded-full border border-white/20 px-4 py-2 text-xs font-bold', locale === targetLocale && 'bg-white text-big-stone']}>
+          {targetLocale.toUpperCase()}
+        </a>
+      ))}
+    </div>
+  </nav>
+</aside>
+
+<script is:inline>
+  (() => {
+    const header = document.getElementById('site-header');
+    const navbar = document.getElementById('site-navbar');
+    const toggle = document.getElementById('site-menu-toggle');
+    const menu = document.getElementById('site-mobile-menu');
+    const overlay = document.getElementById('site-nav-overlay');
+    const servicesTrigger = document.querySelector('.site-services-trigger');
+    const servicesMenu = document.querySelector('.site-services-menu');
+    let lastScrollY = window.scrollY;
+
+    const updateHeader = () => {
+      const current = window.scrollY;
+      header?.classList.toggle('-translate-y-full', current > lastScrollY && current > 50);
+      navbar?.classList.toggle('lg:backdrop-blur-xs', current > 60);
+      navbar?.classList.toggle('lg:shadow-lg', current > 60);
+      navbar?.classList.toggle('bg-white/85', current > 60);
+      lastScrollY = current;
+    };
+
+    const closeMenu = () => {
+      toggle?.setAttribute('aria-expanded', 'false');
+      menu?.setAttribute('aria-hidden', 'true');
+      menu?.classList.add('invisible', 'translate-y-3', 'opacity-0');
+      toggle?.classList.remove('bg-white', 'text-black', 'scale-105');
+      toggle?.classList.add('bg-[#1C2D3C]', 'text-white');
+      document.documentElement.style.overflow = '';
+    };
+
+    toggle?.addEventListener('click', () => {
+      const opening = toggle.getAttribute('aria-expanded') !== 'true';
+      if (!opening) return closeMenu();
+      toggle.setAttribute('aria-expanded', 'true');
+      menu?.setAttribute('aria-hidden', 'false');
+      menu?.classList.remove('invisible', 'translate-y-3', 'opacity-0');
+      toggle.classList.add('bg-white', 'text-black', 'scale-105');
+      toggle.classList.remove('bg-[#1C2D3C]', 'text-white');
+      document.documentElement.style.overflow = 'hidden';
+    });
+
+    menu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+    servicesTrigger?.addEventListener('mouseenter', () => {
+      servicesMenu?.classList.remove('invisible', 'translate-y-2', 'opacity-0');
+      overlay?.classList.remove('opacity-0');
+      overlay?.classList.add('opacity-100');
+    });
+    servicesTrigger?.addEventListener('mouseleave', () => {
+      servicesMenu?.classList.add('invisible', 'translate-y-2', 'opacity-0');
+      overlay?.classList.add('opacity-0');
+      overlay?.classList.remove('opacity-100');
+    });
+    window.addEventListener('scroll', updateHeader, { passive: true });
+  })();
+</script>

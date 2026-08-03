@@ -53,4 +53,31 @@ describe('static CMS client', () => {
 
     await expect(client.request('/services')).rejects.toBeInstanceOf(CmsApiError);
   });
+
+  it('deduplicates identical GET requests during one static build', async () => {
+    const fetchImpl = vi.fn(async () => Response.json({ data: ['shared'] }));
+    const client = createCmsClient({ fetchImpl: fetchImpl as typeof fetch });
+
+    const [first, second] = await Promise.all([
+      client.requestOnce('/services?locale=id'),
+      client.requestOnce('/services?locale=id'),
+    ]);
+
+    expect(first).toEqual({ data: ['shared'] });
+    expect(second).toEqual(first);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it('evicts failed build requests so a later attempt can recover', async () => {
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(Response.json({ data: ['recovered'] }));
+    const client = createCmsClient({ fetchImpl: fetchImpl as typeof fetch });
+
+    await expect(client.requestOnce('/services', { retryCount: 0 }))
+      .rejects.toMatchObject({ status: 503 });
+    await expect(client.requestOnce('/services', { retryCount: 0 }))
+      .resolves.toEqual({ data: ['recovered'] });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
 });

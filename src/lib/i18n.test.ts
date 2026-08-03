@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   alternateLocaleUrls,
+  getMessages,
   localizedPath,
   normalizeLogicalPath,
+  translate,
 } from './i18n';
 
 describe('locale routing parity', () => {
@@ -33,5 +35,12 @@ describe('locale routing parity', () => {
       zh: 'https://awankusuma.com/zh/kontak',
       'x-default': 'https://awankusuma.com/kontak',
     });
+  });
+
+  it('interpolates translated variables without changing missing placeholders', async () => {
+    const messages = await getMessages('id');
+
+    expect(translate(messages, 'footer.copyright', { year: 2026 }))
+      .toBe('© 2026 AWAN KUSUMA LEGALITAS');
   });
 });

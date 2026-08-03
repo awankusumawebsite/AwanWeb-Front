@@ -1,0 +1,26 @@
+---
+import type { Locale } from '../../config/site';
+import { localizedPath } from '../../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  partial?: boolean;
+}
+
+const { locale, partial = false } = Astro.props;
+const copy = {
+  id: ['Sedang dalam pemeliharaan', 'Kami sedang menyiapkan pengalaman yang lebih baik. Silakan kembali beberapa saat lagi.'],
+  en: ['Under maintenance', 'We are preparing a better experience. Please check back shortly.'],
+  zh: ['系统维护中', '我们正在优化网站体验，请稍后再访问。'],
+}[locale];
+---
+
+<section class:list={['flex w-full items-center justify-center bg-slate-50 px-6 text-center', partial ? 'min-h-[70vh] py-36' : 'min-h-screen']}>
+  <div class="max-w-xl">
+    <img src="/assets/image/logo.png" alt="Awan Kusuma Legalitas" width="80" height="80" class="mx-auto mb-8 size-20 object-contain" />
+    <p class="mb-3 text-xs font-black uppercase tracking-[0.25em] text-elm">Awan Kusuma Legalitas</p>
+    <h1 class="text-3xl font-black tracking-tight text-big-stone md:text-5xl">{copy[0]}</h1>
+    <p class="mx-auto mt-5 max-w-md leading-relaxed text-slate-600">{copy[1]}</p>
+    {partial && <a href={localizedPath('/', locale)} class="mt-8 inline-flex rounded-full bg-big-stone px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-elm">Home</a>}
+  </div>
+</section>

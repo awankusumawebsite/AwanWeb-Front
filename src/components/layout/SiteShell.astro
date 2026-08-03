@@ -1,0 +1,71 @@
+---
+import type { Locale } from '../../config/site';
+import { getMessages } from '../../lib/i18n';
+import { getSiteShellData, isPageInMaintenance } from '../../lib/site-data';
+import Analytics from '../common/Analytics.astro';
+import TrackingNotice from '../common/TrackingNotice.astro';
+import FloatingWhatsApp from '../global/FloatingWhatsApp.astro';
+import Footer from './Footer.astro';
+import MaintenanceScreen from './MaintenanceScreen.astro';
+import Navbar from './Navbar.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+}
+
+const { locale, path } = Astro.props;
+const [messages, shell] = await Promise.all([
+  getMessages(locale),
+  getSiteShellData(locale),
+]);
+const pageMaintenance = isPageInMaintenance(shell.status, path);
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Awan Kusuma Legalitas',
+  url: 'https://awankusuma.com',
+  logo: 'https://awankusuma.com/assets/image/logo.png',
+  sameAs: [
+    'https://www.instagram.com/awankusuma.legalitas',
+    'https://www.linkedin.com/company/pt-awan-kusuma-legalitas/',
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: shell.contact.whatsapp_display || shell.contact.whatsapp,
+    contactType: 'customer service',
+    availableLanguage: ['Indonesian', 'English', 'Chinese'],
+  },
+};
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Awan Kusuma Legalitas',
+  url: 'https://awankusuma.com',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: 'https://awankusuma.com/info-bisnis?search={search_term_string}',
+    'query-input': 'required name=search_term_string',
+  },
+};
+---
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
+<script is:inline type="application/ld+json" set:html={JSON.stringify(websiteSchema)}></script>
+
+{
+  shell.status.is_maintenance ? (
+    <MaintenanceScreen locale={locale} />
+  ) : (
+    <>
+      <Navbar locale={locale} path={path} messages={messages} categories={shell.categories} />
+      <div id="main-content" class="relative flex min-h-screen w-full flex-col">
+        {pageMaintenance ? <MaintenanceScreen locale={locale} partial /> : <slot />}
+      </div>
+      <Footer locale={locale} messages={messages} categories={shell.categories} />
+      <FloatingWhatsApp phoneNumber={shell.contact.whatsapp} />
+      <TrackingNotice locale={locale} messages={messages} />
+    </>
+  )
+}
+<Analytics />

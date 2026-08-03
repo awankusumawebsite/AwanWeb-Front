@@ -2,6 +2,7 @@
 import AboutPageIsland from '../sections/about/AboutPageIsland';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MarqueeImages from '../components/MarqueeImages.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
 import type { Locale } from '../config/site';
 import { cms } from '../lib/cms';
 import { getMessages, translate } from '../lib/i18n';
@@ -33,8 +34,10 @@ const aboutMessages = {
   locale={locale}
   path="/tentang-kami"
 >
-  <main class="relative w-full overflow-hidden bg-white font-sans">
-    <AboutPageIsland client:load locale={locale} messages={aboutMessages} />
-    <MarqueeImages images={marqueeResponse?.data || []} />
-  </main>
+  <SiteShell locale={locale} path="/tentang-kami">
+    <main class="relative w-full overflow-hidden bg-white font-sans">
+      <AboutPageIsland client:load locale={locale} messages={aboutMessages} />
+      <MarqueeImages images={marqueeResponse?.data || []} />
+    </main>
+  </SiteShell>
 </BaseLayout>

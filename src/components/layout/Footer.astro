@@ -1,0 +1,111 @@
+---
+import type { Locale } from '../../config/site';
+import type { MessageTree } from '../../lib/i18n';
+import { localizedPath, translate } from '../../lib/i18n';
+import type { ServiceMenuGroup } from '../../lib/site-data';
+
+interface Props {
+  locale: Locale;
+  messages: MessageTree;
+  categories?: ServiceMenuGroup[];
+}
+
+const { locale, messages, categories = [] } = Astro.props;
+const year = new Date().getFullYear();
+const serviceLinks = categories.length > 0
+  ? categories.slice(0, 4).map((category) => ({
+      label: category.category,
+      href: `/layanan#${category.slug || category.category.toLowerCase().replace(/\s+/g, '-')}`,
+    }))
+  : [
+      { label: translate(messages, 'footer.servicesLinks.pendirian'), href: '/layanan#pendirian-perusahaan' },
+      { label: translate(messages, 'footer.servicesLinks.perizinan'), href: '/layanan#perizinan-usaha' },
+      { label: translate(messages, 'footer.servicesLinks.agensi'), href: '/layanan#marketing-agency' },
+      { label: translate(messages, 'footer.servicesLinks.pajak'), href: '/layanan#accounting-pajak' },
+    ];
+
+const columns = [
+  {
+    heading: translate(messages, 'footer.aboutHeading'),
+    links: [
+      { label: translate(messages, 'footer.aboutLinks.about'), href: '/tentang-kami' },
+      { label: translate(messages, 'footer.aboutLinks.whyUs'), href: '/tentang-kami#why-us' },
+      { label: translate(messages, 'footer.aboutLinks.visiMisi'), href: '/tentang-kami#visi-misi' },
+      { label: translate(messages, 'footer.aboutLinks.culture'), href: '/tentang-kami#culture' },
+    ],
+  },
+  { heading: translate(messages, 'footer.servicesHeading'), links: serviceLinks },
+  {
+    heading: translate(messages, 'footer.articlesHeading'),
+    links: [{ label: translate(messages, 'footer.articlesLinks.articles'), href: '/info-bisnis' }],
+  },
+  {
+    heading: translate(messages, 'footer.contactHeading'),
+    links: [
+      { label: translate(messages, 'footer.contactLinks.faq'), href: '/kontak#faq' },
+      { label: translate(messages, 'footer.contactLinks.contact'), href: '/kontak' },
+      { label: translate(messages, 'footer.contactLinks.privacyPolicy'), href: '/kebijakan-privasi' },
+    ],
+  },
+];
+---
+
+<footer class="w-full bg-white font-sans">
+  <div class="px-5 pb-0 pt-10 lg:px-10">
+    <div class="relative w-full overflow-hidden rounded-2xl bg-[linear-gradient(160deg,#dff0f5_0%,#f5f7f8_40%,#e0edf5_100%)] px-10 py-20 md:px-16 md:py-28">
+      <div class="pointer-events-none absolute right-10 top-0 h-56 w-56 -translate-y-1/2 rounded-full bg-white/40 blur-3xl md:h-80 md:w-80"></div>
+      <div class="pointer-events-none absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-elm/10 blur-3xl"></div>
+      <div class="relative z-10 flex flex-col items-start justify-between gap-10 md:flex-row md:items-center md:gap-16">
+        <div class="max-w-xl flex-1">
+          <h2 class="mb-4 text-2xl font-black leading-snug text-black md:text-3xl lg:text-4xl">{translate(messages, 'footer.ctaHeading')}</h2>
+          <p class="text-sm leading-relaxed text-slate-600 md:text-base">{translate(messages, 'footer.ctaDescription')}</p>
+        </div>
+        <div class="flex shrink-0 flex-col items-start gap-5 md:items-end">
+          <a href={localizedPath('/kontak', locale)} class="inline-flex items-center gap-3 rounded-full bg-big-stone px-8 py-4 text-sm font-bold tracking-widest text-white shadow-lg transition-colors duration-300 hover:bg-elm">
+            {translate(messages, 'footer.ctaButton')}
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </a>
+          <div class="flex items-center gap-4 text-xs font-bold text-slate-500">
+            <a href={localizedPath('/kontak#faq', locale)} class="underline underline-offset-2 transition-colors hover:text-slate-800">{translate(messages, 'footer.faqLink')}</a>
+            <span class="text-slate-300">|</span>
+            <a href={localizedPath('/tentang-kami', locale)} class="underline underline-offset-2 transition-colors hover:text-slate-800">{translate(messages, 'footer.aboutLink')}</a>
+            <span class="text-slate-300">|</span>
+            <a href={localizedPath('/layanan', locale)} class="underline underline-offset-2 transition-colors hover:text-slate-800">{translate(messages, 'footer.servicesLink')}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white px-5 pb-8 pt-20 lg:px-10">
+    <div class="flex flex-col gap-10 lg:flex-row lg:gap-0">
+      <div class="flex flex-col justify-end lg:flex-1">
+        <p class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">{translate(messages, 'footer.companyTagline')}</p>
+        <div class="text-4xl font-black uppercase leading-[0.95] tracking-tight text-big-stone md:text-5xl lg:text-6xl" aria-hidden="true">
+          <span class="block">{translate(messages, 'footer.heading1')}</span>
+          <span class="block">{translate(messages, 'footer.heading2')}</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-8 md:grid-cols-4 lg:w-[55%] lg:pt-6 xl:w-1/2">
+        {columns.map((column) => (
+          <div>
+            <h2 class="mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{column.heading}</h2>
+            <ul class="flex flex-col gap-2.5">
+              {column.links.map((link) => (
+                <li><a href={localizedPath(link.href, locale)} class="text-[13px] font-medium leading-snug text-slate-700 transition-colors hover:text-elm">{link.label}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-16 flex flex-col items-start justify-between gap-3 border-t border-gray-200 pt-5 md:flex-row md:items-center">
+      <p class="whitespace-nowrap text-[10px] font-medium uppercase tracking-widest text-slate-400">{translate(messages, 'footer.copyright', { year })}</p>
+      <p class="text-[10px] font-medium tracking-widest text-slate-400 md:pr-16">
+        {translate(messages, 'footer.madeBy')} <a href="https://kxterr-v2.vercel.app/" target="_blank" rel="noopener noreferrer" class="font-bold text-elm underline decoration-elm/30 underline-offset-2 transition-colors hover:text-big-stone">Ray</a>
+      </p>
+    </div>
+  </div>
+</footer>

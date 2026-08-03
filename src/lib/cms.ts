@@ -80,6 +80,7 @@ export function createCmsClient({
   timeoutMs = Number(import.meta.env.CMS_BUILD_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS,
 }: CmsClientOptions = {}) {
   const origin = normalizeBaseUrl(baseUrl);
+  const buildRequests = new Map<string, Promise<unknown>>();
 
   async function request<T>(
     path: string,
@@ -139,7 +140,34 @@ export function createCmsClient({
     }
   }
 
-  return { request };
+  function requestOnce<T>(
+    path: string,
+    options: CmsRequestOptions = {},
+  ): Promise<T | null> {
+    const method = options.method?.toUpperCase() ?? 'GET';
+
+    if (method !== 'GET') {
+      return request<T>(path, options);
+    }
+
+    const key = `${options.allowNotFound ? 'optional' : 'required'}:${path}`;
+    const existing = buildRequests.get(key) as Promise<T | null> | undefined;
+    if (existing) return existing;
+
+    const pending = request<T>(path, options).catch((error) => {
+      buildRequests.delete(key);
+      throw error;
+    });
+    buildRequests.set(key, pending);
+
+    return pending;
+  }
+
+  function clearBuildCache(): void {
+    buildRequests.clear();
+  }
+
+  return { request, requestOnce, clearBuildCache };
 }
 
 export const cms = createCmsClient();

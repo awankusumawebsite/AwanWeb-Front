@@ -67,7 +67,11 @@ export async function getMessages(locale: Locale): Promise<MessageTree> {
   return (await messageLoaders[locale]()).default;
 }
 
-export function translate(messages: MessageTree, key: string): string {
+export function translate(
+  messages: MessageTree,
+  key: string,
+  variables: Record<string, string | number> = {},
+): string {
   const value = key.split('.').reduce<unknown>((current, segment) => {
     if (!current || typeof current !== 'object') return undefined;
     return (current as Record<string, unknown>)[segment];
@@ -77,5 +81,8 @@ export function translate(messages: MessageTree, key: string): string {
     throw new Error(`Missing translation: ${key}`);
   }
 
-  return value;
+  return value.replace(/\{([^}]+)\}/g, (match, variable: string) => {
+    const replacement = variables[variable];
+    return replacement === undefined ? match : String(replacement);
+  });
 }
