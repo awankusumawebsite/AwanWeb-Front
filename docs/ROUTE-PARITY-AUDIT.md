@@ -17,7 +17,7 @@ sudah berpindah; staging DomaiNesia tetap wajib.
 | SEO dasar | Lulus lokal | canonical, hreflang, sitemap, robots branch test |
 | Redirect legacy | Siap di artifact | Harus diuji pada Apache staging |
 | Optimasi gambar CMS | Lulus build/browser | 104 image, 46,70 MB → 10,76 MB |
-| CMS build trigger | Belum | Menunggu remote/staging/deploy contract |
+| CMS build trigger | Siap lokal, nonaktif | Debounce Redis + repository dispatch; menunggu remote/staging |
 | Tools React | Diblokir maintenance | `pdf-liner` dan `surat-kuasa` belum parity |
 | Visual/performance staging | Belum | Membutuhkan URL staging aktual |
 
@@ -43,7 +43,7 @@ sudah berpindah; staging DomaiNesia tetap wajib.
 | `/mitra` | sama | Static/noindex + notary portal island |
 | `/mitra/orders/<code>` | `/mitra?order=<code>` | Apache 302 menjaga link lama |
 | `/api/admin-redirect` | tidak diperlukan | Navbar/login memakai origin panel Laravel terverifikasi |
-| `/api/revalidate` | diganti build trigger | Belum diaktifkan; wajib debounce/coalesce |
+| `/api/revalidate` | diganti build trigger | Implementasi lokal nonaktif; aktivasi setelah staging |
 | `/storage/*` rewrite | tidak diperlukan | Output memakai CDN/local optimized artifact |
 
 ## Redirect Legacy
@@ -105,7 +105,8 @@ broken image, nol request image ke CDN setelah hydration, dan nol console error.
 2. Remote Git dan metode deployment Astro belum dipilih.
 3. `.htaccess` belum diuji pada LiteSpeed/Apache DomaiNesia.
 4. Visual regression dan Core Web Vitals pada origin staging belum diukur.
-5. Build trigger CMS yang debounce/coalesce belum diimplementasikan.
+5. Build trigger CMS belum dapat diuji end-to-end tanpa remote dan staging;
+   implementasi source serta test backend sudah tersedia dalam keadaan nonaktif.
 6. Tools React belum parity dan production Tools masih maintenance.
 7. Cutover/rollback DNS belum diuji melalui rehearsal staging.
 

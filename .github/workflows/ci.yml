@@ -5,10 +5,15 @@ on:
     branches: [master]
   pull_request:
   workflow_dispatch:
+  repository_dispatch:
+    types: [cms-content-changed]
 
 concurrency:
-  group: astro-static-${{ github.ref }}
-  cancel-in-progress: true
+  # GitHub keeps at most one running and one pending build for this group.
+  # A newer CMS event replaces an older pending event without interrupting an
+  # artifact that is already being built.
+  group: astro-static-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'production' }}
+  cancel-in-progress: false
 
 jobs:
   verify:

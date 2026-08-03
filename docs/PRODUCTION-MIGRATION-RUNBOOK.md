@@ -261,8 +261,34 @@ Kontrak yang disarankan:
 - Release baru aktif hanya setelah checksum, validator, dan health check lulus.
 - Kegagalan build tidak mengganti symlink aktif.
 
-Implementasi trigger belum boleh diaktifkan sebelum repository remote, metode
-transfer, secret store, dan staging endpoint diputuskan.
+Source lokal sekarang sudah menyiapkan kontrak ini tanpa mengaktifkannya:
+
+- Model CMS public tetap mengirim revalidasi Next selama fase rollback.
+- Perubahan yang sama hanya menandai pending build Astro bila feature flag aktif.
+- Redis menggabungkan tag selama 120 detik, dengan batas tunggu maksimum 15 menit.
+- Scheduler `frontend:dispatch-pending-build` berjalan tiap menit dan hanya
+  menghapus pending state setelah GitHub merespons sukses.
+- Workflow Astro menerima event `repository_dispatch` bertipe
+  `cms-content-changed`; concurrency tidak membatalkan build yang sedang aktif.
+
+Aktivasi tetap dilarang sebelum repository remote dan staging lulus. Setelah itu,
+buat fine-grained GitHub token yang hanya diarahkan ke repository Astro dengan
+permission **Contents: Read and write** (permission minimum endpoint repository
+dispatch), lalu simpan hanya pada `/home/ryuumeco/backend-shared/.env`:
+
+```dotenv
+FRONTEND_BUILD_DISPATCH_ENABLED=true
+FRONTEND_BUILD_DISPATCH_URL=https://api.github.com/repos/OWNER/REPOSITORY/dispatches
+FRONTEND_BUILD_DISPATCH_TOKEN=<secret-dari-GitHub>
+FRONTEND_BUILD_EVENT_TYPE=cms-content-changed
+FRONTEND_BUILD_DEBOUNCE_SECONDS=120
+FRONTEND_BUILD_MAX_DELAY_SECONDS=900
+FRONTEND_BUILD_TIMEOUT_SECONDS=8
+```
+
+Jangan menghapus `NEXTJS_REVALIDATE_*` sebelum Astro production stabil dan masa
+rollback Next berakhir. Token asli tidak boleh ditempel ke issue, chat, log,
+repository, atau Obsidian.
 
 ## 11. Monitoring 24 Jam Pertama
 
