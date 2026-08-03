@@ -1,0 +1,355 @@
+{
+  "metadata": {
+    "siteName": "Awan Kusuma Legalitas",
+    "siteDescription": "Trusted business legality services — PT establishment, CV, NIB, business permits, and virtual office. Free consultation!",
+    "aboutTitle": "About Us | Awan Kusuma Legalitas",
+    "aboutDescription": "Get to know Awan Kusuma Legalitas — your trusted partner for business legality and compliance across Indonesia.",
+    "servicesTitle": "Service Catalog | Awan Kusuma Legalitas",
+    "servicesDescription": "A comprehensive range of business legality solutions — company establishment, business licensing, and legal consulting.",
+    "contactTitle": "Contact | Awan Kusuma Legalitas",
+    "contactDescription": "Contact our expert team for business legality consultation. First consultation is free, fast response.",
+    "articlesTitle": "Business Info | Awan Kusuma Legalitas",
+    "articlesDescription": "Expert perspectives, legality strategies, and the latest business insights from our professional team.",
+    "homeTitle": "PT Establishment, CV & Business Permits — Trusted Legal Services | Awan Kusuma Legalitas",
+    "homeDescription": "Professional PT establishment, CV, NIB, business permits & virtual office services across Indonesia. Fast, transparent, guaranteed. Free consultation!"
+  },
+  "navbar": {
+    "about": "ABOUT US",
+    "services": "SERVICES",
+    "articles": "INSIGHTS",
+    "contact": "CONTACT",
+    "login": "LOGIN",
+    "contactUs": "CONTACT US",
+    "faq": "FAQ",
+    "contactLink": "Contact Us",
+    "cookiePolicy": "Cookie Policy",
+    "privacyPolicy": "Privacy Policy",
+    "devPolicy": "Development Environment Policy",
+    "infoSecurity": "Information Security",
+    "copyright": "© AWAN KUSUMA LEGALITAS INC.",
+    "tracking": "TRACK ORDER"
+  },
+  "hero": {
+    "tagline": "Awan Kusuma Legalitas.",
+    "heading1": "GROW & SECURE",
+    "heading2": "BUSINESS WITH US",
+    "cta": "Contact Us Now"
+  },
+  "homeAbout": {
+    "companyName": "Awan Kusuma",
+    "companyTag": "Legalitas",
+    "paragraph1": "is here to cut through the bureaucracy that slows your business growth. We believe every entrepreneur deserves strong legal protection and transparent administration.",
+    "paragraph2": "With proven expertise, we ensure every strategic step is grounded in proper legal foundations. Because we believe sustainable business growth is born from legal certainty and precise execution.",
+    "seeMore": "learn more",
+    "sectionHeading": "AWAN KUSUMA LEGALITAS",
+    "sectionSubheading": "ABOUT US",
+    "aboutUsCard": "About Us",
+    "aboutUsSubtitle": "About Us",
+    "whyUsCard": "Why Choose Us?",
+    "whyUsSubtitle": "Why Us?",
+    "viewText": "VIEW",
+    "visiMisiLink": "Vision & Mission",
+    "budayaLink": "Work Culture"
+  },
+  "homeServices": {
+    "heading": "OUR SERVICES",
+    "subheading": "SERVICES",
+    "description": "Comprehensive business legality solutions",
+    "servicesCount": "{count} SERVICES",
+    "viewAll": "View All Services",
+    "ctaText": "Consult Now"
+  },
+  "homeTestimonials": {
+    "heading": "WHAT THEY SAY",
+    "subheading": "TESTIMONIALS"
+  },
+  "homeArticles": {
+    "heading": "LATEST BUSINESS INSIGHTS",
+    "subheading": "ARTICLES",
+    "readMore": "Read More",
+    "viewAll": "View All Articles"
+  },
+  "homeFaq": {
+    "heading": "FREQUENTLY ASKED QUESTIONS",
+    "subheading": "FAQ",
+    "ctaHeading": "Still have questions?",
+    "ctaText": "Free Consultation",
+    "ctaDescription": "Our team is ready to answer all your questions about business legality."
+  },
+  "homePartners": {
+    "heading": "TRUSTED BY",
+    "subheading": "PARTNERS"
+  },
+  "aboutIntro": {
+    "heading": "Your Strategic Business Legality Partner",
+    "subheading": "ABOUT AWAN KUSUMA",
+    "contentHeading": "More than just permit management",
+    "paragraph1": "Awan Kusuma serves as a strategic partner for over 1,000+ companies in simplifying Indonesia's bureaucratic maze. We integrate legal expertise with operational agility to ensure all your legality needs are met with precision. From business entity establishment to specialized permits, our expert team is ready to handle every detail of your legality at competitive prices, serving startup founders, SMEs, and medium to large-scale multinational companies.",
+    "paragraph2": "For us, legality goes beyond document formalities; it is both a legal shield and a launchpad for your sustainable business expansion. Supported by cross-disciplinary consultants, we guarantee every legal step of your business is arranged with precision and strategically planned."
+  },
+  "aboutWhyUs": {
+    "heading": "WHY CHOOSE AWAN KUSUMA?",
+    "subheading": "WHY US",
+    "contentHeading": "ABSOLUTE LEGAL CERTAINTY FOR YOUR BUSINESS.",
+    "description": "We bring a new standard to licensing services in Indonesia through fully transparent processes, fast turnaround times, and tangible cost efficiency for companies of all sizes.",
+    "usps": {
+      "1": { "title": "Integrity", "desc": "Your trust is our priority. By upholding ethics and transparency, Awan Kusuma ensures your entire business legality process is clean, honest, and highly targeted." },
+      "2": { "title": "Innovation", "desc": "We move dynamically following regulatory evolution in Indonesia. Awan Kusuma ensures your licensing strategy stays relevant with the latest systems, providing creative, legally compliant solutions to support business acceleration in the digital era." },
+      "3": { "title": "Collaboration", "desc": "With a spirit of collaboration and transparent communication, Awan Kusuma synergizes with your team to ensure every licensing stage runs smoothly, effectively, and without hurdles." },
+      "4": { "title": "Customer Priority", "desc": "Your satisfaction is our measure of success. Awan Kusuma is dedicated to providing responsive, transparent service and maximum results, ensuring every detail of your legality needs is handled perfectly and on time." },
+      "5": { "title": "Ownership", "desc": "Building secure and transparent legal assets. Through planned legality services, Awan Kusuma ensures your business ownership structure has a strong legal foundation as the primary capital for worry-free expansion." },
+      "6": { "title": "Excellence", "desc": "Awan Kusuma is the trusted solution for all your legality needs. We ensure your business gains a competitive edge through perfect legal compliance and efficient processes." },
+      "7": { "title": "Urgency", "desc": "Timeliness is our service standard. Awan Kusuma prioritizes completing your licensing quickly and accurately, providing instant legal solutions so your expansion plans and business targets are achieved on schedule." }
+    }
+  },
+  "aboutVisiMisi": {
+    "heading": "Vision & Mission",
+    "visiLabel": "VISION",
+    "visiText": "To be at the Forefront in Providing Innovative and Sustainable Legal Solutions.",
+    "misi1Title": "01 Client Focus",
+    "misi1Desc": "Making your needs and satisfaction our highest priority. We ensure every action and decision is taken to deliver real legality outcomes for your business success.",
+    "misi2Title": "02 Highest Professional Standards",
+    "misi2Desc": "Upholding accuracy and integrity in every legal practice. We apply strict work standards to maintain full trust from clients, partners, and all stakeholders.",
+    "misi3Title": "03 Team Empowerment & Growth",
+    "misi3Desc": "Building a dynamic work ecosystem for our expert team. Through continuous professional development, we ensure every service is handled by competent and knowledgeable experts.",
+    "misi4Title": "04 Social Responsibility",
+    "misi4Desc": "Committed to making positive contributions to society and the environment through ethical business practices. We ensure every legal step we take supports a healthy business ecosystem."
+  },
+  "aboutCulture": {
+    "heading": "Work Culture",
+    "subheading": "CULTURE",
+    "description": "\"We are here to ensure your business grows rapidly while having solid legal protection every step of the way.\"",
+    "philosophies": {
+      "1": { "title": "FAST", "desc": "Not just fast, we work with strategic agility. We understand the urgency of every permit and respond quickly to regulatory dynamics so your business operations are never halted by bureaucracy." },
+      "2": { "title": "FAIR", "desc": "Integrity is our foundation. We guarantee an honest, ethical, and transparent process at every stage. At Awan Kusuma, there are no hidden fees or concealed processes; every legal step is fully accountable." },
+      "3": { "title": "BUILD TO LAST", "desc": "We don't just manage documents for today. Through a Future Proofing approach, we ensure the legality and licensing structure we build protects your business long-term, ready for regulatory changes, and serves as a solid foundation for future expansion." }
+    }
+  },
+  "servicesIndex": {
+    "heading": "OUR SERVICES",
+    "description": "Discover a comprehensive range of legal governance and administrative compliance solutions designed to secure your business expansion with high precision and absolute transparency",
+    "servicesCount": "{count} SERVICES"
+  },
+  "contactPage": {
+    "heading": "Contact Us",
+    "subheading": "CONTACT",
+    "hours": "Monday – Friday, 09:00 – 17:00 WIB (GMT+7)",
+    "faqHeading": "Frequently Asked Questions",
+    "locationHeading": "Our Location"
+  },
+  "articleDetail": {
+    "home": "Home",
+    "infoBisnis": "Business Insights",
+    "readAlso": "Read Also",
+    "relatedTopics": "Related Topics",
+    "shareArticle": "Share this article:",
+    "minRead": "{count} min read",
+    "noContent": "Content not available.",
+    "articleNotFound": "Article not found.",
+    "author": "Awan Kusuma Legal Team",
+    "authorRole": "Legal & Business Consultant"
+  },
+  "errorPage": {
+    "title": "Something Went Wrong",
+    "description": "Sorry, this page encountered an error. Our team has been notified and is working on the issue.",
+    "retry": "Try Again",
+    "backHome": "Back to Home"
+  },
+  "notFoundPage": {
+    "title": "Page Not Found",
+    "description": "Sorry, the page you're looking for doesn't exist or has been moved. Please return to the homepage or use the navigation above.",
+    "backHome": "Back to Home",
+    "viewServices": "View Services"
+  },
+  "infoBisnis": {
+    "heading": "BUSINESS INFO",
+    "subheading": "ARTICLES",
+    "allCategory": "All",
+    "readArticle": "Read Article",
+    "noArticles": "No articles available for this category yet.",
+    "articleListLabel": "Business Insights article list",
+    "paginationLabel": "Article page navigation",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "goToPage": "Go to page {page}"
+  },
+  "kontakHero": {
+    "subheading": "Direct Consultation",
+    "heading1": "CONSULT YOUR",
+    "heading2": "BUSINESS LEGAL",
+    "heading3": "STRATEGY",
+    "description": "Don't let legal hurdles slow down your business growth. Consult with our expert team for precise and transparent legal solutions.",
+    "formTitle": "Consultation Form",
+    "formDesc": "Tell us about your business challenges.",
+    "formLabels": {
+      "name": "Full Name",
+      "phone": "WhatsApp Number",
+      "service": "Interested Service",
+      "message": "Message / Inquiry"
+    },
+    "formPlaceholders": {
+      "serviceDefault": "Select Service",
+      "serviceOther": "Other / General Inquiry"
+    },
+    "formSubmit": "CONSULT NOW",
+    "trustSignals": {
+      "1": { "text": "FREE Initial Consultation", "detail": "Discuss your initial needs without any cost burden." },
+      "2": { "text": "Fast Response < 1 Workday", "detail": "We value your business operational time." },
+      "3": { "text": "100% Privacy Guaranteed", "detail": "All your data and business strategies are confidential." }
+    }
+  },
+  "kontakFaq": {
+    "subheading": "FAQ",
+    "heading1": "Frequently Asked",
+    "heading2": "Questions",
+    "description": "Can't find the answer you're looking for? Contact us directly and our team is ready to help."
+  },
+  "footer": {
+    "ctaHeading": "Ready to secure your business legality with us?",
+    "ctaDescription": "Awan Kusuma Legalitas is here to provide trusted legal solutions and fast, accurate, and transparent licensing processes. Let us grow together with your business.",
+    "ctaButton": "FREE CONSULTATION",
+    "faqLink": "FAQ",
+    "aboutLink": "About Us",
+    "servicesLink": "Services",
+    "companyTagline": "Awan Kusuma Legalitas.",
+    "heading1": "GROW & SECURE",
+    "heading2": "BUSINESS WITH US",
+    "aboutHeading": "ABOUT US",
+    "aboutLinks": {
+      "about": "About",
+      "whyUs": "Why Choose Us?",
+      "visiMisi": "Vision & Mission",
+      "culture": "Work Culture"
+    },
+    "servicesHeading": "SERVICES",
+    "servicesLinks": {
+      "pendirian": "Company Establishment",
+      "perizinan": "Business Licensing",
+      "agensi": "Marketing Agency",
+      "pajak": "Tax Reporting"
+    },
+    "articlesHeading": "INSIGHTS",
+    "articlesLinks": {
+      "articles": "Articles & News"
+    },
+    "contactHeading": "CONTACT",
+    "contactLinks": {
+      "faq": "FAQ",
+      "contact": "Contact Us",
+      "privacyPolicy": "Privacy Policy"
+    },
+    "copyright": "© {year} AWAN KUSUMA LEGALITAS",
+    "madeBy": "MADE WITH PASSION BY"
+  },
+  "trustSignals": {
+    "clients": "Clients Served",
+    "processingDays": "Business Days",
+    "notary": "Certified Notary",
+    "consultation": "Free Consultation"
+  },
+  "common": {
+    "learnMore": "Learn More",
+    "contactNow": "Contact Now",
+    "freeConsultation": "Free Consultation",
+    "viewDetails": "View Details",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "An Error Occurred",
+    "backToHome": "Back to Home",
+    "pageNotFound": "Page Not Found",
+    "allRightsReserved": "All rights reserved."
+  },
+  "languageSwitcher": {
+    "id": "Indonesia",
+    "en": "English",
+    "zh": "中文"
+  },
+  "cookieConsent": {
+    "title": "Analytics Notice",
+    "description": "This website automatically loads Google Analytics and Meta Pixel for analytics and marketing. Details and control options are available in our ",
+    "privacyLink": "Privacy Policy.",
+    "dismiss": "Dismiss notice"
+  },
+  "privacyPage": {
+    "title": "Privacy Policy",
+    "metaDescription": "Privacy Policy of PT Awan Kusuma Legalitas — information about the collection, use, and protection of your personal data."
+  },
+  "tracking": {
+    "title": "Track Order | Awan Kusuma Legalitas",
+    "heading1": "TRACK YOUR",
+    "heading2": "ORDER STATUS",
+    "description": "Monitor your legality processing in real-time and transparently.",
+    "inputPlaceholder": "Enter Tracking Code (e.g., AK-2606-XXXX)",
+    "btnTrack": "Track Now",
+    "btnSearching": "Searching...",
+    "errorEmpty": "Tracking code cannot be empty",
+    "errorFormat": "Invalid code format",
+    "errorNotFound": "Code not found or verification failed",
+    "errorRateLimit": "Too many attempts. Please try again later.",
+    "errorGeneric": "A system error occurred",
+    "verifyTitle": "Security Verification",
+    "verifyDesc": "This order is confidential. Enter the last 4 digits of your registered phone number.",
+    "verifyInputPlaceholder": "Last 4 Digits of Phone",
+    "btnVerify": "Verify",
+    "btnVerifying": "Verifying...",
+    "resultOrderLabel": "ORDER TITLE",
+    "resultServiceLabel": "SERVICE",
+    "resultStatusLabel": "STATUS",
+    "resultProgressLabel": "PROGRESS",
+    "resultEtaLabel": "ESTIMATED COMPLETION",
+    "copied": "Copied!",
+    "adminNote": "Admin Note",
+    "statusPending": "Pending",
+    "statusInProgress": "In Progress",
+    "statusOnHold": "On Hold",
+    "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled",
+    "stageCompleted": "Completed",
+    "stageInProgress": "In Progress",
+    "stagePending": "Pending",
+    "stageSkipped": "Skipped",
+    "ctaHeading": "Need More Help?",
+    "ctaDesc": "Our team is ready to assist you via WhatsApp.",
+    "ctaBtn": "Contact Admin"
+  },
+  "mitra": {
+    "title": "Notary Partner Portal | Awan Kusuma Legalitas",
+    "description": "Order and staff management dashboard exclusively for Notary Partners.",
+    "tabOrders": "Office Orders",
+    "tabStaff": "My Staff",
+    "filterAll": "All Status",
+    "filterPending": "Pending",
+    "filterInProgress": "In Progress",
+    "filterCompleted": "Completed",
+    "btnDetail": "View Detail",
+    "backToList": "Back to Order List",
+    "orderHeader": "Order #",
+    "progressLabel": "Work Progress",
+    "progressSub": "Updated in real-time",
+    "docsTitle": "Office Documents & Files",
+    "docsSub": "Official records related to this order",
+    "noDocs": "No documents released yet",
+    "btnDownload": "Download",
+    "timelineTitle": "Process History Timeline",
+    "timelineSub": "Detail of task progress and verification",
+    "btnComplete": "COMPLETE",
+    "btnCompleting": "PROCESSING...",
+    "stageFinalProtected": "FINAL STAGE (INTERNAL ADMIN)",
+    "notAllowedFinal": "Final stage is under the exclusive authority of Internal Admin.",
+    "completeSuccess": "Subtask successfully completed.",
+    "completeError": "Failed to complete subtask.",
+    "noOrders": "No Registered Orders Yet",
+    "noOrdersDesc": "There are currently no legal orders or services connected to your notary office.",
+    "staffTitle": "Notary Staff & Assistants List",
+    "staffSub": "Management of staff registered in your notary office",
+    "noStaff": "No Staff Registered Yet",
+    "noStaffDesc": "No notary staff accounts are currently linked to your office.",
+    "colName": "Staff Name",
+    "colEmail": "Email",
+    "colStatus": "Status",
+    "colSupervisor": "Supervisor",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "adminAccessRestricted": "Staff management features are exclusive to the Notary Principal."
+  }
+}

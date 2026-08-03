@@ -1,0 +1,355 @@
+{
+  "metadata": {
+    "siteName": "Awan Kusuma 法律事务所",
+    "siteDescription": "值得信赖的商业法律服务 — 公司设立（PT、CV）、营业执照（NIB）、经营许可及虚拟办公室。免费咨询！",
+    "aboutTitle": "关于我们 | Awan Kusuma 法律事务所",
+    "aboutDescription": "深入了解 Awan Kusuma 法律事务所 — 您在印尼全境的商业法律与合规的可靠合作伙伴。",
+    "servicesTitle": "服务目录 | Awan Kusuma 法律事务所",
+    "servicesDescription": "全面的商业合法性解决方案 — 公司设立、营业执照和法律咨询。",
+    "contactTitle": "联系我们 | Awan Kusuma 法律事务所",
+    "contactDescription": "联系我们的专业团队获取商业法律咨询。首次咨询免费，快速响应。",
+    "articlesTitle": "商业资讯 | Awan Kusuma 法律事务所",
+    "articlesDescription": "来自我们专业团队的专家视角、合法性策略和最新商业见解。",
+    "homeTitle": "公司设立、CV、营业执照办理服务 | Awan Kusuma 法律事务所",
+    "homeDescription": "印尼全境专业公司设立（PT、CV）、营业执照（NIB）、经营许可及虚拟办公室服务。快速、透明、有保障。免费咨询！"
+  },
+  "navbar": {
+    "about": "关于我们",
+    "services": "服务项目",
+    "articles": "商业资讯",
+    "contact": "联系我们",
+    "login": "登录",
+    "contactUs": "联系我们",
+    "faq": "常见问题",
+    "contactLink": "联系我们",
+    "cookiePolicy": "Cookie 政策",
+    "privacyPolicy": "隐私政策",
+    "devPolicy": "开发环境政策",
+    "infoSecurity": "信息安全",
+    "copyright": "© AWAN KUSUMA LEGALITAS INC.",
+    "tracking": "订单查询"
+  },
+  "hero": {
+    "tagline": "Awan Kusuma 法律事务所",
+    "heading1": "GROW & SECURE",
+    "heading2": "BUSINESS WITH US",
+    "cta": "立即联系我们"
+  },
+  "homeAbout": {
+    "companyName": "Awan Kusuma",
+    "companyTag": "法律事务所",
+    "paragraph1": "致力于消除阻碍您业务发展的官僚障碍。我们相信每位企业家都有权获得坚实的法律保护和透明的行政管理。",
+    "paragraph2": "凭借经过验证的专业知识，我们确保每一个战略步骤都建立在正确的法律基础之上。因为我们相信，可持续的商业增长源于法律确定性和精准执行。",
+    "seeMore": "了解更多",
+    "sectionHeading": "AWAN KUSUMA 法律事务所",
+    "sectionSubheading": "关于我们",
+    "aboutUsCard": "关于我们",
+    "aboutUsSubtitle": "About Us",
+    "whyUsCard": "为什么选择我们？",
+    "whyUsSubtitle": "Why Us?",
+    "viewText": "查看",
+    "visiMisiLink": "愿景与使命",
+    "budayaLink": "工作文化"
+  },
+  "homeServices": {
+    "heading": "我们的服务",
+    "subheading": "服务项目",
+    "description": "全面的商业法律解决方案",
+    "servicesCount": "{count} 项服务",
+    "viewAll": "查看所有服务",
+    "ctaText": "立即咨询"
+  },
+  "homeTestimonials": {
+    "heading": "客户评价",
+    "subheading": "推荐语"
+  },
+  "homeArticles": {
+    "heading": "最新商业资讯",
+    "subheading": "文章",
+    "readMore": "阅读更多",
+    "viewAll": "查看所有文章"
+  },
+  "homeFaq": {
+    "heading": "常见问题",
+    "subheading": "FAQ",
+    "ctaHeading": "还有其他问题？",
+    "ctaText": "免费咨询",
+    "ctaDescription": "我们的团队随时准备回答您关于商业法律的所有问题。"
+  },
+  "homePartners": {
+    "heading": "合作伙伴",
+    "subheading": "信任机构"
+  },
+  "aboutIntro": {
+    "heading": "您的战略商业法律合作伙伴",
+    "subheading": "关于 AWAN KUSUMA",
+    "contentHeading": "不仅仅是许可证管理",
+    "paragraph1": "Awan Kusuma 作为1000多家企业的战略合作伙伴，致力于简化印尼复杂的官僚程序。我们将法律专业知识与运营敏捷性相结合，确保您的所有法律需求得到精准满足。从企业实体设立到专业许可证，我们的专家团队以具有竞争力的价格为初创企业创始人、中小企业以及中大型跨国公司提供全方位法律服务。",
+    "paragraph2": "对我们而言，法律事务超越了文件形式；它既是法律盾牌，也是您可持续商业扩张的起跑台。在跨学科顾问的支持下，我们保证您的每一个商业法律步骤都精准安排、战略规划。"
+  },
+  "aboutWhyUs": {
+    "heading": "为什么选择 AWAN KUSUMA？",
+    "subheading": "选择理由",
+    "contentHeading": "为您企业提供绝对的法律保障。",
+    "description": "我们通过完全透明的流程、快速的周转时间和切实可见的成本效益，为印度尼西亚各种规模的企业带来许可服务的新标准。",
+    "usps": {
+      "1": { "title": "诚信", "desc": "您的信任是我们的首要任务。Awan Kusuma 坚持道德与透明，确保您所有商业合法化流程清晰、诚实、极具针对性。" },
+      "2": { "title": "创新", "desc": "我们紧随印度尼西亚监管法规的发展而不断进步。Awan Kusuma 确保您的许可策略始终与最新系统保持一致，为数字时代的业务加速提供富有创意且合规的解决方案。" },
+      "3": { "title": "协作", "desc": "秉承协作与透明沟通的精神，Awan Kusuma 与您的团队协同合作，确保每个许可阶段都能顺利、高效、无障碍地进行。" },
+      "4": { "title": "客户至上", "desc": "您的满意是我们衡量成功的标准。Awan Kusuma 致力于提供响应迅速、透明的服务和最佳结果，确保您合法化需求的每个细节都能得到完美且及时的处理。" },
+      "5": { "title": "所有权", "desc": "构建安全透明的法律资产。通过精心规划的法律服务，Awan Kusuma 确保您的企业所有权结构具备坚实的法律基础，作为您无忧扩张的主要资本。" },
+      "6": { "title": "卓越", "desc": "Awan Kusuma 是满足您所有法律需求的值得信赖的解决方案。我们通过完美的法律合规和高效的流程，确保您的企业获得竞争优势。" },
+      "7": { "title": "紧迫性", "desc": "准时是我们的服务标准。Awan Kusuma 优先快速准确地完成您的许可审批，提供即时的法律解决方案，以确保您的扩张计划和业务目标能如期实现。" }
+    }
+  },
+  "aboutVisiMisi": {
+    "heading": "愿景与使命",
+    "visiLabel": "愿景",
+    "visiText": "成为提供创新和可持续法律解决方案的前沿领导者。",
+    "misi1Title": "01 以客户为中心",
+    "misi1Desc": "将您的需求和满意度作为我们的最高优先事项。我们确保每一个行动和决策都是为了为您的商业成功提供切实的法律成果。",
+    "misi2Title": "02 最高专业标准",
+    "misi2Desc": "在每一项法律实践中坚持准确性和诚信。我们执行严格的工作标准，以维护客户、合作伙伴和所有利益相关者的充分信任。",
+    "misi3Title": "03 团队赋能与成长",
+    "misi3Desc": "为我们的专家团队建设充满活力的工作生态系统。通过持续的专业发展，我们确保每项服务都由能力出众、见识广博的专家处理。",
+    "misi4Title": "04 社会责任",
+    "misi4Desc": "致力于通过道德商业实践为社会和环境做出积极贡献。我们确保我们采取的每一个法律步骤都支持健康的商业生态系统。"
+  },
+  "aboutCulture": {
+    "heading": "工作文化",
+    "subheading": "文化",
+    "description": "“我们致力于确保您的企业快速发展，同时在每一步都能获得坚实的法律保护。”",
+    "philosophies": {
+      "1": { "title": "FAST", "desc": "我们不仅求快，更具备战略敏捷性。我们了解每项许可的紧迫性，能够快速响应监管动态，确保您的业务运营永远不会因官僚障碍而停滞。" },
+      "2": { "title": "FAIR", "desc": "诚信是我们的基石。我们保证每个阶段的流程诚实、合乎道德且透明。在 Awan Kusuma，没有隐性费用或暗箱操作；我们的每一步法律行动都完全经得起审查。" },
+      "3": { "title": "BUILD TO LAST", "desc": "我们不仅仅满足于解决眼前的文件问题。通过面向未来的规划方法，我们确保构建的合法性与许可架构能够长期保护您的企业，以应对监管法规的变化，并为您未来的业务扩张奠定坚实的基础。" }
+    }
+  },
+  "servicesIndex": {
+    "heading": "我们的服务",
+    "description": "发现全面的法律治理和行政合规解决方案，旨在以高精准度和绝对透明度保障您的业务扩张",
+    "servicesCount": "{count} 项服务"
+  },
+  "contactPage": {
+    "heading": "联系我们",
+    "subheading": "联系方式",
+    "hours": "周一至周五，09:00 – 17:00（西印尼时间 GMT+7）",
+    "faqHeading": "常见问题",
+    "locationHeading": "我们的位置"
+  },
+  "articleDetail": {
+    "home": "首页",
+    "infoBisnis": "商业资讯",
+    "readAlso": "推荐阅读",
+    "relatedTopics": "相关主题",
+    "shareArticle": "分享这篇文章：",
+    "minRead": "{count} 分钟阅读",
+    "noContent": "内容不可用。",
+    "articleNotFound": "文章未找到。",
+    "author": "Awan Kusuma 法律团队",
+    "authorRole": "法律与商业顾问"
+  },
+  "errorPage": {
+    "title": "发生错误",
+    "description": "抱歉，该页面遇到了问题。我们的团队已收到通知并正在处理中。",
+    "retry": "重试",
+    "backHome": "返回首页"
+  },
+  "notFoundPage": {
+    "title": "页面未找到",
+    "description": "抱歉，您要查找的页面不存在或已被移动。请返回首页或使用上方导航。",
+    "backHome": "返回首页",
+    "viewServices": "查看服务"
+  },
+  "infoBisnis": {
+    "heading": "商业资讯",
+    "subheading": "文章",
+    "allCategory": "全部",
+    "readArticle": "阅读文章",
+    "noArticles": "此分类暂无文章。",
+    "articleListLabel": "商业资讯文章列表",
+    "paginationLabel": "文章页面导航",
+    "previousPage": "上一页",
+    "nextPage": "下一页",
+    "goToPage": "前往第 {page} 页"
+  },
+  "kontakHero": {
+    "subheading": "直接咨询",
+    "heading1": "咨询您的",
+    "heading2": "企业法律",
+    "heading3": "战略",
+    "description": "不要让法律障碍减缓您的业务增长。请向我们的专家团队咨询，以获得准确且透明的法律解决方案。",
+    "formTitle": "咨询表格",
+    "formDesc": "告诉我们您面临的业务挑战。",
+    "formLabels": {
+      "name": "全名",
+      "phone": "WhatsApp 账号",
+      "service": "感兴趣的服务",
+      "message": "留言 / 咨询"
+    },
+    "formPlaceholders": {
+      "serviceDefault": "选择服务",
+      "serviceOther": "其他 / 一般咨询"
+    },
+    "formSubmit": "立即咨询",
+    "trustSignals": {
+      "1": { "text": "免费初步咨询", "detail": "无任何费用负担地讨论您的初步需求。" },
+      "2": { "text": "快速响应 < 1 个工作日", "detail": "我们重视您的业务运营时间。" },
+      "3": { "text": "100% 隐私保证", "detail": "您的所有数据和业务策略均严格保密。" }
+    }
+  },
+  "kontakFaq": {
+    "subheading": "FAQ",
+    "heading1": "常见",
+    "heading2": "问题",
+    "description": "找不到您要找的答案？直接联系我们，我们的团队随时准备为您提供帮助。"
+  },
+  "footer": {
+    "ctaHeading": "准备好与我们一起保障您的商业法律了吗？",
+    "ctaDescription": "Awan Kusuma 法律事务所致力于提供值得信赖的法律解决方案以及快速、准确、透明的许可流程。让我们与您的企业共同成长。",
+    "ctaButton": "免费咨询",
+    "faqLink": "常见问题",
+    "aboutLink": "关于我们",
+    "servicesLink": "服务项目",
+    "companyTagline": "Awan Kusuma 法律事务所",
+    "heading1": "GROW & SECURE",
+    "heading2": "BUSINESS WITH US",
+    "aboutHeading": "关于我们",
+    "aboutLinks": {
+      "about": "关于",
+      "whyUs": "为什么选择我们？",
+      "visiMisi": "愿景与使命",
+      "culture": "工作文化"
+    },
+    "servicesHeading": "服务项目",
+    "servicesLinks": {
+      "pendirian": "公司设立",
+      "perizinan": "经营许可",
+      "agensi": "营销代理",
+      "pajak": "税务申报"
+    },
+    "articlesHeading": "商业资讯",
+    "articlesLinks": {
+      "articles": "文章与新闻"
+    },
+    "contactHeading": "联系方式",
+    "contactLinks": {
+      "faq": "常见问题",
+      "contact": "联系我们",
+      "privacyPolicy": "隐私政策"
+    },
+    "copyright": "© {year} AWAN KUSUMA LEGALITAS",
+    "madeBy": "用心打造"
+  },
+  "trustSignals": {
+    "clients": "服务客户",
+    "processingDays": "工作日处理",
+    "notary": "公证认证",
+    "consultation": "免费咨询"
+  },
+  "common": {
+    "learnMore": "了解更多",
+    "contactNow": "立即联系",
+    "freeConsultation": "免费咨询",
+    "viewDetails": "查看详情",
+    "close": "关闭",
+    "loading": "加载中...",
+    "error": "发生错误",
+    "backToHome": "返回首页",
+    "pageNotFound": "页面未找到",
+    "allRightsReserved": "版权所有。"
+  },
+  "languageSwitcher": {
+    "id": "Indonesia",
+    "en": "English",
+    "zh": "中文"
+  },
+  "cookieConsent": {
+    "title": "分析工具通知",
+    "description": "本网站会自动加载 Google Analytics 和 Meta Pixel，用于分析和营销。详情及控制方式请参阅我们的",
+    "privacyLink": "隐私政策。",
+    "dismiss": "关闭通知"
+  },
+  "privacyPage": {
+    "title": "隐私政策",
+    "metaDescription": "PT Awan Kusuma Legalitas 隐私政策 — 关于个人数据的收集、使用和保护的信息。"
+  },
+  "tracking": {
+    "title": "查询订单 | Awan Kusuma 法律事务所",
+    "heading1": "查询您的",
+    "heading2": "订单状态",
+    "description": "实时透明地监控您的合法化处理进度。",
+    "inputPlaceholder": "输入查询代码（例如：AK-2606-XXXX）",
+    "btnTrack": "立即查询",
+    "btnSearching": "查询中...",
+    "errorEmpty": "查询代码不能为空",
+    "errorFormat": "代码格式无效",
+    "errorNotFound": "代码未找到或验证失败",
+    "errorRateLimit": "尝试次数过多，请稍后再试。",
+    "errorGeneric": "系统发生错误",
+    "verifyTitle": "安全验证",
+    "verifyDesc": "此订单为机密信息。请输入您注册手机号码的最后4位数字。",
+    "verifyInputPlaceholder": "手机号码最后4位",
+    "btnVerify": "验证",
+    "btnVerifying": "验证中...",
+    "resultOrderLabel": "订单标题",
+    "resultServiceLabel": "服务",
+    "resultStatusLabel": "状态",
+    "resultProgressLabel": "进度",
+    "resultEtaLabel": "预计完成时间",
+    "copied": "已复制！",
+    "adminNote": "管理员备注",
+    "statusPending": "待处理",
+    "statusInProgress": "处理中",
+    "statusOnHold": "已暂停",
+    "statusCompleted": "已完成",
+    "statusCancelled": "已取消",
+    "stageCompleted": "已完成",
+    "stageInProgress": "处理中",
+    "stagePending": "待处理",
+    "stageSkipped": "已跳过",
+    "ctaHeading": "需要更多帮助？",
+    "ctaDesc": "我们的团队随时准备通过 WhatsApp 为您提供帮助。",
+    "ctaBtn": "联系管理员"
+  },
+  "mitra": {
+    "title": "公证人合作伙伴门户 | Awan Kusuma 法律事务所",
+    "description": "专为公证人合作伙伴设计的订单和人员管理仪表板。",
+    "tabOrders": "办公室订单",
+    "tabStaff": "我的员工",
+    "filterAll": "所有状态",
+    "filterPending": "待处理",
+    "filterInProgress": "处理中",
+    "filterCompleted": "已完成",
+    "btnDetail": "查看详情",
+    "backToList": "返回订单列表",
+    "orderHeader": "订单 #",
+    "progressLabel": "工作进度",
+    "progressSub": "实时更新",
+    "docsTitle": "办公室文档和文件",
+    "docsSub": "与此订单相关的官方记录",
+    "noDocs": "尚未发布任何文档",
+    "btnDownload": "下载",
+    "timelineTitle": "流程历史时间表",
+    "timelineSub": "任务进度和验证的详细信息",
+    "btnComplete": "完成",
+    "btnCompleting": "处理中...",
+    "stageFinalProtected": "最终阶段（内部管理员）",
+    "notAllowedFinal": "最终阶段属于内部管理员的专属权限。",
+    "completeSuccess": "子任务已成功完成。",
+    "completeError": "完成子任务失败。",
+    "noOrders": "暂无注册订单",
+    "noOrdersDesc": "目前没有与您的公证处连接的法律订单或服务。",
+    "staffTitle": "公证员员工和助理列表",
+    "staffSub": "管理在您公证处注册的员工",
+    "noStaff": "暂无注册员工",
+    "noStaffDesc": "目前没有公证员员工帐户与您的办公室关联。",
+    "colName": "员工姓名",
+    "colEmail": "电子邮件",
+    "colStatus": "状态",
+    "colSupervisor": "主管",
+    "statusActive": "活跃",
+    "statusInactive": "未活跃",
+    "adminAccessRestricted": "员工管理功能仅供公证处主管使用。"
+  }
+}

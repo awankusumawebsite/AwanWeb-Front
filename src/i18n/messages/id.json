@@ -1,0 +1,355 @@
+{
+  "metadata": {
+    "siteName": "Awan Kusuma Legalitas",
+    "siteDescription": "Jasa legalitas bisnis terpercaya — pendirian PT, CV, NIB, perizinan usaha, dan virtual office. Konsultasi gratis!",
+    "aboutTitle": "Tentang Kami | Awan Kusuma Legalitas",
+    "aboutDescription": "Kenali lebih dekat Awan Kusuma Legalitas — partner terpercaya untuk legalitas dan kepatuhan bisnis Anda di seluruh Indonesia.",
+    "servicesTitle": "Katalog Layanan | Awan Kusuma Legalitas",
+    "servicesDescription": "Rangkaian solusi legalitas bisnis yang komprehensif — pendirian perusahaan, perizinan usaha, dan konsultasi hukum.",
+    "contactTitle": "Kontak | Awan Kusuma Legalitas",
+    "contactDescription": "Hubungi tim ahli kami untuk konsultasi legalitas bisnis. Konsultasi pertama gratis, respons cepat.",
+    "articlesTitle": "Info Bisnis | Awan Kusuma Legalitas",
+    "articlesDescription": "Perspektif ahli, strategi legalitas, dan wawasan bisnis terbaru dari tim profesional kami.",
+    "homeTitle": "Jasa Pendirian PT, CV & Perizinan Usaha Terpercaya | Awan Kusuma Legalitas",
+    "homeDescription": "Jasa pendirian PT, CV, NIB, perizinan usaha & virtual office resmi se-Indonesia. Proses cepat, transparan, bergaransi. Konsultasi gratis!"
+  },
+  "navbar": {
+    "about": "TENTANG KAMI",
+    "services": "LAYANAN",
+    "articles": "INFO BISNIS",
+    "contact": "KONTAK",
+    "login": "LOGIN",
+    "contactUs": "HUBUNGI KAMI",
+    "faq": "FAQ",
+    "contactLink": "Hubungi Kami",
+    "cookiePolicy": "Cookie Policy",
+    "privacyPolicy": "Privacy Policy",
+    "devPolicy": "Development Environment Policy",
+    "infoSecurity": "Information Security",
+    "copyright": "© AWAN KUSUMA LEGALITAS INC.",
+    "tracking": "LACAK PROSES"
+  },
+  "hero": {
+    "tagline": "Awan Kusuma Legalitas",
+    "heading1": "JASA PENDIRIAN PT, CV",
+    "heading2": "& PERIZINAN USAHA",
+    "cta": "Hubungi Sekarang"
+  },
+  "homeAbout": {
+    "companyName": "Awan Kusuma",
+    "companyTag": "Legalitas",
+    "paragraph1": "hadir untuk memangkas birokrasi yang menghambat laju bisnis anda. Kami percaya bahwa setiap pengusaha berhak atas perlindungan hukum yang kokoh dan administrasi yang transparan.",
+    "paragraph2": "Dengan keahlian yang teruji, kami memastikan setiap langkah strategis berpijak pada landasan hukum yang tepat. Karena kami percaya, pertumbuhan bisnis yang berkelanjutan lahir dari kepastian hukum dan eksekusi yang presisi.",
+    "seeMore": "lihat selengkapnya",
+    "sectionHeading": "AWAN KUSUMA LEGALITAS",
+    "sectionSubheading": "TENTANG KAMI",
+    "aboutUsCard": "Tentang Kami",
+    "aboutUsSubtitle": "About Us",
+    "whyUsCard": "Kenapa Harus Kami?",
+    "whyUsSubtitle": "Why Us?",
+    "viewText": "LIHAT",
+    "visiMisiLink": "Visi & Misi",
+    "budayaLink": "Budaya Kerja"
+  },
+  "homeServices": {
+    "heading": "LAYANAN KAMI",
+    "subheading": "SERVICES",
+    "description": "Rangkaian solusi legalitas bisnis yang komprehensif",
+    "servicesCount": "{count} LAYANAN",
+    "viewAll": "Lihat Semua Layanan",
+    "ctaText": "Konsultasi Sekarang"
+  },
+  "homeTestimonials": {
+    "heading": "APA KATA MEREKA",
+    "subheading": "TESTIMONIALS"
+  },
+  "homeArticles": {
+    "heading": "INFO BISNIS TERBARU",
+    "subheading": "ARTICLES",
+    "readMore": "Baca Selengkapnya",
+    "viewAll": "Lihat Semua Artikel"
+  },
+  "homeFaq": {
+    "heading": "PERTANYAAN YANG SERING DIAJUKAN",
+    "subheading": "FAQ",
+    "ctaHeading": "Masih punya pertanyaan?",
+    "ctaText": "Konsultasi Gratis",
+    "ctaDescription": "Tim kami siap membantu menjawab semua pertanyaan seputar legalitas bisnis Anda."
+  },
+  "homePartners": {
+    "heading": "DIPERCAYA OLEH",
+    "subheading": "PARTNERS"
+  },
+  "aboutIntro": {
+    "heading": "Mitra Strategis Legalitas Bisnis Anda",
+    "subheading": "TENTANG AWAN KUSUMA",
+    "contentHeading": "Lebih dari sekadar tata kelola perizinan",
+    "paragraph1": "Awan Kusuma hadir sebagai mitra strategis bagi lebih dari 1000+ perusahaan dalam menyederhanakan labirin birokrasi di Indonesia. Kami mengintegrasikan keahlian hukum dengan ketangkasan operasional untuk memastikan seluruh kebutuhan legalitas Anda terpenuhi secara presisi. Mulai dari pembuatan badan usaha hingga izin khusus, tim ahli kami siap menangani setiap detail legalitas Anda dengan harga yang kompetitif, bagi para pendiri startup, pelaku UMKM, hingga perusahaan skala menengah dan besar kelas multinasional.",
+    "paragraph2": "Bagi kami, legalitas melampaui aspek formalitas dokumen; ia adalah perisai hukum sekaligus landasan pacu bagi ekspansi bisnis Anda yang berkelanjutan. Didukung oleh konsultan lintas disiplin, kami menjamin setiap langkah hukum bisnis Anda tersusun secara presisi dan terencana secara strategis."
+  },
+  "aboutWhyUs": {
+    "heading": "KENAPA HARUS AWAN KUSUMA?",
+    "subheading": "WHY US",
+    "contentHeading": "KEPASTIAN HUKUM MUTLAK UNTUK BISNIS ANDA.",
+    "description": "Kami menghadirkan standar baru dalam layanan perizinan di Indonesia melalui proses yang sepenuhnya transparan, durasi pengerjaan yang cepat, serta efisiensi biaya yang nyata bagi setiap skala perusahaan.",
+    "usps": {
+      "1": { "title": "Integritas", "desc": "Kepercayaan Anda adalah prioritas kami. Dengan menjunjung tinggi etika dan transparansi, Awan Kusuma memastikan seluruh proses legalitas bisnis Anda berjalan bersih, jujur, dan tepat sasaran." },
+      "2": { "title": "Inovasi", "desc": "Kami bergerak dinamis mengikuti evolusi regulasi di Indonesia. Awan Kusuma memastikan strategi perizinan Anda selalu relevan dengan sistem terbaru, memberikan solusi kreatif yang tetap patuh hukum demi mendukung akselerasi bisnis di era digital." },
+      "3": { "title": "Kerjasama", "desc": "Dengan semangat kolaborasi dan komunikasi yang transparan, Awan Kusuma bersinergi dengan tim Anda untuk memastikan setiap tahapan perizinan berjalan lancar, efektif, dan tanpa hambatan." },
+      "4": { "title": "Prioritas Pelanggan", "desc": "Kepuasan Anda adalah tolak ukur keberhasilan kami. Awan Kusuma berdedikasi memberikan pelayanan yang responsif, transparan, dan hasil yang maksimal, memastikan setiap detail kebutuhan legalitas Anda tertangani dengan sempurna dan tepat waktu." },
+      "5": { "title": "Kepemilikan", "desc": "Membangun aset hukum yang aman dan transparan. Melalui layanan legalitas yang terencana, Awan Kusuma memastikan struktur kepemilikan bisnis Anda memiliki dasar hukum yang kuat sebagai modal utama ekspansi tanpa rasa khawatir." },
+      "6": { "title": "Keunggulan", "desc": "Awan Kusuma adalah solusi terpercaya untuk segala kebutuhan legalitas Anda. Kami memastikan bisnis Anda memiliki keunggulan kompetitif melalui kepatuhan hukum yang sempurna dan proses yang efisien." },
+      "7": { "title": "Urgensi", "desc": "Ketepatan waktu adalah standar layanan kami. Awan Kusuma memprioritaskan penyelesaian perizinan Anda secara cepat dan akurat, memberikan solusi hukum instan agar rencana ekspansi dan target bisnis Anda tercapai sesuai jadwal." }
+    }
+  },
+  "aboutVisiMisi": {
+    "heading": "Visi & Misi",
+    "visiLabel": "VISI",
+    "visiText": "Menjadi Garda Terdepan dalam Memberikan Solusi Hukum Inovatif dan Berkelanjutan.",
+    "misi1Title": "01 Fokus Pada Klien",
+    "misi1Desc": "Menjadikan kebutuhan dan kepuasan Anda sebagai prioritas tertinggi. Kami memastikan setiap tindakan dan keputusan diambil untuk memberikan hasil legalitas yang nyata bagi kesuksesan bisnis Anda.",
+    "misi2Title": "02 Standar Profesionalisme Tertinggi",
+    "misi2Desc": "Menjunjung tinggi akurasi dan integritas dalam setiap praktik hukum. Kami menerapkan standar kerja yang ketat untuk menjaga kepercayaan penuh dari klien, mitra, dan seluruh pemangku kepentingan.",
+    "misi3Title": "03 Pemberdayaan & Pertumbuhan Tim",
+    "misi3Desc": "Membangun ekosistem kerja yang dinamis bagi tim ahli kami. Melalui pengembangan profesional yang berkelanjutan, kami memastikan setiap layanan ditangani oleh pakar yang kompeten dan berwawasan luas.",
+    "misi4Title": "04 Tanggung Jawab Sosial",
+    "misi4Desc": "Berkomitmen memberikan kontribusi positif bagi masyarakat dan lingkungan melalui praktik bisnis yang beretika. Kami memastikan setiap langkah legalitas yang kami ambil turut mendukung ekosistem usaha yang sehat."
+  },
+  "aboutCulture": {
+    "heading": "Budaya Kerja",
+    "subheading": "CULTURE",
+    "description": "\"Kami hadir untuk memastikan bisnis Anda tumbuh pesat sekaligus memiliki perlindungan hukum yang kokoh di setiap langkahnya.\"",
+    "philosophies": {
+      "1": { "title": "FAST", "desc": "Bukan sekadar cepat, kami bekerja dengan ketangkasan strategis. Kami memahami urgensi setiap perizinan dan merespons dinamika regulasi dengan cepat agar operasional bisnis Anda tidak pernah terhenti oleh urusan birokrasi." },
+      "2": { "title": "FAIR", "desc": "Integritas adalah fondasi kami. Kami menjamin proses yang jujur, etis, dan transparan dalam setiap tahapan. Di Awan Kusuma, tidak ada biaya tersembunyi atau proses yang ditutupi; setiap langkah hukum kami dapat dipertanggungjawabkan sepenuhnya." },
+      "3": { "title": "BUILD TO LAST", "desc": "Kami tidak hanya mengurus dokumen untuk hari ini. Melalui pendekatan Future Proofing, kami memastikan struktur legalitas dan perizinan yang kami bangun mampu melindungi bisnis Anda dalam jangka panjang, siap menghadapi perubahan regulasi, dan menjadi pijakan kokoh untuk ekspansi di masa depan." }
+    }
+  },
+  "servicesIndex": {
+    "heading": "LAYANAN KAMI",
+    "description": "Temukan rangkaian solusi tata kelola hukum dan kepatuhan administrasi yang dirancang secara komprehensif untuk mengamankan langkah ekspansi bisnis Anda dengan presisi tinggi dan transparansi mutlak",
+    "servicesCount": "{count} LAYANAN"
+  },
+  "contactPage": {
+    "heading": "Hubungi Kami",
+    "subheading": "KONTAK",
+    "hours": "Senin – Jumat, 09.00 – 17.00 WIB",
+    "faqHeading": "Pertanyaan yang Sering Diajukan",
+    "locationHeading": "Lokasi Kami"
+  },
+  "articleDetail": {
+    "home": "Home",
+    "infoBisnis": "Info Bisnis",
+    "readAlso": "Baca Juga",
+    "relatedTopics": "Topik Terkait",
+    "shareArticle": "Bagikan artikel ini:",
+    "minRead": "{count} min read",
+    "noContent": "Konten tidak tersedia.",
+    "articleNotFound": "Artikel tidak ditemukan.",
+    "author": "Tim Legalitas Awan Kusuma",
+    "authorRole": "Konsultan Hukum & Bisnis"
+  },
+  "errorPage": {
+    "title": "Terjadi Kesalahan",
+    "description": "Maaf, halaman ini mengalami gangguan. Tim kami telah diberitahu dan sedang menangani masalah ini.",
+    "retry": "Coba Lagi",
+    "backHome": "Kembali ke Beranda"
+  },
+  "notFoundPage": {
+    "title": "Halaman Tidak Ditemukan",
+    "description": "Maaf, halaman yang Anda cari tidak ada atau telah dipindahkan. Silakan kembali ke beranda atau gunakan navigasi di atas.",
+    "backHome": "Kembali ke Beranda",
+    "viewServices": "Lihat Layanan"
+  },
+  "infoBisnis": {
+    "heading": "INFO BISNIS",
+    "subheading": "ARTIKEL",
+    "allCategory": "Semua",
+    "readArticle": "Baca Artikel",
+    "noArticles": "Belum ada artikel untuk kategori ini.",
+    "articleListLabel": "Daftar artikel Info Bisnis",
+    "paginationLabel": "Navigasi halaman artikel",
+    "previousPage": "Sebelumnya",
+    "nextPage": "Berikutnya",
+    "goToPage": "Buka halaman {page}"
+  },
+  "kontakHero": {
+    "subheading": "Konsultasi Langsung",
+    "heading1": "KONSULTASIKAN",
+    "heading2": "STRATEGI HUKUM",
+    "heading3": "BISNIS ANDA",
+    "description": "Jangan biarkan hambatan legalitas memperlambat pertumbuhan bisnis Anda. Konsultasikan dengan tim ahli kami untuk solusi hukum yang tepat dan transparan.",
+    "formTitle": "Form Konsultasi",
+    "formDesc": "Ceritakan tantangan bisnis Anda kepada kami.",
+    "formLabels": {
+      "name": "Nama Lengkap",
+      "phone": "Nomor WhatsApp",
+      "service": "Layanan Yang Diminati",
+      "message": "Pesan / Pertanyaan"
+    },
+    "formPlaceholders": {
+      "serviceDefault": "Pilih Layanan",
+      "serviceOther": "Lainnya / Pertanyaan Umum"
+    },
+    "formSubmit": "KONSULTASI SEKARANG",
+    "trustSignals": {
+      "1": { "text": "Konsultasi Pertama GRATIS", "detail": "Diskusikan kebutuhan awal tanpa beban biaya." },
+      "2": { "text": "Respon Cepat < 1 Hari Kerja", "detail": "Kami menghargai waktu operasional bisnis Anda." },
+      "3": { "text": "Privasi Terjamin 100%", "detail": "Seluruh data dan strategi bisnis Anda rahasia." }
+    }
+  },
+  "kontakFaq": {
+    "subheading": "FAQ",
+    "heading1": "Pertanyaan",
+    "heading2": "Umum",
+    "description": "Tidak menemukan jawaban yang Anda cari? Hubungi kami langsung dan tim kami siap membantu."
+  },
+  "footer": {
+    "ctaHeading": "Siap wujudkan legalitas bisnis Anda bersama kami?",
+    "ctaDescription": "Awan Kusuma Legalitas hadir untuk memberikan solusi hukum terpercaya dan proses perizinan yang cepat, tepat, dan transparan. Ajak kami tumbuh bersama bisnis Anda.",
+    "ctaButton": "KONSULTASI GRATIS",
+    "faqLink": "FAQ",
+    "aboutLink": "Tentang Kami",
+    "servicesLink": "Layanan",
+    "companyTagline": "Awan Kusuma Legalitas.",
+    "heading1": "GROW & SECURE",
+    "heading2": "BUSINESS WITH US",
+    "aboutHeading": "TENTANG KAMI",
+    "aboutLinks": {
+      "about": "Tentang",
+      "whyUs": "Kenapa Harus Kami?",
+      "visiMisi": "Visi & Misi",
+      "culture": "Budaya Kerja"
+    },
+    "servicesHeading": "LAYANAN",
+    "servicesLinks": {
+      "pendirian": "Pendirian Perusahaan",
+      "perizinan": "Perizinan Bisnis",
+      "agensi": "Agensi Pemasaran",
+      "pajak": "Pelaporan Pajak"
+    },
+    "articlesHeading": "INFO BISNIS",
+    "articlesLinks": {
+      "articles": "Artikel & Berita"
+    },
+    "contactHeading": "KONTAK",
+    "contactLinks": {
+      "faq": "FAQ",
+      "contact": "Hubungi Kami",
+      "privacyPolicy": "Kebijakan Privasi"
+    },
+    "copyright": "© {year} AWAN KUSUMA LEGALITAS",
+    "madeBy": "MADE WITH PASSION BY"
+  },
+  "trustSignals": {
+    "clients": "Klien Terlayani",
+    "processingDays": "Hari Kerja Proses",
+    "notary": "Notaris Resmi",
+    "consultation": "Konsultasi Awal"
+  },
+  "common": {
+    "learnMore": "Selengkapnya",
+    "contactNow": "Hubungi Sekarang",
+    "freeConsultation": "Konsultasi Gratis",
+    "viewDetails": "Lihat Detail",
+    "close": "Tutup",
+    "loading": "Memuat...",
+    "error": "Terjadi Kesalahan",
+    "backToHome": "Kembali ke Beranda",
+    "pageNotFound": "Halaman Tidak Ditemukan",
+    "allRightsReserved": "Hak cipta dilindungi."
+  },
+  "languageSwitcher": {
+    "id": "Indonesia",
+    "en": "English",
+    "zh": "中文"
+  },
+  "cookieConsent": {
+    "title": "Pemberitahuan Analitik",
+    "description": "Website ini memuat Google Analytics dan Meta Pixel secara otomatis untuk analitik dan pemasaran. Detail dan pilihan kontrol tersedia di ",
+    "privacyLink": "Kebijakan Privasi kami.",
+    "dismiss": "Tutup pemberitahuan"
+  },
+  "privacyPage": {
+    "title": "Kebijakan Privasi",
+    "metaDescription": "Kebijakan Privasi PT Awan Kusuma Legalitas — informasi tentang pengumpulan, penggunaan, dan perlindungan data pribadi Anda."
+  },
+  "tracking": {
+    "title": "Lacak Order | Awan Kusuma Legalitas",
+    "heading1": "LACAK STATUS",
+    "heading2": "ORDER ANDA",
+    "description": "Pantau proses pengurusan legalitas Anda secara real-time transparan.",
+    "inputPlaceholder": "Masukkan Kode Tracking (Mis. AK-2606-XXXX)",
+    "btnTrack": "Lacak Sekarang",
+    "btnSearching": "Mencari...",
+    "errorEmpty": "Kode tracking tidak boleh kosong",
+    "errorFormat": "Format kode tidak valid",
+    "errorNotFound": "Kode tidak ditemukan atau verifikasi gagal",
+    "errorRateLimit": "Terlalu banyak percobaan. Silakan coba lagi nanti.",
+    "errorGeneric": "Terjadi kesalahan sistem",
+    "verifyTitle": "Verifikasi Keamanan",
+    "verifyDesc": "Order ini bersifat rahasia. Masukkan 4 digit terakhir nomor HP yang Anda daftarkan.",
+    "verifyInputPlaceholder": "4 Digit Terakhir No. HP",
+    "btnVerify": "Verifikasi",
+    "btnVerifying": "Memverifikasi...",
+    "resultOrderLabel": "JUDUL ORDER",
+    "resultServiceLabel": "LAYANAN",
+    "resultStatusLabel": "STATUS",
+    "resultProgressLabel": "PROGRESS",
+    "resultEtaLabel": "ESTIMASI SELESAI",
+    "copied": "Disalin!",
+    "adminNote": "Catatan Admin",
+    "statusPending": "Menunggu",
+    "statusInProgress": "Diproses",
+    "statusOnHold": "Ditahan",
+    "statusCompleted": "Selesai",
+    "statusCancelled": "Dibatalkan",
+    "stageCompleted": "Selesai",
+    "stageInProgress": "Sedang Diproses",
+    "stagePending": "Menunggu",
+    "stageSkipped": "Dilewati",
+    "ctaHeading": "Butuh Bantuan Lebih Lanjut?",
+    "ctaDesc": "Tim kami siap membantu Anda via WhatsApp.",
+    "ctaBtn": "Hubungi Admin"
+  },
+  "mitra": {
+    "title": "Portal Mitra Notaris | Awan Kusuma Legalitas",
+    "description": "Dasbor manajemen order dan kepegawaian khusus Mitra Notaris.",
+    "tabOrders": "Order Kantor",
+    "tabStaff": "Staf Saya",
+    "filterAll": "Semua Status",
+    "filterPending": "Menunggu",
+    "filterInProgress": "Diproses",
+    "filterCompleted": "Selesai",
+    "btnDetail": "Lihat Detail",
+    "backToList": "Kembali ke Daftar Order",
+    "orderHeader": "Order #",
+    "progressLabel": "Progres Pengerjaan",
+    "progressSub": "Diperbarui secara real-time",
+    "docsTitle": "Dokumen & Berkas Kantor",
+    "docsSub": "Berkas resmi terkait order ini",
+    "noDocs": "Belum ada dokumen yang dirilis",
+    "btnDownload": "Unduh",
+    "timelineTitle": "Riwayat Tahapan Proses",
+    "timelineSub": "Detail pengerjaan dan verifikasi sub-tugas",
+    "btnComplete": "SELESAI",
+    "btnCompleting": "MEMPROSES...",
+    "stageFinalProtected": "TAHAP AKHIR (ADMIN INTERNAL)",
+    "notAllowedFinal": "Tahap akhir adalah wewenang eksklusif Admin Internal.",
+    "completeSuccess": "Sub-tugas berhasil diselesaikan.",
+    "completeError": "Gagal menyelesaikan sub-tugas.",
+    "noOrders": "Belum Ada Order Terdaftar",
+    "noOrdersDesc": "Saat ini belum ada pesanan atau layanan legalitas yang terhubung dengan kantor notaris Anda.",
+    "staffTitle": "Daftar Staf & Asisten Notaris",
+    "staffSub": "Manajemen staf yang terdaftar di kantor notaris Anda",
+    "noStaff": "Belum Ada Staf Terdaftar",
+    "noStaffDesc": "Belum ada akun staf notaris yang terhubung ke kantor Anda.",
+    "colName": "Nama Staf",
+    "colEmail": "Email",
+    "colStatus": "Status",
+    "colSupervisor": "Supervisor",
+    "statusActive": "Aktif",
+    "statusInactive": "Nonaktif",
+    "adminAccessRestricted": "Fitur manajemen staf eksklusif untuk Pimpinan Notaris."
+  }
+}

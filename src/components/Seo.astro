@@ -1,0 +1,52 @@
+---
+import {
+  OPEN_GRAPH_LOCALES,
+  SITE_URL,
+  type Locale,
+} from '../config/site';
+import { alternateLocaleUrls, localizedUrl } from '../lib/i18n';
+
+interface Props {
+  title: string;
+  description: string;
+  locale: Locale;
+  path: string;
+  image?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  locale,
+  path,
+  image = '/assets/image/og-image.png',
+  type = 'website',
+  noindex = false,
+} = Astro.props;
+
+const canonical = localizedUrl(path, locale);
+const alternateUrls = alternateLocaleUrls(path);
+const imageUrl = new URL(image, SITE_URL).href;
+---
+
+<meta name="description" content={description} />
+<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+<link rel="canonical" href={canonical} />
+{
+  Object.entries(alternateUrls).map(([language, href]) => (
+    <link rel="alternate" hreflang={language} href={href} />
+  ))
+}
+<meta property="og:type" content={type} />
+<meta property="og:locale" content={OPEN_GRAPH_LOCALES[locale]} />
+<meta property="og:site_name" content="Awan Kusuma Legalitas" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={imageUrl} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />

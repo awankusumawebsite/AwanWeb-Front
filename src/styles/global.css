@@ -1,0 +1,261 @@
+@import "tailwindcss";
+
+/* Self-hosted variable font removes build/runtime dependency on Google Fonts. */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans-Vietnamese.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans-LatinExt.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans-Latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+/* Amiamie Regular */
+@font-face {
+  font-family: "Amiamie";
+  src: url("/assets/fonts/Amiamie-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Amiamie Light */
+@font-face {
+  font-family: "Amiamie";
+  src: url("/assets/fonts/Amiamie-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --background: #FFFFFF;
+  --font-jakarta: "Plus Jakarta Sans";
+  --foreground: #1C2D3C;
+
+  /* Brand Colors */
+  --color-big-stone: #1C2D3C;
+  --color-elm: #1C768F;
+  --color-mercury: #E5E5E5;
+  --color-white: #FFFFFF;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+
+  /* Brand color tokens for Tailwind */
+  --color-big-stone: #1C2D3C;
+  --color-elm: #1C768F;
+  --color-mercury: #E5E5E5;
+}
+
+/* Bot/Lighthouse bootstrap runs in <head>, before the preloader can paint. */
+html[data-preloader-mode="skip"] [data-preloader] {
+  display: none !important;
+}
+
+/* Initial reveal starts from parsed CSS; GSAP remains responsible for route transitions. */
+html[data-preloader-mode="initial"] [data-preloader] {
+  animation: preloader-shell-hide 0s linear 1.55s forwards;
+}
+
+html[data-preloader-mode="initial"] [data-preloader] .word-anim {
+  animation: preloader-word-out 0.6s cubic-bezier(0.76, 0, 0.24, 1)
+    calc(0.2s + var(--word-index) * 0.05s) forwards;
+}
+
+html[data-preloader-mode="initial"] [data-preloader-blind="dark"],
+html[data-preloader-mode="initial"] [data-preloader-blind="teal"] {
+  transform: scaleY(1);
+  transform-origin: top;
+  will-change: transform;
+}
+
+html[data-preloader-mode="initial"] [data-preloader-blind="dark"] {
+  animation: preloader-blind-out 0.8s cubic-bezier(0.87, 0, 0.13, 1)
+    calc(0.2s + var(--blind-index) * 0.08s) forwards;
+}
+
+html[data-preloader-mode="initial"] [data-preloader-blind="teal"] {
+  animation: preloader-blind-out 0.8s cubic-bezier(0.87, 0, 0.13, 1)
+    calc(0.35s + var(--blind-index) * 0.08s) forwards;
+}
+
+@keyframes preloader-word-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes preloader-shell-hide {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes preloader-blind-out {
+  to {
+    transform: scaleY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-preloader-mode="initial"] [data-preloader] .word-anim,
+  html[data-preloader-mode="initial"] [data-preloader-blind] {
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* ── MARQUEE ANIMATIONS ── */
+@keyframes marquee-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 30s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 35s linear infinite;
+  will-change: transform;
+}
+
+/* Pause on hover */
+.animate-marquee-left:hover,
+.animate-marquee-right:hover {
+  animation-play-state: paused;
+}
+
+@keyframes tracking-notice-auto-dismiss {
+  0%, 92% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+
+/* ── COOKIE CONSENT SLIDE UP ── */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tracking-notice-auto-dismiss {
+  animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards, tracking-notice-auto-dismiss 5s linear forwards;
+}
+
+/* ── LENIS REQUIRED CSS ── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+
+/* Center focus is updated only when an item crosses the center observer zone. */
+/* Performance: use opacity + transform only (GPU-composited). */
+/* Avoid filter: grayscale — it triggers expensive repaints on 20+ items during scroll. */
+.partner-marquee-item {
+  opacity: 0.25;
+  transform: scale(0.86);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.partner-marquee-item[data-partner-center="true"] {
+  opacity: 1;
+  transform: scale(1.12);
+}
+
+/* Bot/Lighthouse must see server-rendered article content before hydration. */
+html[data-preloader-mode="skip"] .article-content {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ServiceTestimonials Custom Swiper Pagination */
+.st-pagination .swiper-custom-bullet {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 9999px;
+  background: #cbd5e1;
+  opacity: 1;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.st-pagination .swiper-custom-bullet:hover {
+  background: #94a3b8;
+}
+.st-pagination .swiper-custom-bullet-active {
+  background: #01A497 !important;
+  width: 32px !important;
+}
+

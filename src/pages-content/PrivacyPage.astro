@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import type { Locale } from '../config/site';
+import { privacyContent } from '../content/privacy';
+import { getMessages, localizedPath, translate } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const content = privacyContent[locale];
+const messages = await getMessages(locale);
+const title = translate(messages, 'privacyPage.title');
+const description = translate(messages, 'privacyPage.metaDescription');
+
+function decorateTrustedLegalHtml(value: string): string {
+  return value
+    .replace(/<strong>/g, '<strong class="text-big-stone font-bold">')
+    .replace(
+      /<code>/g,
+      '<code class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-sm text-elm">',
+    )
+    .replace(
+      /<a /g,
+      '<a class="font-semibold text-elm transition-colors hover:text-orange-500 hover:underline" ',
+    );
+}
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  path="/kebijakan-privasi"
+>
+  <main class="min-h-screen w-full bg-white pb-20 pt-32 font-sans text-black selection:bg-elm selection:text-white">
+    <div class="mx-auto max-w-3xl px-6 md:px-12">
+      <nav class="mb-8 text-sm text-black/50" aria-label="Breadcrumb">
+        <a class="transition-colors hover:text-elm" href={localizedPath('/', locale)}>
+          Awan Kusuma Legalitas
+        </a>
+        <span aria-hidden="true"> / </span>
+        <span aria-current="page">{content.title}</span>
+      </nav>
+
+      <h1 class="mb-4 text-3xl font-black tracking-tight text-big-stone md:text-4xl lg:text-5xl">
+        {content.title}
+      </h1>
+      <p class="mb-12 text-sm font-medium text-black/40">
+        {content.lastUpdated}
+      </p>
+
+      <div class="mt-12 flex flex-col gap-12">
+        {
+          content.sections.map((section) => (
+            <section class="flex flex-col gap-4">
+              <h2 class="text-xl font-bold tracking-tight text-big-stone md:text-2xl">
+                {section.heading}
+              </h2>
+              <div class="flex flex-col gap-4 text-[15px] leading-relaxed text-black/70 md:text-base">
+                {section.paragraphs.map((paragraph) => (
+                  <p set:html={decorateTrustedLegalHtml(paragraph)} />
+                ))}
+                {'list' in section && section.list ? (
+                  <ul class="mt-2 flex flex-col gap-3">
+                    {section.list.map((item) => (
+                      <li class="flex items-start gap-3">
+                        <span class="mt-1.5 shrink-0 text-elm" aria-hidden="true">
+                          <svg class="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                          </svg>
+                        </span>
+                        <span set:html={decorateTrustedLegalHtml(item)} />
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </main>
+</BaseLayout>

@@ -1,0 +1,47 @@
+---
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+import type { Locale } from '../config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  locale?: Locale;
+  path?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  locale = 'id',
+  path = '/',
+  image,
+  type = 'website',
+  noindex = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <Seo
+      title={title}
+      description={description}
+      locale={locale}
+      path={path}
+      image={image}
+      type={type}
+      noindex={noindex}
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
