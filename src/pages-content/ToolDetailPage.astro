@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
+import type { Locale } from '../config/site';
+import { getSiteShellData, isPageInMaintenance } from '../lib/site-data';
+import type { CmsTool } from '../lib/tools';
+
+interface Props {
+  locale: Locale;
+  tool: CmsTool;
+}
+
+const { locale, tool } = Astro.props;
+const shell = await getSiteShellData(locale);
+const underMaintenance = shell.status.is_maintenance || isPageInMaintenance(shell.status, '/tools');
+---
+
+<BaseLayout
+  title={`${tool.name} | Awan Kusuma Utilities`}
+  description={tool.description || `Gunakan ${tool.name} dari Awan Kusuma Legalitas.`}
+  locale={locale}
+  path={`/tools/${tool.slug}`}
+  noindex={underMaintenance || import.meta.env.MIGRATION_NOINDEX !== 'false'}
+>
+  <SiteShell locale={locale} path="/tools">
+    <main class="min-h-screen w-full bg-gray-50 px-6 pb-20 pt-36 font-sans md:px-12 lg:px-20">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10">
+          <p class="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-elm">Utility suite</p>
+          <h1 class="text-3xl font-black tracking-tight text-big-stone md:text-5xl">{tool.name}</h1>
+          {tool.description && <p class="mt-4 max-w-2xl text-sm font-medium text-black/60 md:text-base">{tool.description}</p>}
+        </div>
+
+        <div class="overflow-hidden rounded-3xl border border-black/5 bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] md:rounded-[40px]">
+          {tool.type === 'html' && tool.html_content ? (
+            <iframe srcdoc={tool.html_content} sandbox="allow-scripts" title={tool.name} class="h-[700px] w-full border-0 bg-white lg:h-[800px]"></iframe>
+          ) : tool.type === 'url' && tool.url ? (
+            <iframe src={tool.url} sandbox="allow-scripts allow-same-origin allow-forms" title={tool.name} class="h-[700px] w-full border-0 bg-white lg:h-[800px]" allow="camera;microphone;geolocation"></iframe>
+          ) : (
+            <div class="flex min-h-80 items-center justify-center p-10 text-center">
+              <div>
+                <p class="font-semibold text-big-stone">Tool ini membutuhkan modul interaktif khusus.</p>
+                <p class="mt-2 text-sm text-black/45">Modul belum diaktifkan pada build statis ini.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  </SiteShell>
+</BaseLayout>

@@ -1,0 +1,10 @@
+---
+export function getStaticPaths() {
+  return [
+    { params: { locale: 'en' }, props: { locale: 'en' as const } },
+    { params: { locale: 'zh' }, props: { locale: 'zh' as const } },
+  ];
+}
+
+return Astro.redirect(`/${Astro.props.locale}/kontak#faq`, 301);
+---

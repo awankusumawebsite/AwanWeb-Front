@@ -1,0 +1,13 @@
+---
+import ToolDetailPage from '../../pages-content/ToolDetailPage.astro';
+import { getActiveTools } from '../../lib/tools';
+
+export async function getStaticPaths() {
+  const tools = await getActiveTools();
+  return tools.map((tool) => ({ params: { slug: tool.slug }, props: { tool } }));
+}
+
+const { tool } = Astro.props;
+---
+
+<ToolDetailPage locale="id" tool={tool} />

@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
+import type { Locale } from '../config/site';
+import { localizedPath } from '../lib/i18n';
+import { getSiteShellData, isPageInMaintenance } from '../lib/site-data';
+import { getActiveTools } from '../lib/tools';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const [tools, shell] = await Promise.all([
+  getActiveTools(),
+  getSiteShellData(locale),
+]);
+const underMaintenance = shell.status.is_maintenance || isPageInMaintenance(shell.status, '/tools');
+---
+
+<BaseLayout
+  title="Tools & Utilities | Awan Kusuma Legalitas"
+  description="Rangkaian utilitas eksklusif Awan Kusuma untuk mempercepat alur kerja legalitas."
+  locale={locale}
+  path="/tools"
+  noindex={underMaintenance || import.meta.env.MIGRATION_NOINDEX !== 'false'}
+>
+  <SiteShell locale={locale} path="/tools">
+    <main class="w-full bg-white font-sans selection:bg-elm selection:text-white">
+      <section class="relative overflow-hidden bg-big-stone px-6 pb-40 pt-44 text-center text-white md:pb-52 md:pt-52">
+        <div class="pointer-events-none absolute -right-32 -top-40 size-[34rem] rounded-full bg-elm/30 blur-[140px]"></div>
+        <div class="relative z-10 mx-auto flex max-w-5xl flex-col items-center">
+          <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+            <span class="size-1.5 rounded-full bg-elm"></span>
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80 sm:text-xs">Internal utilities</span>
+          </div>
+          <h1 class="text-5xl font-black uppercase leading-[0.9] tracking-tighter sm:text-7xl md:text-8xl lg:text-[100px]">
+            Tools &amp;<br /><span class="text-white/70">Program</span>
+          </h1>
+          <p class="mt-8 max-w-2xl text-sm font-medium leading-relaxed text-white/60 sm:text-base md:text-lg">
+            Rangkaian utilitas eksklusif Awan Kusuma untuk mempercepat alur kerja legalitas. Dari pemrosesan PDF hingga generator dokumen, semua dioptimalkan untuk produktivitas.
+          </p>
+        </div>
+      </section>
+
+      <section class="px-6 py-24 md:px-12 md:py-32 lg:px-20">
+        <div class="mx-auto max-w-7xl">
+          <div class="mb-14">
+            <p class="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-elm">Eksplorasi tools</p>
+            <h2 class="text-3xl font-black tracking-tight text-big-stone md:text-4xl">Utilitas Tambahan</h2>
+          </div>
+
+          {tools.length > 0 ? (
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {tools.map((tool) => (
+                <a
+                  href={localizedPath(`/tools/${tool.slug}`, locale)}
+                  class="group flex min-h-64 flex-col rounded-2xl border border-black/5 bg-[#fafafa] p-7 transition duration-300 hover:-translate-y-1 hover:border-elm/30 hover:bg-white hover:shadow-xl hover:shadow-black/5"
+                >
+                  <div class="mb-8 flex size-12 items-center justify-center rounded-full border border-black/5 bg-white text-xl shadow-sm" style={`color:${tool.color || '#1C768F'}`}>
+                    {tool.icon ? tool.icon.slice(0, 2).toUpperCase() : 'AK'}
+                  </div>
+                  <div class="mt-auto">
+                    <h3 class="text-xl font-bold tracking-tight text-big-stone transition-colors group-hover:text-elm">{tool.name}</h3>
+                    {tool.description && <p class="mt-2 line-clamp-3 text-sm font-medium leading-relaxed text-black/50">{tool.description}</p>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <div class="flex min-h-72 items-center justify-center rounded-3xl border border-black/5 bg-slate-50 text-center">
+              <p class="font-medium text-black/45">Belum ada tools tersedia.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
+  </SiteShell>
+</BaseLayout>
