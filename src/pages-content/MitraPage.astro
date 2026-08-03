@@ -1,0 +1,34 @@
+---
+import SiteShell from '../components/layout/SiteShell.astro';
+import type { Locale } from '../config/site';
+import MitraPortalIsland from '../islands/MitraPortalIsland';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getMessages, localizedPath, translate } from '../lib/i18n';
+import { backendOrigin } from '../lib/runtime-api';
+
+interface Props { locale: Locale }
+
+const { locale } = Astro.props;
+const messages = await getMessages(locale);
+const mitraMessages = messages.mitra as Record<string, string>;
+const mitraHref = localizedPath('/mitra', locale);
+const loginHref = localizedPath(`/login?redirect=${encodeURIComponent(mitraHref)}`, locale);
+---
+
+<BaseLayout
+  title={translate(messages, 'mitra.title')}
+  description={translate(messages, 'mitra.description')}
+  locale={locale}
+  path="/mitra"
+  noindex
+>
+  <SiteShell locale={locale} path="/mitra">
+    <MitraPortalIsland
+      client:load
+      messages={mitraMessages}
+      backendOrigin={backendOrigin(import.meta.env.PUBLIC_BACKEND_URL)}
+      loginHref={loginHref}
+      trackingHref={localizedPath('/lacak', locale)}
+    />
+  </SiteShell>
+</BaseLayout>

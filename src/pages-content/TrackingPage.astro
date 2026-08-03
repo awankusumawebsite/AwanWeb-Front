@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteShell from '../components/layout/SiteShell.astro';
-import TrackingPublicIsland from '../islands/TrackingPublicIsland';
+import TrackingPortalIsland from '../islands/TrackingPortalIsland';
 import type { Locale } from '../config/site';
 import { getMessages, localizedPath, translate } from '../lib/i18n';
 import { backendOrigin } from '../lib/runtime-api';
@@ -12,6 +12,8 @@ const messages = await getMessages(locale);
 const trackingMessages = messages.tracking as Record<string, string>;
 const trackingPath = localizedPath('/lacak', locale);
 const loginHref = localizedPath(`/login?redirect=${encodeURIComponent(trackingPath)}`, locale);
+const contactHref = localizedPath('/kontak', locale);
+const mitraHref = localizedPath('/mitra', locale);
 ---
 
 <BaseLayout
@@ -22,12 +24,14 @@ const loginHref = localizedPath(`/login?redirect=${encodeURIComponent(trackingPa
   noindex
 >
   <SiteShell locale={locale} path="/lacak">
-    <TrackingPublicIsland
+    <TrackingPortalIsland
       client:load
       locale={locale}
       messages={trackingMessages}
       backendOrigin={backendOrigin(import.meta.env.PUBLIC_BACKEND_URL)}
       loginHref={loginHref}
+      contactHref={contactHref}
+      mitraHref={mitraHref}
     />
   </SiteShell>
 </BaseLayout>

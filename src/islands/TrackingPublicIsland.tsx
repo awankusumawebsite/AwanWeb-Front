@@ -24,6 +24,7 @@ interface Props {
   messages: Record<string, string>;
   backendOrigin: string;
   loginHref: string;
+  showLogin?: boolean;
 }
 
 type LookupState = 'idle' | 'loading' | 'verifying' | 'success';
@@ -51,6 +52,7 @@ export default function TrackingPublicIsland({
   messages,
   backendOrigin,
   loginHref,
+  showLogin = true,
 }: Props) {
   const [code, setCode] = useState('');
   const [phoneLast4, setPhoneLast4] = useState('');
@@ -120,7 +122,7 @@ export default function TrackingPublicIsland({
   const progress = Math.min(100, Math.max(0, Number(order?.progress_percent) || 0));
 
   return (
-    <main className="relative mx-auto min-h-screen w-full max-w-7xl px-4 pb-24 pt-28 sm:px-6 lg:px-8 lg:pt-36">
+    <main id="tracking-manual" className="relative mx-auto min-h-screen w-full max-w-7xl scroll-mt-24 px-4 pb-24 pt-28 sm:px-6 lg:px-8 lg:pt-36">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
         <div className="absolute left-1/4 top-0 size-[34rem] -translate-y-1/2 rounded-full bg-elm/10 blur-[120px]" />
         <div className="absolute bottom-0 right-1/4 size-[42rem] translate-y-1/3 rounded-full bg-orange-500/8 blur-[150px]" />
@@ -174,9 +176,11 @@ export default function TrackingPublicIsland({
           {error && <p role="alert" className="mt-4 flex items-center justify-center gap-2 text-xs font-bold text-red-600"><AlertCircle size={15} aria-hidden="true" />{error}</p>}
         </form>
 
-        <p className="mt-5 text-xs font-medium text-slate-400">
-          Portal klien terdaftar: <a href={loginHref} className="font-bold text-elm hover:underline">Login</a>
-        </p>
+        {showLogin && (
+          <p className="mt-5 text-xs font-medium text-slate-400">
+            Portal klien terdaftar: <a href={loginHref} className="font-bold text-elm hover:underline">Login</a>
+          </p>
+        )}
       </section>
 
       {state === 'success' && order && (

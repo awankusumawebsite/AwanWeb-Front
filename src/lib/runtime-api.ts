@@ -54,6 +54,111 @@ export interface TrackingOrder {
   documents?: TrackingDocument[];
 }
 
+export interface CustomerOrderSummary {
+  id: number;
+  tracking_code: string;
+  title: string;
+  status: string;
+  progress: number;
+  service_name?: string | null;
+  notary_office?: string | null;
+  public_note?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface CustomerOrderDetail extends Omit<CustomerOrderSummary, 'notary_office'> {
+  notary_office?: string | Record<string, unknown> | null;
+  stages: TrackingStage[];
+  documents: TrackingDocument[];
+}
+
+export interface CustomerInvoiceSummary {
+  id: number;
+  invoice_number: string;
+  order_title?: string | null;
+  tracking_code?: string | null;
+  status: string;
+  total: number | string;
+  issued_at?: string | null;
+  due_at?: string | null;
+  payment_receipt?: boolean;
+  has_payment_receipt?: boolean;
+}
+
+export interface CustomerInvoiceDetail extends CustomerInvoiceSummary {
+  order?: { title?: string; tracking_code?: string } | null;
+  subtotal?: number | string;
+  discount?: number | string;
+  tax?: number | string;
+  paid_at?: string | null;
+  notes?: string | null;
+  items?: Array<{
+    id: number;
+    description: string;
+    quantity: number | string;
+    unit_price: number | string;
+    amount: number | string;
+  }>;
+}
+
+export interface PaymentMethod {
+  id: number;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+}
+
+export interface NotaryOrderSummary {
+  id: number;
+  tracking_code: string;
+  title: string;
+  status: string;
+  progress: number;
+  service_name?: string | null;
+  customer_name?: string | null;
+  public_note?: string | null;
+  assigned_staff_id?: number | null;
+  assigned_staff_name?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface NotaryChecklistItem {
+  id: number;
+  name: string;
+  is_completed: boolean;
+  is_required?: boolean;
+}
+
+export interface NotaryStage {
+  id: number;
+  name: string;
+  status: string;
+  description?: string;
+  eta_date?: string | null;
+  is_final?: boolean;
+  checklist_items: NotaryChecklistItem[];
+}
+
+export interface NotaryOrderDetail extends NotaryOrderSummary {
+  customer_phone?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+  stages: NotaryStage[];
+  documents: Array<TrackingDocument & { is_final?: boolean }>;
+}
+
+export interface NotaryStaff {
+  id: number;
+  name: string;
+  username?: string | null;
+  email: string;
+  is_active: boolean;
+  supervisor_name?: string | null;
+  created_at?: string | null;
+}
+
 export class PortalApiError extends Error {
   readonly status: number;
   readonly code: PortalErrorCode;
@@ -110,8 +215,22 @@ export function getXsrfToken(cookie = typeof document === 'undefined' ? '' : doc
 
 export function setSessionHint(active: boolean): void {
   if (typeof window === 'undefined') return;
-  if (active) window.localStorage.setItem(AUTH_SESSION_HINT_KEY, '1');
-  else window.localStorage.removeItem(AUTH_SESSION_HINT_KEY);
+  try {
+    if (active) window.localStorage.setItem(AUTH_SESSION_HINT_KEY, '1');
+    else window.localStorage.removeItem(AUTH_SESSION_HINT_KEY);
+  } catch {
+    // Storage can be disabled by browser privacy settings. Authentication
+    // remains authoritative on the backend; this is only a request hint.
+  }
+}
+
+export function hasSessionHint(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(AUTH_SESSION_HINT_KEY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 function errorCodeForStatus(status: number): PortalErrorCode {
@@ -195,6 +314,147 @@ export function createRuntimeApi({
     return body.user as AuthUser;
   }
 
+  async function request(
+    path: string,
+    options: RequestInit = {},
+    prepareCsrf = false,
+  ): Promise<Record<string, unknown>> {
+    if (prepareCsrf) await csrfCookie();
+
+    const headers = new Headers(options.headers);
+    headers.set('Accept', 'application/json');
+    if (prepareCsrf) headers.set('X-XSRF-TOKEN', getXsrfToken());
+
+    let response: Response;
+    try {
+      response = await fetchImpl(apiUrl(path, base), {
+        ...options,
+        credentials: 'include',
+        cache: 'no-store',
+        headers,
+      });
+    } catch {
+      throw new PortalApiError({
+        code: 'NETWORK_ERROR',
+        message: 'Tidak dapat terhubung ke server. Periksa koneksi Anda.',
+      });
+    }
+
+    const body = await jsonBody(response);
+    if (!response.ok) {
+      if (response.status === 401) setSessionHint(false);
+      throw new PortalApiError({
+        status: response.status,
+        code: errorCodeForStatus(response.status),
+        message: typeof body.message === 'string' ? body.message : 'Permintaan tidak dapat diproses.',
+        fields: body.errors as Record<string, string[]> | null | undefined,
+      });
+    }
+
+    return body;
+  }
+
+  async function currentUser(): Promise<AuthUser | null> {
+    const body = await request('auth/me');
+    return body.authenticated === true && body.user ? body.user as AuthUser : null;
+  }
+
+  async function logout(): Promise<void> {
+    await request('auth/logout', { method: 'POST' }, true);
+    setSessionHint(false);
+  }
+
+  async function customerOrders(): Promise<CustomerOrderSummary[]> {
+    const body = await request('portal/orders');
+    const result = Array.isArray(body.orders) ? body.orders : body.data;
+    return Array.isArray(result) ? result as CustomerOrderSummary[] : [];
+  }
+
+  async function customerOrderDetail(trackingCode: string): Promise<CustomerOrderDetail> {
+    const body = await request(`portal/orders/${encodeURIComponent(trackingCode)}`);
+    return body.order as CustomerOrderDetail;
+  }
+
+  async function customerInvoices(): Promise<CustomerInvoiceSummary[]> {
+    const body = await request('portal/invoices');
+    return Array.isArray(body.invoices) ? body.invoices as CustomerInvoiceSummary[] : [];
+  }
+
+  async function customerInvoiceDetail(invoiceNumber: string): Promise<{
+    invoice: CustomerInvoiceDetail;
+    paymentMethods: PaymentMethod[];
+    adminWhatsapp: string;
+  }> {
+    const body = await request(`portal/invoices/${encodeURIComponent(invoiceNumber)}`);
+    return {
+      invoice: body.invoice as CustomerInvoiceDetail,
+      paymentMethods: Array.isArray(body.payment_methods) ? body.payment_methods as PaymentMethod[] : [],
+      adminWhatsapp: typeof body.admin_whatsapp === 'string' ? body.admin_whatsapp : '',
+    };
+  }
+
+  async function uploadInvoiceReceipt(invoiceNumber: string, file: File): Promise<void> {
+    const form = new FormData();
+    form.append('receipt', file);
+    await request(`portal/invoices/${encodeURIComponent(invoiceNumber)}/upload-receipt`, {
+      method: 'POST',
+      body: form,
+    }, true);
+  }
+
+  async function notaryOrders(): Promise<NotaryOrderSummary[]> {
+    const body = await request('portal/mitra/orders');
+    return Array.isArray(body.orders) ? body.orders as NotaryOrderSummary[] : [];
+  }
+
+  async function notaryOrderDetail(trackingCode: string): Promise<NotaryOrderDetail> {
+    const body = await request(`portal/mitra/orders/${encodeURIComponent(trackingCode)}`);
+    return body.order as NotaryOrderDetail;
+  }
+
+  async function notaryMutation(
+    trackingCode: string,
+    action: 'complete' | 'undo' | 'checklist' | 'checklist/undo' | 'assign',
+    payload: Record<string, number | null>,
+  ): Promise<Record<string, unknown>> {
+    return request(`portal/mitra/orders/${encodeURIComponent(trackingCode)}/${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }, true);
+  }
+
+  async function completeNotaryStage(trackingCode: string, stageId: number): Promise<void> {
+    await notaryMutation(trackingCode, 'complete', { stage_id: stageId });
+  }
+
+  async function undoNotaryStage(trackingCode: string, stageId: number): Promise<void> {
+    await notaryMutation(trackingCode, 'undo', { stage_id: stageId });
+  }
+
+  async function completeNotaryChecklist(trackingCode: string, checklistItemId: number): Promise<void> {
+    await notaryMutation(trackingCode, 'checklist', { checklist_item_id: checklistItemId });
+  }
+
+  async function undoNotaryChecklist(trackingCode: string, checklistItemId: number): Promise<void> {
+    await notaryMutation(trackingCode, 'checklist/undo', { checklist_item_id: checklistItemId });
+  }
+
+  async function assignNotaryOrder(trackingCode: string, staffId: number | null): Promise<string | null> {
+    const body = await notaryMutation(trackingCode, 'assign', { staff_id: staffId });
+    return typeof body.assigned_staff_name === 'string' ? body.assigned_staff_name : null;
+  }
+
+  async function notaryStaff(): Promise<NotaryStaff[]> {
+    const body = await request('portal/mitra/staff');
+    return Array.isArray(body.staff) ? body.staff as NotaryStaff[] : [];
+  }
+
+  async function toggleNotaryStaff(staffId: number): Promise<boolean> {
+    const body = await request(`portal/mitra/staff/${staffId}/toggle-status`, { method: 'POST' }, true);
+    return body.is_active === true;
+  }
+
   async function lookupTracking(
     code: string,
     locale: string,
@@ -237,7 +497,27 @@ export function createRuntimeApi({
     };
   }
 
-  return { csrfCookie, login, lookupTracking };
+  return {
+    csrfCookie,
+    login,
+    currentUser,
+    logout,
+    customerOrders,
+    customerOrderDetail,
+    customerInvoices,
+    customerInvoiceDetail,
+    uploadInvoiceReceipt,
+    notaryOrders,
+    notaryOrderDetail,
+    completeNotaryStage,
+    undoNotaryStage,
+    completeNotaryChecklist,
+    undoNotaryChecklist,
+    assignNotaryOrder,
+    notaryStaff,
+    toggleNotaryStaff,
+    lookupTracking,
+  };
 }
 
 export function trackingDocumentUrl(
@@ -249,4 +529,12 @@ export function trackingDocumentUrl(
   const url = new URL(apiUrl(`tracking/documents/${encodeURIComponent(code)}/${documentId}/download`, origin));
   if (phoneLast4) url.searchParams.set('phone_last4', phoneLast4);
   return url.href;
+}
+
+export function customerDocumentUrl(documentId: number, origin?: string): string {
+  return apiUrl(`portal/documents/${documentId}/download`, origin);
+}
+
+export function notaryDocumentUrl(documentId: number, origin?: string): string {
+  return apiUrl(`portal/mitra/documents/${documentId}/download`, origin);
 }
