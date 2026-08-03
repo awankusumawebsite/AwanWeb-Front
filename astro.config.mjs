@@ -5,7 +5,7 @@ import { defineConfig } from 'astro/config';
 import { fileURLToPath } from 'node:url';
 
 const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url));
-const excludedSitemapRoute = /^\/(?:en\/|zh\/)?(?:faq|lacak|login|mitra)(?:\/|$)/;
+const excludedSitemapRoute = /^\/(?:en\/|zh\/)?(?:404|faq|lacak|login|mitra)(?:\/|$)/;
 
 export default defineConfig({
   site: 'https://awankusuma.com',

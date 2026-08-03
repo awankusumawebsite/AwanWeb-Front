@@ -1,0 +1,52 @@
+Options -Indexes
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Redirect route Next lama ke representasi detail portal static Astro.
+  RewriteRule ^((?:en|zh)/)?mitra/orders/([^/]+)/?$ /$1mitra?order=$2 [R=302,L,NE]
+
+  # Redirect FAQ lama ke bagian FAQ di halaman Kontak.
+  RewriteRule ^faq/?$ /kontak#faq [R=301,L,NE]
+  RewriteRule ^(en|zh)/faq/?$ /$1/kontak#faq [R=301,L,NE]
+
+  # Normalisasi query pagination Next lama menjadi path static Astro.
+  RewriteCond %{QUERY_STRING} ^category=([A-Za-z0-9-]+)&page=1$
+  RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis/kategori/%1 [R=301,L,NE,QSD]
+  RewriteCond %{QUERY_STRING} ^page=1&category=([A-Za-z0-9-]+)$
+  RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis/kategori/%1 [R=301,L,NE,QSD]
+
+  RewriteCond %{QUERY_STRING} ^category=([A-Za-z0-9-]+)&page=([2-9][0-9]*)$
+  RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis/kategori/%1/page/%2 [R=301,L,NE,QSD]
+  RewriteCond %{QUERY_STRING} ^page=([2-9][0-9]*)&category=([A-Za-z0-9-]+)$
+  RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis/kategori/%2/page/%1 [R=301,L,NE,QSD]
+
+  RewriteCond %{QUERY_STRING} ^category=([A-Za-z0-9-]+)$
+  RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis/kategori/%1 [R=301,L,NE,QSD]
+  RewriteCond %{QUERY_STRING} ^page=1$
+  RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis [R=301,L,NE,QSD]
+  RewriteCond %{QUERY_STRING} ^page=([2-9][0-9]*)$
+  RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis/page/%1 [R=301,L,NE,QSD]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(?:css|js|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(?:avif|webp|png|jpe?g|gif|svg|ico|webm|mp4)$">
+    Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml
+</IfModule>

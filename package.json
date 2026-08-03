@@ -11,6 +11,7 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "validate:dist": "node scripts/validate-static-output.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

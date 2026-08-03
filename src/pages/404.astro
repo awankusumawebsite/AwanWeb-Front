@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Halaman Tidak Ditemukan | Awan Kusuma Legalitas"
+  description="Halaman yang Anda cari tidak tersedia."
+  path="/404"
+  noindex
+>
+  <main class="flex min-h-screen items-center justify-center bg-big-stone px-6 text-white">
+    <div class="max-w-xl text-center">
+      <img src="/assets/image/logo.png" alt="Awan Kusuma Legalitas" width="72" height="72" class="mx-auto mb-8 brightness-0 invert" />
+      <p class="text-xs font-black uppercase tracking-[0.35em] text-white/50">Error 404</p>
+      <h1 class="mt-4 text-4xl font-black md:text-6xl">Halaman tidak ditemukan</h1>
+      <p class="mx-auto mt-5 max-w-md text-sm leading-7 text-white/70">Tautan mungkin telah berubah atau halaman sudah tidak tersedia.</p>
+      <a href="/" class="mt-9 inline-flex rounded-full bg-elm px-7 py-3 text-sm font-bold text-white transition-colors hover:bg-white hover:text-big-stone">Kembali ke beranda</a>
+    </div>
+  </main>
+</BaseLayout>
