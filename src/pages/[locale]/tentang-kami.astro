@@ -1,0 +1,14 @@
+---
+import AboutPage from '../../pages-content/AboutPage.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: 'en' }, props: { locale: 'en' as const } },
+    { params: { locale: 'zh' }, props: { locale: 'zh' as const } },
+  ];
+}
+
+const { locale } = Astro.props;
+---
+
+<AboutPage locale={locale} />

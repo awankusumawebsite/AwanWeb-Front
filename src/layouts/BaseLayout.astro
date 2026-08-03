@@ -20,7 +20,7 @@ const {
   path = '/',
   image,
   type = 'website',
-  noindex = false,
+  noindex = import.meta.env.MIGRATION_NOINDEX !== 'false',
 } = Astro.props;
 ---
 

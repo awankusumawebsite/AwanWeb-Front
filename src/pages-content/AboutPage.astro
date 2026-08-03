@@ -1,0 +1,40 @@
+---
+import AboutPageIsland from '../sections/about/AboutPageIsland';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MarqueeImages from '../components/MarqueeImages.astro';
+import type { Locale } from '../config/site';
+import { cms } from '../lib/cms';
+import { getMessages, translate } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+interface MarqueeResponse {
+  data: Array<{ image_url: string; alt_text?: string | null }>;
+}
+
+const { locale } = Astro.props;
+const messages = await getMessages(locale);
+const title = translate(messages, 'metadata.aboutTitle');
+const description = translate(messages, 'metadata.aboutDescription');
+const marqueeResponse = await cms.request<MarqueeResponse>('/marquee-images');
+const aboutMessages = {
+  aboutIntro: messages.aboutIntro,
+  aboutWhyUs: messages.aboutWhyUs,
+  aboutVisiMisi: messages.aboutVisiMisi,
+  aboutCulture: messages.aboutCulture,
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  path="/tentang-kami"
+>
+  <main class="relative w-full overflow-hidden bg-white font-sans">
+    <AboutPageIsland client:load locale={locale} messages={aboutMessages} />
+    <MarqueeImages images={marqueeResponse?.data || []} />
+  </main>
+</BaseLayout>
