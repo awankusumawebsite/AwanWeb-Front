@@ -5,6 +5,25 @@ ErrorDocument 404 /404.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # Redirect permanen URL lama yang sebelumnya ditangani Next.js.
+  RewriteRule ^about-us/?$ /tentang-kami [R=301,L,NE]
+  RewriteRule ^(en|zh)/about-us/?$ /$1/tentang-kami [R=301,L,NE]
+  RewriteRule ^tracking/?$ / [R=301,L,NE]
+  RewriteRule ^(en|zh)/tracking/?$ /$1 [R=301,L,NE]
+
+  RewriteRule ^info-bisnis/info-bisnisperubahan-cara-migrasi-kbli-2025/?$ /info-bisnis/perubahan-cara-migrasi-kbli-2025 [R=301,L,NE]
+  RewriteRule ^(en|zh)/info-bisnis/info-bisnisperubahan-cara-migrasi-kbli-2025/?$ /$1/info-bisnis/perubahan-cara-migrasi-kbli-2025 [R=301,L,NE]
+
+  RewriteRule ^blogPost(?:/[0-9]+)?/?$ /info-bisnis [R=301,L,NE,NC]
+  RewriteRule ^(en|zh)/blogPost(?:/[0-9]+)?/?$ /$1/info-bisnis [R=301,L,NE,NC]
+  RewriteRule ^auth(?:/.*)?$ /login [R=301,L,NE]
+  RewriteRule ^(en|zh)/auth(?:/.*)?$ /$1/login [R=301,L,NE]
+  RewriteRule ^layanan/[0-9]+/?$ /layanan [R=301,L,NE]
+  RewriteRule ^(en|zh)/layanan/[0-9]+/?$ /$1/layanan [R=301,L,NE]
+
+  RewriteRule ^(?:cookie|privacy)/?$ /kebijakan-privasi [R=301,L,NE]
+  RewriteRule ^(en|zh)/(?:cookie|privacy)/?$ /$1/kebijakan-privasi [R=301,L,NE]
+
   # Redirect route Next lama ke representasi detail portal static Astro.
   RewriteRule ^((?:en|zh)/)?mitra/orders/([^/]+)/?$ /$1mitra?order=$2 [R=302,L,NE]
 
@@ -32,9 +51,12 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 <IfModule mod_headers.c>
+  Header always set X-Frame-Options "DENY"
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set X-DNS-Prefetch-Control "on"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 
   <FilesMatch "\.html$">
     Header set Cache-Control "public, max-age=0, must-revalidate"

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { extname, join, relative, resolve, sep } from 'node:path';
+import { extractOptimizableImageUrls } from './remote-image-utils.mjs';
 
 const root = resolve('dist');
 const failures = [];
@@ -33,6 +34,8 @@ if (!existsSync(root)) {
 
 const files = walk(root);
 const htmlFiles = files.filter((file) => file.endsWith('.html'));
+const remainingRemoteCmsImages = new Set();
+const optimizedCmsImages = new Set();
 const requiredPages = [
   '/', '/en/', '/zh/',
   '/tentang-kami/', '/en/tentang-kami/', '/zh/tentang-kami/',
@@ -57,6 +60,10 @@ for (const file of htmlFiles) {
       ? `/${relativeFile.slice(0, -'index.html'.length)}`
       : `/${relativeFile}`;
   const html = readFileSync(file, 'utf8');
+  for (const imageUrl of extractOptimizableImageUrls(html)) remainingRemoteCmsImages.add(imageUrl);
+  for (const match of html.matchAll(/\/?_media\/cms\/[A-Za-z0-9._-]+\.webp/g)) {
+    optimizedCmsImages.add(`/${match[0].replace(/^\//, '')}`);
+  }
   const attributes = html.matchAll(/\b(?:href|src)=(?:"([^"]+)"|'([^']+)')/gi);
 
   for (const match of attributes) {
@@ -67,6 +74,17 @@ for (const file of htmlFiles) {
     if (url.origin !== 'https://awankusuma.com') continue;
     if (!outputExists(url.pathname)) failures.push(`Link internal rusak di ${pagePath}: ${value}`);
   }
+}
+
+if (remainingRemoteCmsImages.size > 0) {
+  failures.push(
+    `Masih ada ${remainingRemoteCmsImages.size} remote image yang wajib dilokalkan di HTML; `
+    + 'langkah optimize:remote-images kemungkinan terlewat.',
+  );
+}
+
+for (const imagePath of optimizedCmsImages) {
+  if (!outputExists(imagePath)) failures.push(`Artifact CMS image tidak ditemukan: ${imagePath}`);
 }
 
 const sitemap = files
@@ -81,7 +99,36 @@ for (const privatePath of ['/login', '/lacak', '/mitra', '/faq', '/404']) {
   }
 }
 
-if (!existsSync(join(root, '.htaccess'))) failures.push('dist/.htaccess tidak tersedia.');
+const htaccessPath = join(root, '.htaccess');
+if (!existsSync(htaccessPath)) {
+  failures.push('dist/.htaccess tidak tersedia.');
+} else {
+  const htaccess = readFileSync(htaccessPath, 'utf8');
+  for (const legacyRoute of [
+    'about-us',
+    'tracking',
+    'info-bisnisperubahan-cara-migrasi-kbli-2025',
+    'blogPost',
+    'auth',
+    'layanan/[0-9]+',
+    'cookie|privacy',
+    'mitra/orders',
+    'category=',
+  ]) {
+    if (!htaccess.includes(legacyRoute)) failures.push(`Redirect Apache belum mencakup: ${legacyRoute}`);
+  }
+}
+
+const robotsPath = join(root, 'robots.txt');
+if (!existsSync(robotsPath)) {
+  failures.push('dist/robots.txt tidak tersedia.');
+} else {
+  const robots = readFileSync(robotsPath, 'utf8');
+  if (!robots.includes('User-agent: *')) failures.push('robots.txt tidak memiliki aturan user-agent global.');
+  if (process.env.MIGRATION_NOINDEX !== 'false' && !robots.includes('Disallow: /')) {
+    failures.push('Build staging tidak memblokir crawler melalui robots.txt.');
+  }
+}
 
 if (failures.length > 0) {
   console.error(`Validasi static output gagal (${failures.length} masalah):`);

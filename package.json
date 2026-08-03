@@ -8,9 +8,10 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && npm run optimize:remote-images",
     "preview": "astro preview",
     "check": "astro check",
+    "optimize:remote-images": "node scripts/optimize-remote-images.mjs",
     "validate:dist": "node scripts/validate-static-output.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.8",
+    "sharp": "^0.35.3",
     "typescript": "5.9.3",
     "vitest": "4.1.10"
   }
