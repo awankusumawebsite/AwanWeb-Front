@@ -4,6 +4,7 @@ import { cms } from './cms';
 export interface ServiceMenuItem {
   name: string;
   slug: string;
+  description?: string | null;
   icon_name?: string | null;
   hide_from_menu?: boolean;
 }
