@@ -356,7 +356,9 @@ export function createRuntimeApi({
 
   async function currentUser(): Promise<AuthUser | null> {
     const body = await request('auth/me');
-    return body.authenticated === true && body.user ? body.user as AuthUser : null;
+    const user = body.authenticated === true && body.user ? body.user as AuthUser : null;
+    if (!user) setSessionHint(false);
+    return user;
   }
 
   async function logout(): Promise<void> {

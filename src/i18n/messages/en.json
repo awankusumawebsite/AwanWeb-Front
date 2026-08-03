@@ -27,7 +27,14 @@
     "devPolicy": "Development Environment Policy",
     "infoSecurity": "Information Security",
     "copyright": "© AWAN KUSUMA LEGALITAS INC.",
-    "tracking": "TRACK ORDER"
+    "tracking": "TRACK ORDER",
+    "account": "ACCOUNT",
+    "activeAccount": "Active Account",
+    "adminDashboard": "Admin Dashboard",
+    "partnerPortal": "Partner Portal",
+    "customerPortal": "Customer Portal",
+    "logout": "Sign Out",
+    "retryAccount": "Retry Account"
   },
   "hero": {
     "tagline": "Awan Kusuma Legalitas.",

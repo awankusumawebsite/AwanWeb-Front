@@ -27,7 +27,14 @@
     "devPolicy": "开发环境政策",
     "infoSecurity": "信息安全",
     "copyright": "© AWAN KUSUMA LEGALITAS INC.",
-    "tracking": "订单查询"
+    "tracking": "订单查询",
+    "account": "账户",
+    "activeAccount": "当前账户",
+    "adminDashboard": "管理后台",
+    "partnerPortal": "合作伙伴门户",
+    "customerPortal": "客户门户",
+    "logout": "退出登录",
+    "retryAccount": "重试账户"
   },
   "hero": {
     "tagline": "Awan Kusuma 法律事务所",

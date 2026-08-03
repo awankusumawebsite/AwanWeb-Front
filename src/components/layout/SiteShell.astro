@@ -9,6 +9,7 @@ import FloatingWhatsApp from '../global/FloatingWhatsApp.astro';
 import Footer from './Footer.astro';
 import MaintenanceScreen from './MaintenanceScreen.astro';
 import Navbar from './Navbar.astro';
+import { backendOrigin } from '../../lib/runtime-api';
 
 interface Props {
   locale: Locale;
@@ -71,7 +72,7 @@ const preloaderText = path === '/'
   ) : (
     <>
       <Preloader text={preloaderText} />
-      <Navbar locale={locale} path={path} messages={messages} categories={shell.categories} />
+      <Navbar locale={locale} path={path} messages={messages} categories={shell.categories} backendOrigin={backendOrigin(import.meta.env.PUBLIC_BACKEND_URL)} />
       <div id="main-content" class="relative flex min-h-screen w-full flex-col">
         {pageMaintenance ? <MaintenanceScreen locale={locale} partial /> : <slot />}
       </div>

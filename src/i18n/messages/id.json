@@ -27,7 +27,14 @@
     "devPolicy": "Development Environment Policy",
     "infoSecurity": "Information Security",
     "copyright": "© AWAN KUSUMA LEGALITAS INC.",
-    "tracking": "LACAK PROSES"
+    "tracking": "LACAK PROSES",
+    "account": "AKUN",
+    "activeAccount": "Akun Aktif",
+    "adminDashboard": "Dasbor Admin",
+    "partnerPortal": "Portal Mitra",
+    "customerPortal": "Portal Pelanggan",
+    "logout": "Keluar Sistem",
+    "retryAccount": "Coba Akun Lagi"
   },
   "hero": {
     "tagline": "Awan Kusuma Legalitas",

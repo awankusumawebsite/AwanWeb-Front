@@ -3,15 +3,17 @@ import type { Locale } from '../../config/site';
 import type { MessageTree } from '../../lib/i18n';
 import { localizedPath, translate } from '../../lib/i18n';
 import type { ServiceMenuGroup } from '../../lib/site-data';
+import AuthNavIsland from '../../islands/AuthNavIsland';
 
 interface Props {
   locale: Locale;
   path: string;
   messages: MessageTree;
   categories?: ServiceMenuGroup[];
+  backendOrigin: string;
 }
 
-const { locale, path, messages, categories = [] } = Astro.props;
+const { locale, path, messages, categories = [], backendOrigin } = Astro.props;
 const navItems = [
   { key: 'about', href: '/tentang-kami' },
   { key: 'services', href: '/layanan', services: true },
@@ -23,6 +25,16 @@ const navItems = [
 const isActive = (href: string) => href === '/'
   ? path === '/'
   : path === href || path.startsWith(`${href}/`);
+const authLabels = {
+  login: translate(messages, 'navbar.login'),
+  account: translate(messages, 'navbar.account'),
+  activeAccount: translate(messages, 'navbar.activeAccount'),
+  adminDashboard: translate(messages, 'navbar.adminDashboard'),
+  partnerPortal: translate(messages, 'navbar.partnerPortal'),
+  customerPortal: translate(messages, 'navbar.customerPortal'),
+  logout: translate(messages, 'navbar.logout'),
+  retry: translate(messages, 'navbar.retryAccount'),
+};
 ---
 
 <div id="site-nav-overlay" class="pointer-events-none fixed inset-0 z-30 hidden bg-black/50 opacity-0 transition-opacity duration-300 lg:block"></div>
@@ -116,12 +128,15 @@ const isActive = (href: string) => href === '/'
           </a>
         ))}
       </div>
-      <a
-        href={localizedPath('/login', locale)}
-        class="whitespace-nowrap rounded-full border border-elm px-4 py-2 text-[11px] font-bold text-elm transition-colors hover:bg-elm hover:text-white xl:px-5 xl:py-2.5 xl:text-xs"
-      >
-        {translate(messages, 'navbar.login')}
-      </a>
+      <AuthNavIsland
+        client:load
+        variant="desktop"
+        backendOrigin={backendOrigin}
+        loginHref={localizedPath('/login', locale)}
+        customerHref={localizedPath('/lacak', locale)}
+        partnerHref={localizedPath('/mitra', locale)}
+        labels={authLabels}
+      />
       <a
         href={localizedPath('/kontak', locale)}
         class="whitespace-nowrap rounded-full bg-big-stone px-5 py-2 text-[11px] font-bold text-white transition-colors hover:bg-elm xl:px-6 xl:py-2.5 xl:text-xs"
@@ -180,6 +195,20 @@ const isActive = (href: string) => href === '/'
           {targetLocale.toUpperCase()}
         </a>
       ))}
+    </div>
+    <div class="mt-8 flex flex-col gap-3">
+      <AuthNavIsland
+        client:load
+        variant="mobile"
+        backendOrigin={backendOrigin}
+        loginHref={localizedPath('/login', locale)}
+        customerHref={localizedPath('/lacak', locale)}
+        partnerHref={localizedPath('/mitra', locale)}
+        labels={authLabels}
+      />
+      <a href={localizedPath('/kontak', locale)} class="flex w-full items-center justify-center rounded-full bg-elm px-6 py-4 text-sm font-bold tracking-widest text-white">
+        {translate(messages, 'navbar.contactUs')}
+      </a>
     </div>
   </nav>
 </aside>
