@@ -1,0 +1,33 @@
+---
+import ArticleCard from '../article/ArticleCard.astro';
+import type { Locale } from '../../config/site';
+import type { ArticleSummary } from '../../lib/articles';
+import { localizedPath } from '../../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  articles: ArticleSummary[];
+  heading: string;
+  subheading: string;
+  viewAll: string;
+}
+
+const { locale, articles, heading, subheading, viewAll } = Astro.props;
+---
+
+{articles.length > 0 && (
+  <section class="relative w-full bg-white px-5 py-15 font-sans lg:px-8 md:py-20">
+    <div class="mx-auto max-w-280">
+      <div class="mb-10 flex flex-col items-start md:mb-12">
+        <h2 class="mb-3 text-3xl font-extrabold uppercase leading-tight tracking-tight text-big-stone md:text-4xl lg:text-[42px]">{heading}</h2>
+        <p class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-elm">◆ {subheading}</p>
+      </div>
+      <div class="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
+        {articles.map((article, index) => <ArticleCard article={article} locale={locale} priority={index === 0} />)}
+      </div>
+      <div class="mt-12 flex justify-end">
+        <a href={localizedPath('/info-bisnis', locale)} class="group flex items-center gap-5 text-sm font-black uppercase tracking-widest text-big-stone transition-colors hover:text-elm"><span class="flex size-12 items-center justify-center rounded-full border border-gray-300 text-elm transition-colors group-hover:border-elm group-hover:bg-elm group-hover:text-white">→</span>{viewAll}</a>
+      </div>
+    </div>
+  </section>
+)}

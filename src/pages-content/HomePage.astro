@@ -1,0 +1,85 @@
+---
+import MarqueeImages from '../components/MarqueeImages.astro';
+import HomeAbout from '../components/home/HomeAbout.astro';
+import HomeArticles from '../components/home/HomeArticles.astro';
+import HomeFaq from '../components/home/HomeFaq.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import HomePartners from '../components/home/HomePartners.astro';
+import HomeServices from '../components/home/HomeServices.astro';
+import HomeTestimonials from '../components/home/HomeTestimonials.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
+import type { Locale } from '../config/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getHomeData } from '../lib/home';
+import { getMessages, translate } from '../lib/i18n';
+import { getSiteShellData } from '../lib/site-data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const [messages, shell, home] = await Promise.all([
+  getMessages(locale),
+  getSiteShellData(locale),
+  getHomeData(locale),
+]);
+
+const aboutCopy = Object.fromEntries([
+  'companyName', 'companyTag', 'paragraph1', 'paragraph2', 'seeMore',
+  'sectionHeading', 'sectionSubheading', 'aboutUsCard', 'aboutUsSubtitle',
+  'whyUsCard', 'whyUsSubtitle', 'visiMisiLink', 'budayaLink',
+].map((key) => [key, translate(messages, `homeAbout.${key}`)]));
+---
+
+<BaseLayout
+  title={translate(messages, 'metadata.homeTitle')}
+  description={translate(messages, 'metadata.homeDescription')}
+  locale={locale}
+  path="/"
+>
+  <SiteShell locale={locale} path="/">
+    <main class="relative min-h-screen w-full bg-white font-sans">
+      <HomeHero
+        locale={locale}
+        tagline={translate(messages, 'hero.tagline')}
+        heading1={translate(messages, 'hero.heading1')}
+        heading2={translate(messages, 'hero.heading2')}
+        cta={translate(messages, 'hero.cta')}
+      />
+      <HomeAbout locale={locale} copy={aboutCopy} />
+      <HomePartners
+        partners={home.partners}
+        heading={translate(messages, 'homePartners.heading')}
+      />
+      <HomeServices
+        locale={locale}
+        categories={shell.categories}
+        heading={translate(messages, 'homeServices.heading')}
+        subheading={translate(messages, 'homeServices.subheading')}
+        viewAll={translate(messages, 'homeServices.viewAll')}
+        countTemplate={translate(messages, 'homeServices.servicesCount')}
+      />
+      <HomeTestimonials
+        testimonials={home.testimonials}
+        heading={translate(messages, 'homeTestimonials.heading')}
+        subheading={translate(messages, 'homeTestimonials.subheading')}
+      />
+      <HomeArticles
+        locale={locale}
+        articles={home.articles}
+        heading={translate(messages, 'homeArticles.heading')}
+        subheading={translate(messages, 'homeArticles.subheading')}
+        viewAll={translate(messages, 'homeArticles.viewAll')}
+      />
+      <HomeFaq
+        locale={locale}
+        faqs={home.faqs}
+        heading={translate(messages, 'homeFaq.heading')}
+        subheading={translate(messages, 'homeFaq.subheading')}
+        ctaText={translate(messages, 'homeFaq.ctaText')}
+      />
+      <MarqueeImages images={home.marqueeImages} />
+    </main>
+  </SiteShell>
+</BaseLayout>

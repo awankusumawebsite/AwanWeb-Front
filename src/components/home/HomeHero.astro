@@ -1,0 +1,115 @@
+---
+import type { Locale } from '../../config/site';
+import { localizedPath } from '../../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  tagline: string;
+  heading1: string;
+  heading2: string;
+  cta: string;
+}
+
+const { locale, tagline, heading1, heading2, cta } = Astro.props;
+---
+
+<section data-home-hero class="sticky top-0 z-0 w-full bg-black">
+  <div class="relative flex h-[100svh] min-h-[500px] w-full flex-col justify-end overflow-hidden pb-12 md:min-h-[600px] md:pb-16 lg:pb-12">
+    <div class="absolute inset-0 z-0 bg-black md:bg-white">
+      <img
+        data-hero-poster
+        src="/assets/video/hero-poster.webp"
+        alt=""
+        width="1920"
+        height="1080"
+        fetchpriority="high"
+        decoding="sync"
+        class="absolute inset-0 size-full object-cover"
+      />
+      <video
+        data-hero-video
+        autoplay
+        loop
+        muted
+        playsinline
+        preload="auto"
+        poster="/assets/video/hero-poster.webp"
+        class="absolute inset-0 size-full bg-[#141516] object-cover opacity-0 transition-opacity duration-300"
+      >
+        <source media="(max-width: 767px)" src="/assets/video/hero-mobile.webm" type="video/webm" />
+        <source media="(min-width: 768px)" src="/assets/video/hero-desktop.webm" type="video/webm" />
+        <source src="/assets/video/hero.webm" type="video/webm" />
+      </video>
+      <div class="absolute inset-0 bg-black/30 md:bg-black/20"></div>
+    </div>
+
+    <div class="relative z-10 w-full px-5 xl:px-15">
+      <div class="flex flex-col items-start gap-4">
+        <p data-hero-copy class="px-1 text-xs font-bold uppercase tracking-widest text-white/80 md:text-white lg:text-sm">
+          {tagline}
+        </p>
+        <h1 data-hero-copy class="flex flex-col text-4xl font-black uppercase leading-[0.95] tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-5xl lg:text-6xl">
+          <span class="block py-1">{heading1}</span>
+          <span class="block py-1">{heading2}</span>
+        </h1>
+        <a
+          data-hero-copy
+          href={localizedPath('/kontak', locale)}
+          class="group mt-2 flex items-center gap-4 rounded-full bg-big-stone px-6 py-3 text-xs font-bold tracking-widest text-white shadow-md transition-colors hover:bg-elm md:mt-4 md:px-8 md:py-4 md:text-sm"
+        >
+          <svg class="size-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path>
+          </svg>
+          {cta}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import gsap from 'gsap';
+  import ScrollTrigger from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const hero = document.querySelector<HTMLElement>('[data-home-hero]');
+  const video = hero?.querySelector<HTMLVideoElement>('[data-hero-video]');
+  const poster = hero?.querySelector<HTMLElement>('[data-hero-poster]');
+
+  if (hero && video) {
+    let disposed = false;
+    const revealVideo = () => {
+      if (disposed || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+      video.classList.remove('opacity-0');
+      video.classList.add('opacity-100');
+      poster?.setAttribute('data-video-ready', 'true');
+      void video.play().catch(() => undefined);
+    };
+
+    video.addEventListener('loadeddata', revealVideo);
+    video.addEventListener('canplay', revealVideo);
+    revealVideo();
+
+    if (!window.__IS_BOT && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.fromTo(
+        hero.querySelectorAll('[data-hero-copy]'),
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out' },
+      );
+      ScrollTrigger.create({
+        trigger: hero,
+        start: 'top top',
+        end: 'bottom top',
+        onLeave: () => video.pause(),
+        onEnterBack: () => void video.play().catch(() => undefined),
+      });
+    }
+
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      video.removeEventListener('loadeddata', revealVideo);
+      video.removeEventListener('canplay', revealVideo);
+    }, { once: true });
+  }
+</script>

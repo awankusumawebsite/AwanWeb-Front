@@ -1,0 +1,41 @@
+---
+import { homeMediaUrl, type HomeTestimonial } from '../../lib/home';
+
+interface Props {
+  testimonials: HomeTestimonial[];
+  heading: string;
+  subheading: string;
+}
+
+const fallback: HomeTestimonial[] = [
+  { name: 'Sushen Qoirunnisa', role: 'Founding Team, PT Delta Surya', avatar: 'https://i.pravatar.cc/150?img=47', quote: 'Pengurusan PKKPR cepat kilat, kurang dari 1 hari jadi semua mantap dan sukses berkat tim Awan Kusuma.' },
+  { name: 'Dina Rahmawati', role: 'CEO, Maju Bersama CV', avatar: 'https://i.pravatar.cc/150?img=49', quote: 'Pelayanannya ramah, cepat dan tepat. Sangat direkomendasikan.' },
+  { name: 'Budi Hartono', role: 'Direktur, PT Nusantara Raya', avatar: 'https://i.pravatar.cc/150?img=12', quote: 'Proses legalitas bisnis menjadi jauh lebih mudah bersama tim Awan Kusuma.' },
+];
+
+const { testimonials, heading, subheading } = Astro.props;
+const source = testimonials.length > 0 ? testimonials : fallback;
+let safeItems = [...source];
+while (safeItems.length < 6) safeItems = [...safeItems, ...source];
+---
+
+<section class="relative w-full overflow-hidden py-28" style="background:linear-gradient(160deg,#dff0f5 0%,#f5f7f8 40%,#e0edf5 100%)">
+  <div class="absolute -top-1 left-1/2 z-10 h-24 w-[110%] -translate-x-1/2 rounded-b-[100%] bg-white"></div>
+  <div class="relative z-20 mb-12 px-6 pt-8 text-center">
+    <h2 class="text-4xl font-black leading-tight tracking-tight text-big-stone md:text-6xl lg:text-7xl">{heading}</h2>
+    <p class="mt-4 text-xs font-extrabold uppercase tracking-[0.3em] text-elm md:text-sm">{subheading}</p>
+  </div>
+  <div class="relative z-20 flex snap-x gap-5 overflow-x-auto px-[max(1.5rem,calc((100vw-80rem)/2))] py-10 [scrollbar-width:none]">
+    {safeItems.map((item) => (
+      <article class="flex min-h-[310px] w-[270px] shrink-0 snap-center flex-col rounded-4xl bg-white px-6 py-7 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-1 md:w-[330px] md:min-h-[350px] md:px-7 md:py-8">
+        <p class="flex-1 text-[13.5px] italic leading-[1.7] text-slate-600">“{item.quote}”</p>
+        <div class="mb-5 mt-6 h-0.5 w-8 bg-elm/30"></div>
+        <div class="flex items-center gap-3">
+          <img src={homeMediaUrl(item.avatar)} alt={item.name} width="40" height="40" loading="lazy" class="size-10 rounded-full object-cover" />
+          <div><p class="text-xs font-semibold text-slate-800">{item.name}</p>{item.role && <p class="mt-0.5 text-[10px] text-slate-400">{item.role}</p>}</div>
+        </div>
+      </article>
+    ))}
+  </div>
+  <div class="absolute -bottom-1 left-1/2 z-10 h-24 w-[110%] -translate-x-1/2 rounded-t-[100%] bg-white"></div>
+</section>

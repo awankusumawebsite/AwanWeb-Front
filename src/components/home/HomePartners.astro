@@ -1,0 +1,56 @@
+---
+import { homeMediaUrl, type HomePartner } from '../../lib/home';
+
+interface Props {
+  partners: HomePartner[];
+  heading: string;
+}
+
+const fallbackPartners: HomePartner[] = [
+  { name: 'Teddie Clubs', logo_url: '/images/mockups/photo-1599305090598-fe179d501227.webp' },
+  { name: 'Lip Top Space', logo_url: '/images/mockups/photo-1614680376739-414d95ff43df.webp' },
+  { name: 'Isu Romance', logo_url: '/images/mockups/photo-1614680376573-df3480f0c6ff.webp' },
+  { name: 'Artha Group', logo_url: '/images/mockups/photo-1557804506-669a67965ba0.webp' },
+];
+
+const { partners, heading } = Astro.props;
+const source = partners.length > 0 ? partners : fallbackPartners;
+let safePartners = [...source];
+while (safePartners.length < 10) safePartners = [...safePartners, ...source];
+const marqueePartners = [...safePartners, ...safePartners];
+const duration = Math.max(35, safePartners.length * 3.5);
+---
+
+<section class="relative w-full overflow-hidden border-b border-black/5 bg-white py-16 md:py-24">
+  <h2 class="relative z-20 mb-14 px-6 text-center text-xs font-black uppercase tracking-[0.4em] md:text-sm md:tracking-[0.6em]">{heading}</h2>
+  <div class="relative w-full overflow-hidden">
+    <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent md:w-32"></div>
+    <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent md:w-32"></div>
+    <div data-partner-track class="flex w-max items-center" style={`--partner-duration:${duration}s`}>
+      {marqueePartners.map((partner) => (
+        <div class="flex h-[120px] w-[180px] shrink-0 flex-col items-center justify-center gap-3 md:h-[150px] md:w-[240px]">
+          <img
+            src={homeMediaUrl(partner.logo_url || partner.logo)}
+            alt={partner.name}
+            width="160"
+            height="80"
+            loading="lazy"
+            decoding="async"
+            class="h-[60px] w-[120px] object-contain md:h-[80px] md:w-[160px]"
+          />
+          <span class="select-none text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 md:text-[11px]">{partner.name}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-partner-track] {
+    animation: partner-track var(--partner-duration) linear infinite;
+    will-change: transform;
+  }
+  [data-partner-track]:hover { animation-play-state: paused; }
+  @keyframes partner-track { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { [data-partner-track] { animation: none; } }
+</style>

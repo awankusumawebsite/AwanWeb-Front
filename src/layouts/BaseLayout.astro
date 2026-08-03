@@ -30,6 +30,21 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
+    <script is:inline>
+      (function () {
+        var userAgent = navigator.userAgent || '';
+        var isBot = /bot|googlebot|crawler|spider|robot|crawling|lighthouse|chrome-lighthouse|speed-insights/i.test(userAgent);
+        var path = location.pathname.replace(/^\/(?:id|en|zh)(?=\/|$)/, '') || '/';
+        var isTopLevel = /^\/(?:tentang-kami|layanan|info-bisnis|faq|kontak|information|tools)?\/?$/.test(path);
+        var skip = isBot || !isTopLevel;
+        document.documentElement.dataset.preloaderMode = skip ? 'skip' : 'initial';
+        window.__IS_BOT = isBot;
+        if (!skip) {
+          window.__PRELOADER_STARTED_AT = performance.now();
+          document.documentElement.style.overflow = 'hidden';
+        }
+      })();
+    </script>
     <Seo
       title={title}
       description={description}
