@@ -1,0 +1,367 @@
+---
+import MarqueeImages from '../components/MarqueeImages.astro';
+import AdSlot from '../components/article/AdSlot.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
+import type { Locale } from '../config/site';
+import { SITE_URL } from '../config/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { prepareArticleContent, splitArticleForInlineAd } from '../lib/article-content';
+import { articleImageUrl, articleListingPath, type ArticleDetail } from '../lib/articles';
+import { cms } from '../lib/cms';
+import { getMessages, localizedPath, translate } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  article: ArticleDetail;
+}
+
+interface DataResponse<T> {
+  data: T;
+}
+
+interface MarqueeImage {
+  image_url: string;
+  alt_text?: string | null;
+}
+
+const { locale, article } = Astro.props;
+const path = `/info-bisnis/${article.slug}`;
+const articleUrl = new URL(localizedPath(path, locale), SITE_URL).href;
+const imageUrl = articleImageUrl(article.og_image || article.featured_image || article.image);
+const [messages, marqueeResponse] = await Promise.all([
+  getMessages(locale),
+  cms.requestOnce<DataResponse<MarqueeImage[]>>('/marquee-images'),
+]);
+const title = article.meta_title || article.title;
+const description = article.meta_description || article.excerpt || article.title;
+const categoryName = article.category?.name || 'Artikel';
+const categoryPath = articleListingPath({ category: article.category?.slug || null });
+const authorName = article.author?.name || translate(messages, 'articleDetail.author');
+const authorInitials = authorName.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+const dateLocale = locale === 'id' ? 'id-ID' : locale === 'zh' ? 'zh-CN' : 'en-US';
+const displayDate = article.published_at
+  ? new Intl.DateTimeFormat(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
+      .format(new Date(article.published_at))
+  : null;
+const preparedContent = prepareArticleContent(article.content || '');
+const adSlots = article.ad_slots || [];
+const inlineAd = adSlots.find((ad) => ad.placement === 'in_content' || ad.variant === 'inline');
+const sidebarAd = adSlots.find((ad) => ad.placement === 'sidebar' || ad.variant === 'rectangle');
+const bottomAd = adSlots.find((ad) => ad.placement === 'bottom' || ad.variant === 'banner');
+const contentChunks = inlineAd ? splitArticleForInlineAd(preparedContent.html, 3) : [preparedContent.html];
+const relatedArticles = (article.related_articles || []).slice(0, 2);
+const relatedTopics = [...new Set([
+  article.category?.name,
+  ...relatedArticles.map((related) => related.category?.name),
+].filter((value): value is string => Boolean(value)))].slice(0, 5);
+const apiOrigin = (import.meta.env.PUBLIC_BACKEND_URL || 'https://cms.awankusuma.com').replace(/\/+$/, '').replace(/\/api$/, '');
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': article.canonical_url || articleUrl },
+    articleSection: article.category?.name,
+    image: imageUrl,
+    datePublished: article.published_at,
+    dateModified: article.updated_at || article.published_at,
+    wordCount: article.reading_time_minutes ? article.reading_time_minutes * 200 : undefined,
+    author: { '@type': 'Organization', name: authorName },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Awan Kusuma Legalitas',
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/assets/image/logo.png` },
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: translate(messages, 'articleDetail.home'), item: new URL(localizedPath('/', locale), SITE_URL).href },
+      { '@type': 'ListItem', position: 2, name: translate(messages, 'articleDetail.infoBisnis'), item: new URL(localizedPath('/info-bisnis', locale), SITE_URL).href },
+      { '@type': 'ListItem', position: 3, name: article.title, item: article.canonical_url || articleUrl },
+    ],
+  },
+];
+
+function safeJsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  path={path}
+  image={imageUrl}
+  type="article"
+>
+  {schemas.map((schema) => <script is:inline type="application/ld+json" set:html={safeJsonLd(schema)}></script>)}
+
+  <SiteShell locale={locale} path={path}>
+    <div class="pointer-events-none fixed left-0 top-0 z-[9999] h-[3px] w-full" aria-hidden="true">
+      <div data-reading-progress class="h-full origin-left scale-x-0 bg-elm will-change-transform"></div>
+    </div>
+
+    <main
+      data-article-page
+      data-article-slug={article.slug}
+      data-api-origin={apiOrigin}
+      class="relative min-h-screen w-full bg-white pb-32 pt-32 font-sans text-black selection:bg-elm selection:text-white"
+    >
+      <header class="article-header mx-auto mb-10 w-full max-w-7xl px-6 md:px-12 lg:px-20">
+        <nav aria-label="Breadcrumb" class="mb-8 flex flex-wrap items-center gap-1.5">
+          <a href={localizedPath('/', locale)} class="text-[11px] font-bold uppercase tracking-widest text-slate-400 transition-colors hover:text-elm">
+            {translate(messages, 'articleDetail.home')}
+          </a>
+          <span class="text-slate-300">/</span>
+          <a href={localizedPath('/info-bisnis', locale)} class="text-[11px] font-bold uppercase tracking-widest text-slate-400 transition-colors hover:text-elm">
+            {translate(messages, 'articleDetail.infoBisnis')}
+          </a>
+          <span class="text-slate-300">/</span>
+          <span class="max-w-[300px] truncate text-[11px] font-bold uppercase tracking-widest text-slate-500">{article.title}</span>
+        </nav>
+
+        <div class="mb-6 flex flex-wrap items-center gap-3">
+          <a href={localizedPath(categoryPath, locale)} class="rounded-sm bg-elm/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-elm">
+            {categoryName}
+          </a>
+          <div class="ml-auto flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+            {displayDate && <time datetime={article.published_at || undefined}>{displayDate}</time>}
+            <span class="text-slate-300">•</span>
+            <span>{translate(messages, 'articleDetail.minRead', { count: article.reading_time_minutes || 1 })}</span>
+          </div>
+        </div>
+
+        <h1 class="mb-6 text-3xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
+          {article.title}
+        </h1>
+
+        <div class="flex items-center gap-4 border-y border-slate-100 py-6">
+          <div class="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-elm text-xs font-black text-white">
+            {article.author?.avatar ? (
+              <img src={articleImageUrl(article.author.avatar)} alt={authorName} width="40" height="40" class="h-full w-full object-cover" />
+            ) : authorInitials}
+          </div>
+          <div>
+            <p class="text-sm font-bold text-slate-800">{authorName}</p>
+            <p class="text-[11px] font-medium tracking-wide text-slate-500">{translate(messages, 'articleDetail.authorRole')}</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="article-image mx-auto mb-12 w-full max-w-7xl px-6 md:mb-16 md:px-12 lg:px-20">
+        <div class="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-lg md:aspect-[2/1] md:rounded-3xl lg:aspect-[21/9] xl:max-h-[500px]">
+          <img
+            src={imageUrl}
+            alt={article.featured_image_alt || article.title}
+            width="1200"
+            height="630"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
+      </div>
+
+      <div class="article-content mx-auto w-full max-w-7xl px-6 md:px-12 lg:px-20">
+        <div class="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_280px] lg:gap-16 xl:grid-cols-[1fr_300px]">
+          <div class="min-w-0">
+            <article class="article-body relative">
+              <div class="article-prose prose prose-lg prose-slate max-w-none">
+                {contentChunks.length > 0 && <div set:html={contentChunks[0]}></div>}
+                {inlineAd && contentChunks.length > 1 && <AdSlot ad={inlineAd} />}
+                {contentChunks.length > 1 && <div set:html={contentChunks.slice(1).join('')}></div>}
+                {!preparedContent.html && <p>{translate(messages, 'articleDetail.noContent')}</p>}
+              </div>
+            </article>
+
+            {relatedArticles.length > 0 && (
+              <section class="mt-12 border-t border-slate-100 pt-8">
+                <h2 class="mb-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">{translate(messages, 'articleDetail.readAlso')}</h2>
+                <div class="space-y-4">
+                  {relatedArticles.map((related) => (
+                    <a href={localizedPath(`/info-bisnis/${related.slug}`, locale)} class="group -mx-4 flex items-start gap-4 rounded-xl p-4 transition-colors hover:bg-slate-50">
+                      <div class="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                        <img src={articleImageUrl(related.featured_image || related.image)} alt={related.featured_image_alt || related.title} width="80" height="56" loading="lazy" decoding="async" class="h-full w-full object-cover" />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p class="line-clamp-2 text-sm font-bold leading-snug text-slate-800 transition-colors group-hover:text-elm">{related.title}</p>
+                        <span class="mt-1 block text-[10px] font-bold uppercase tracking-widest text-slate-400">{related.category?.name}</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section class="mt-12 border-t border-slate-200 pt-8">
+              <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+                <p class="text-sm font-bold text-slate-800">{translate(messages, 'articleDetail.shareArticle')}</p>
+                <div class="flex gap-3">
+                  {['facebook', 'twitter', 'linkedin'].map((platform) => (
+                    <button data-share={platform} aria-label={`Share ke ${platform}`} class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-black uppercase text-slate-600 transition-colors hover:bg-elm hover:text-white">
+                      {platform.slice(0, 2)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <aside class="hidden lg:block">
+            <div class="sticky top-28 space-y-8">
+              {preparedContent.headings.length > 0 && (
+                <nav aria-label="Daftar Isi">
+                  <p class="mb-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Daftar Isi</p>
+                  <ul class="space-y-0.5 border-l border-slate-200">
+                    {preparedContent.headings.map((heading) => (
+                      <li>
+                        <a
+                          href={`#${heading.id}`}
+                          data-toc-link={heading.id}
+                          class:list={[
+                            '-ml-px block border-l-2 border-transparent py-2 pr-3 text-[13px] font-semibold leading-snug text-slate-500 transition-all hover:border-slate-300 hover:text-slate-800',
+                            heading.level === 3 ? 'pl-6' : 'pl-4',
+                          ]}
+                        >
+                          {heading.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
+              {sidebarAd && <AdSlot ad={sidebarAd} />}
+              {relatedTopics.length > 0 && (
+                <div class="border-t border-slate-100 pt-8">
+                  <h2 class="mb-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">{translate(messages, 'articleDetail.relatedTopics')}</h2>
+                  <div class="flex flex-wrap gap-2">
+                    {relatedTopics.map((topic) => (
+                      <span class="rounded-md bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">{topic}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      {bottomAd && (
+        <div class="mx-auto mt-12 w-full max-w-7xl px-6 md:px-12 lg:mt-16 lg:px-20">
+          <AdSlot ad={bottomAd} />
+        </div>
+      )}
+    </main>
+
+    <div class="border-t border-slate-100/50 bg-slate-50/20 py-10">
+      <MarqueeImages images={marqueeResponse?.data || []} class="bg-transparent" />
+    </div>
+  </SiteShell>
+</BaseLayout>
+
+<script>
+  const page = document.querySelector<HTMLElement>('[data-article-page]');
+  if (page) {
+    const slug = page.dataset.articleSlug;
+    const apiOrigin = page.dataset.apiOrigin || 'https://cms.awankusuma.com';
+    const productionHosts = new Set(['awankusuma.com', 'www.awankusuma.com']);
+    const metricsEnabled = productionHosts.has(window.location.hostname);
+    const postMetric = async (path: string) => {
+      if (!metricsEnabled) return;
+
+      await fetch(`${apiOrigin}${path}`, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        keepalive: true,
+      }).catch(() => undefined);
+    };
+
+    const logView = () => slug && postMetric(`/api/blog/articles/${encodeURIComponent(slug)}/view`);
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(logView, { timeout: 2_000 });
+    } else {
+      globalThis.setTimeout(logView, 2_000);
+    }
+
+    const progress = document.querySelector<HTMLElement>('[data-reading-progress]');
+    const body = document.querySelector<HTMLElement>('.article-body');
+    let frame = 0;
+    const updateProgress = () => {
+      if (!progress || !body) return;
+      const rect = body.getBoundingClientRect();
+      const top = rect.top + window.scrollY;
+      const value = Math.min(1, Math.max(0, (window.scrollY - top + window.innerHeight * 0.3) / rect.height));
+      progress.style.transform = `scaleX(${value})`;
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateProgress);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    updateProgress();
+
+    document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const target = document.getElementById(link.dataset.tocLink || '');
+        if (!target) return;
+        event.preventDefault();
+        const smoothWindow = window as typeof window & {
+          lenis?: { scrollTo: (target: HTMLElement, options: { offset: number; duration: number }) => void };
+        };
+        if (smoothWindow.lenis) smoothWindow.lenis.scrollTo(target, { offset: -120, duration: 1.2 });
+        else window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 120, behavior: 'auto' });
+        history.replaceState(history.state, '', `#${target.id}`);
+      });
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-share]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const url = encodeURIComponent(window.location.href);
+        const text = encodeURIComponent(document.title);
+        const platform = button.dataset.share;
+        const shareUrl = platform === 'facebook'
+          ? `https://www.facebook.com/sharer/sharer.php?u=${url}`
+          : platform === 'twitter'
+            ? `https://twitter.com/intent/tweet?url=${url}&text=${text}`
+            : `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${text}`;
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-article-ad]').forEach((ad) => {
+      const adSlug = ad.dataset.adSlug;
+      if (!adSlug) return;
+      const observer = new IntersectionObserver(([entry]) => {
+        if (!entry?.isIntersecting) return;
+        postMetric(`/api/blog/ads/${encodeURIComponent(adSlug)}/impression`);
+        observer.disconnect();
+      }, { threshold: 0.5 });
+      observer.observe(ad);
+      ad.querySelector('[data-ad-cta]')?.addEventListener('click', () => {
+        postMetric(`/api/blog/ads/${encodeURIComponent(adSlug)}/click`);
+      });
+    });
+  }
+</script>
+
+<style>
+  .article-prose :global(p) { margin-bottom: 1.5rem; font-size: 17px; line-height: 1.75; color: #475569; }
+  .article-prose :global(h2) { margin-bottom: 1rem; margin-top: 3rem; scroll-margin-top: 7rem; font-size: 1.5rem; font-weight: 900; letter-spacing: -0.025em; color: #0f172a; }
+  .article-prose :global(h3) { margin-bottom: 1rem; margin-top: 2.5rem; scroll-margin-top: 7rem; font-size: 1.25rem; font-weight: 900; letter-spacing: -0.025em; color: #0f172a; }
+  .article-prose :global(ul) { margin-bottom: 1.5rem; list-style: disc; padding-left: 1.25rem; }
+  .article-prose :global(ol) { margin-bottom: 1.5rem; list-style: decimal; padding-left: 1.25rem; }
+  .article-prose :global(li) { margin-bottom: 0.5rem; font-size: 17px; color: #475569; }
+  .article-prose :global(blockquote) { margin: 2rem 0; border-left: 4px solid #1c768f; border-radius: 0 0.5rem 0.5rem 0; background: #f8fafc; padding: 0.5rem 0 0.5rem 1.5rem; font-size: 1.25rem; font-style: italic; color: #334155; }
+  .article-prose :global(a) { font-weight: 700; color: #1c768f; text-decoration: underline; text-underline-offset: 4px; }
+  .article-prose :global(img) { margin: 2rem auto; height: auto; max-width: 100%; border-radius: 0.75rem; }
+  .article-prose :global(figure) { margin: 2rem 0; width: 100%; }
+  .article-prose :global(figcaption) { margin-top: 0.75rem; text-align: center; font-size: 0.875rem; font-style: italic; color: #64748b; }
+  .article-prose :global(table) { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; }
+  .article-prose :global(th), .article-prose :global(td) { border: 1px solid #e2e8f0; padding: 0.75rem; text-align: left; }
+</style>

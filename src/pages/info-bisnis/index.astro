@@ -1,0 +1,18 @@
+---
+import ArticleListingPage from '../../pages-content/ArticleListingPage.astro';
+import {
+  articleCategoryLastPages,
+  findArticleListing,
+  getArticleBuildData,
+} from '../../lib/articles';
+
+const data = await getArticleBuildData('id');
+---
+
+<ArticleListingPage
+  locale="id"
+  listing={findArticleListing(data, null, 1)}
+  categories={data.categories}
+  categoryLastPages={articleCategoryLastPages(data)}
+  legacyQueryRedirect
+/>

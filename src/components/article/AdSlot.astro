@@ -1,0 +1,80 @@
+---
+import { articleImageUrl, type ArticleAdSlot } from '../../lib/articles';
+
+interface Props {
+  ad: ArticleAdSlot;
+  class?: string;
+}
+
+const { ad, class: className = '' } = Astro.props;
+const href = ad.cta_url || '/kontak';
+const ctaText = ad.cta_text || 'Konsultasi Gratis';
+---
+
+<aside
+  data-article-ad
+  data-ad-slug={ad.slug}
+  class:list={[
+    'article-ad group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm',
+    ad.variant === 'rectangle' ? 'flex w-full flex-col shadow-lg shadow-slate-200/50' : '',
+    ad.variant === 'banner' ? 'flex w-full flex-col shadow-xl shadow-slate-200/50 sm:flex-row' : '',
+    ad.variant === 'inline' ? 'my-10 flex w-full flex-col items-stretch transition-all duration-300 hover:border-elm/30 hover:shadow-md sm:flex-row sm:items-center' : '',
+    className,
+  ]}
+>
+  {ad.image && (
+    <div class:list={[
+      'shrink-0 overflow-hidden bg-slate-100',
+      ad.variant === 'rectangle' ? 'h-56 w-full border-b border-slate-100' : '',
+      ad.variant === 'banner' ? 'h-56 w-full sm:h-auto sm:w-2/5 lg:w-1/3' : '',
+      ad.variant === 'inline' ? 'h-40 w-full border-b border-slate-100 sm:h-auto sm:w-32 sm:border-b-0 sm:border-r' : '',
+    ]}>
+      <img
+        src={articleImageUrl(ad.image)}
+        alt={ad.title}
+        width="640"
+        height="360"
+        loading="lazy"
+        decoding="async"
+        class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+      />
+    </div>
+  )}
+
+  <div class:list={[
+    'flex flex-1 gap-5 p-6',
+    ad.variant === 'rectangle' ? 'flex-col' : 'flex-col items-center sm:flex-row',
+    ad.variant === 'banner' ? 'bg-big-stone sm:p-8 md:p-10' : '',
+  ]}>
+    <div class="flex-1 text-center sm:text-left">
+      <h4 class:list={[
+        'mb-2 font-black leading-snug tracking-tight',
+        ad.variant === 'banner' ? 'text-lg text-white sm:text-xl md:text-2xl' : 'text-sm text-slate-900',
+      ]}>
+        {ad.title}
+      </h4>
+      {ad.description && (
+        <p class:list={[
+          'text-xs leading-relaxed',
+          ad.variant === 'banner' ? 'text-white/70 sm:text-sm' : 'text-slate-500',
+        ]}>
+          {ad.description}
+        </p>
+      )}
+    </div>
+    <a
+      href={href}
+      data-ad-cta
+      class:list={[
+        'inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 text-[11px] font-bold uppercase tracking-wider transition-all duration-300',
+        ad.variant === 'banner'
+          ? 'bg-elm px-8 py-4 text-white shadow-lg shadow-elm/20 hover:-translate-y-0.5 hover:bg-elm/90'
+          : 'bg-elm/10 text-elm hover:bg-elm hover:text-white',
+        ad.variant === 'rectangle' ? 'w-full' : 'w-full sm:w-auto',
+      ]}
+    >
+      {ctaText}
+      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+    </a>
+  </div>
+</aside>

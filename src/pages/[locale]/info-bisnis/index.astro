@@ -1,0 +1,24 @@
+---
+import ArticleListingPage from '../../../pages-content/ArticleListingPage.astro';
+import { LOCALES, type Locale } from '../../../config/site';
+import {
+  articleCategoryLastPages,
+  findArticleListing,
+  getArticleBuildData,
+} from '../../../lib/articles';
+
+export function getStaticPaths() {
+  return LOCALES.filter((locale) => locale !== 'id').map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+const data = await getArticleBuildData(locale);
+---
+
+<ArticleListingPage
+  locale={locale}
+  listing={findArticleListing(data, null, 1)}
+  categories={data.categories}
+  categoryLastPages={articleCategoryLastPages(data)}
+  legacyQueryRedirect
+/>

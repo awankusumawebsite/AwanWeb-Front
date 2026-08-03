@@ -1,0 +1,23 @@
+---
+import ArticleListingPage from '../../../pages-content/ArticleListingPage.astro';
+import { articleCategoryLastPages, getArticleBuildData } from '../../../lib/articles';
+
+export async function getStaticPaths() {
+  const data = await getArticleBuildData('id');
+  return data.listings
+    .filter((listing) => listing.category !== null && listing.page === 1)
+    .map((listing) => ({
+      params: { category: listing.category as string },
+      props: { listing, categories: data.categories, categoryLastPages: articleCategoryLastPages(data) },
+    }));
+}
+
+const { listing, categories, categoryLastPages } = Astro.props;
+---
+
+<ArticleListingPage
+  locale="id"
+  listing={listing}
+  categories={categories}
+  categoryLastPages={categoryLastPages}
+/>

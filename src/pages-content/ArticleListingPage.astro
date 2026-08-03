@@ -1,0 +1,259 @@
+---
+import MarqueeImages from '../components/MarqueeImages.astro';
+import ArticleCard from '../components/article/ArticleCard.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
+import type { Locale } from '../config/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  articleImageUrl,
+  articleListingPath,
+  paginationItems,
+  type ArticleCategory,
+  type ArticleListingEntry,
+} from '../lib/articles';
+import { cms } from '../lib/cms';
+import { getMessages, localizedPath, translate } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  listing: ArticleListingEntry;
+  categories: ArticleCategory[];
+  categoryLastPages?: Record<string, number>;
+  legacyQueryRedirect?: boolean;
+}
+
+interface DataResponse<T> {
+  data: T;
+}
+
+interface MarqueeImage {
+  image_url: string;
+  alt_text?: string | null;
+}
+
+const {
+  locale,
+  listing,
+  categories,
+  categoryLastPages = {},
+  legacyQueryRedirect = false,
+} = Astro.props;
+const { category, response } = listing;
+const currentPage = response.current_page;
+const lastPage = response.last_page;
+const featured = response.featured;
+const path = articleListingPath({ category, page: currentPage });
+const currentCategory = categories.find((item) => item.slug === category) ?? null;
+const [messages, marqueeResponse] = await Promise.all([
+  getMessages(locale),
+  cms.requestOnce<DataResponse<MarqueeImage[]>>('/marquee-images'),
+]);
+const baseTitle = translate(messages, 'metadata.articlesTitle');
+const baseDescription = translate(messages, 'metadata.articlesDescription');
+const titleParts = [currentCategory?.name, currentPage > 1 ? `Page ${currentPage}` : null, baseTitle]
+  .filter(Boolean);
+const title = titleParts.join(' | ');
+const description = currentCategory?.description || baseDescription;
+const dateLocale = locale === 'id' ? 'id-ID' : locale === 'zh' ? 'zh-CN' : 'en-US';
+const featuredDate = featured?.published_at
+  ? new Intl.DateTimeFormat(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })
+      .format(new Date(featured.published_at))
+  : null;
+const pageItems = paginationItems(currentPage, lastPage);
+const legacyRedirectConfig = JSON.stringify({
+  locale,
+  categories: categories.map((item) => item.slug),
+  globalLastPage: lastPage,
+  categoryLastPages,
+}).replace(/</g, '\\u003c');
+const legacyRedirectScript = `(() => {
+  const config = ${legacyRedirectConfig};
+  const query = new URLSearchParams(window.location.search);
+  if (!query.has('page') && !query.has('category')) return;
+  const requestedCategory = (query.get('category') || '').trim().toLowerCase();
+  const category = config.categories.includes(requestedCategory) ? requestedCategory : null;
+  const rawPage = query.get('page') || '1';
+  const requestedPage = /^\\d+$/.test(rawPage) ? Number.parseInt(rawPage, 10) : 1;
+  const maxPage = category ? (config.categoryLastPages[category] || 1) : config.globalLastPage;
+  const page = Math.min(Math.max(1, requestedPage), Math.max(1, maxPage));
+  const localePrefix = config.locale === 'id' ? '' : '/' + config.locale;
+  const categoryPath = category ? '/kategori/' + category : '';
+  const pagePath = page > 1 ? '/page/' + page : '';
+  window.location.replace(localePrefix + '/info-bisnis' + categoryPath + pagePath);
+})();`;
+
+function listingHref(targetCategory: string | null, page = 1) {
+  return localizedPath(articleListingPath({ category: targetCategory, page }), locale);
+}
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  path={path}
+  image={featured ? articleImageUrl(featured.og_image || featured.featured_image) : undefined}
+>
+  {legacyQueryRedirect && <script is:inline set:html={legacyRedirectScript}></script>}
+
+  <SiteShell locale={locale} path={path}>
+    <main class="relative min-h-screen w-full overflow-hidden bg-white pb-32 pt-32 font-sans text-black selection:bg-elm selection:text-white">
+      {featured && (
+        <section class="mx-auto w-full max-w-7xl px-6 md:px-12 lg:px-20">
+          <div class="mb-12">
+            <h1 class="text-4xl font-black uppercase leading-[1.05] tracking-tight text-big-stone md:text-6xl lg:text-7xl">
+              {translate(messages, 'infoBisnis.heading')}
+            </h1>
+            <p class="mt-4 max-w-2xl text-base font-medium leading-relaxed text-slate-500 mix-blend-multiply md:text-lg">
+              {locale === 'id'
+                ? 'Perspektif ahli, strategi legalitas, dan wawasan bisnis terbaru dari tim profesional kami.'
+                : locale === 'zh'
+                  ? '来自专业团队的专家观点、合规策略与最新商业洞察。'
+                  : 'Expert perspectives, legal strategies, and the latest business insights from our professional team.'}
+            </p>
+          </div>
+
+          <div class="mb-20 grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-16">
+            <a
+              href={localizedPath(`/info-bisnis/${featured.slug}`, locale)}
+              class="group relative mt-4 aspect-[4/3] w-full overflow-hidden rounded-[2rem] lg:col-span-8 md:mt-0"
+            >
+              <img
+                src={articleImageUrl(featured.featured_image || featured.image)}
+                alt={featured.featured_image_alt || featured.title}
+                width="960"
+                height="720"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105"
+              />
+              <span class="absolute inset-0 bg-black/10 transition-colors duration-500 group-hover:bg-transparent"></span>
+            </a>
+
+            <div class="flex flex-col justify-center lg:col-span-4">
+              <a href={localizedPath(`/info-bisnis/${featured.slug}`, locale)}>
+                <h2 class="mb-4 text-2xl font-black leading-[1.3] tracking-tight text-big-stone transition-colors hover:text-elm md:text-3xl">
+                  {featured.title}
+                </h2>
+              </a>
+              <div class="mb-6 flex items-center gap-3 lg:mb-8">
+                {featured.category?.name && (
+                  <span class="rounded-sm bg-elm/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-elm">
+                    {featured.category.name}
+                  </span>
+                )}
+                {featuredDate && (
+                  <time datetime={featured.published_at || undefined} class="text-xs font-bold uppercase tracking-widest text-slate-400">
+                    {featuredDate}
+                  </time>
+                )}
+              </div>
+              <a
+                href={localizedPath(`/info-bisnis/${featured.slug}`, locale)}
+                class="group flex w-fit items-center gap-4 text-sm font-black uppercase tracking-widest text-slate-800 transition-colors hover:text-elm"
+              >
+                {translate(messages, 'infoBisnis.readArticle')}
+                <span class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 transition-all duration-300 group-hover:border-elm group-hover:bg-elm/5">
+                  <svg class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M5 19L19 5M19 5H8M19 5v11"></path></svg>
+                </span>
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section
+        id="articles-grid"
+        class="mx-auto mb-20 w-full max-w-7xl scroll-mt-28 px-6 md:px-12 lg:px-20"
+        aria-label={translate(messages, 'infoBisnis.articleListLabel')}
+      >
+        <div class="scrollbar-hide mb-10 flex w-full flex-nowrap items-center gap-3 overflow-x-auto border-b border-slate-100 pb-6">
+          <a
+            href={listingHref(null)}
+            aria-current={category === null ? 'page' : undefined}
+            class:list={[
+              'whitespace-nowrap rounded-full border px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-all duration-300',
+              category === null
+                ? 'border-elm bg-elm text-white shadow-md'
+                : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50',
+            ]}
+          >
+            {translate(messages, 'infoBisnis.allCategory')}
+          </a>
+          {categories.map((item) => (
+            <a
+              href={listingHref(item.slug)}
+              aria-current={category === item.slug ? 'page' : undefined}
+              class:list={[
+                'whitespace-nowrap rounded-full border px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-all duration-300',
+                category === item.slug
+                  ? 'border-elm bg-elm text-white shadow-md'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50',
+              ]}
+            >
+              {item.name}
+            </a>
+          ))}
+        </div>
+
+        {response.data.length > 0 ? (
+          <div class="grid grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">
+            {response.data.map((article, index) => (
+              <ArticleCard article={article} locale={locale} priority={index < 2 && !featured} />
+            ))}
+          </div>
+        ) : (
+          <div class="flex w-full flex-col items-center py-20 text-center">
+            <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50">
+              <svg class="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+            </div>
+            <p class="font-medium text-slate-500">{translate(messages, 'infoBisnis.noArticles')}</p>
+          </div>
+        )}
+
+        {lastPage > 1 && (
+          <nav class="mt-16 flex flex-wrap items-center justify-center gap-2" aria-label={translate(messages, 'infoBisnis.paginationLabel')}>
+            {currentPage > 1 && (
+              <a
+                href={listingHref(category, currentPage - 1)}
+                rel="prev"
+                class="flex min-h-11 items-center justify-center rounded-full border border-slate-200 px-4 text-sm font-bold text-slate-600 transition-colors hover:border-elm hover:text-elm"
+              >
+                {translate(messages, 'infoBisnis.previousPage')}
+              </a>
+            )}
+            {pageItems.map((item) => typeof item === 'string' ? (
+              <span class="w-8 text-center text-slate-400" aria-hidden="true">…</span>
+            ) : (
+              <a
+                href={listingHref(category, item)}
+                aria-current={item === currentPage ? 'page' : undefined}
+                aria-label={translate(messages, 'infoBisnis.goToPage', { page: item })}
+                class:list={[
+                  'flex h-11 w-11 items-center justify-center rounded-full border text-sm font-black transition-colors',
+                  item === currentPage
+                    ? 'border-elm bg-elm text-white'
+                    : 'border-slate-200 text-slate-600 hover:border-elm hover:text-elm',
+                ]}
+              >
+                {item}
+              </a>
+            ))}
+            {currentPage < lastPage && (
+              <a
+                href={listingHref(category, currentPage + 1)}
+                rel="next"
+                class="flex min-h-11 items-center justify-center rounded-full border border-slate-200 px-4 text-sm font-bold text-slate-600 transition-colors hover:border-elm hover:text-elm"
+              >
+                {translate(messages, 'infoBisnis.nextPage')}
+              </a>
+            )}
+          </nav>
+        )}
+      </section>
+
+      <MarqueeImages images={marqueeResponse?.data || []} class="mt-10 bg-transparent" />
+    </main>
+  </SiteShell>
+</BaseLayout>

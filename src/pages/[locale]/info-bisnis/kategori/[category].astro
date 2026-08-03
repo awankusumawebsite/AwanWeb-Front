@@ -1,0 +1,28 @@
+---
+import ArticleListingPage from '../../../../pages-content/ArticleListingPage.astro';
+import { LOCALES, type Locale } from '../../../../config/site';
+import { articleCategoryLastPages, getArticleBuildData } from '../../../../lib/articles';
+
+export async function getStaticPaths() {
+  const paths = await Promise.all(LOCALES.filter((locale) => locale !== 'id').map(async (locale) => {
+    const data = await getArticleBuildData(locale);
+    return data.listings
+      .filter((listing) => listing.category !== null && listing.page === 1)
+      .map((listing) => ({
+        params: { locale, category: listing.category as string },
+        props: { listing, categories: data.categories, categoryLastPages: articleCategoryLastPages(data) },
+      }));
+  }));
+  return paths.flat();
+}
+
+const locale = Astro.params.locale as Locale;
+const { listing, categories, categoryLastPages } = Astro.props;
+---
+
+<ArticleListingPage
+  locale={locale}
+  listing={listing}
+  categories={categories}
+  categoryLastPages={categoryLastPages}
+/>

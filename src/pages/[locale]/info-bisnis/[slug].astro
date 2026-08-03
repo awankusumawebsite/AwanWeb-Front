@@ -1,0 +1,21 @@
+---
+import ArticleDetailPage from '../../../pages-content/ArticleDetailPage.astro';
+import { LOCALES, type Locale } from '../../../config/site';
+import { getArticleBuildData } from '../../../lib/articles';
+
+export async function getStaticPaths() {
+  const paths = await Promise.all(LOCALES.filter((locale) => locale !== 'id').map(async (locale) => {
+    const data = await getArticleBuildData(locale);
+    return data.details.map(({ slug, article }) => ({
+      params: { locale, slug },
+      props: { article },
+    }));
+  }));
+  return paths.flat();
+}
+
+const locale = Astro.params.locale as Locale;
+const { article } = Astro.props;
+---
+
+<ArticleDetailPage locale={locale} article={article} />

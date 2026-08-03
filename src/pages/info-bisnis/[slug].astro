@@ -1,0 +1,13 @@
+---
+import ArticleDetailPage from '../../pages-content/ArticleDetailPage.astro';
+import { getArticleBuildData } from '../../lib/articles';
+
+export async function getStaticPaths() {
+  const data = await getArticleBuildData('id');
+  return data.details.map(({ slug, article }) => ({ params: { slug }, props: { article } }));
+}
+
+const { article } = Astro.props;
+---
+
+<ArticleDetailPage locale="id" article={article} />
