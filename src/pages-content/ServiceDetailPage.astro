@@ -1,0 +1,212 @@
+---
+import MarqueeImages from '../components/MarqueeImages.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
+import type { Locale } from '../config/site';
+import { SITE_URL } from '../config/site';
+import { normalizeContactInfo } from '../data/contact';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { cms } from '../lib/cms';
+import { localizedPath } from '../lib/i18n';
+import type { ServiceDetail } from '../lib/service-details';
+import { getSiteShellData } from '../lib/site-data';
+import ServiceAboutAndBenefits from '../sections/services/ServiceAboutAndBenefits.jsx';
+import ServiceFAQAndCTA from '../sections/services/ServiceFAQAndCTA.jsx';
+import ServiceHero from '../sections/services/ServiceHero.jsx';
+import ServicePricingSection from '../sections/services/ServicePricingSection.jsx';
+import ServiceTestimonials from '../sections/services/ServiceTestimonials.jsx';
+import ServiceTrustAndProcess from '../sections/services/ServiceTrustAndProcess.jsx';
+
+interface Props {
+  locale: Locale;
+  slug: string;
+  category: string;
+  service: ServiceDetail;
+}
+
+interface DataResponse<T> {
+  data: T;
+}
+
+interface MarqueeImage {
+  image_url: string;
+  alt_text?: string | null;
+}
+
+const { locale, slug, service } = Astro.props;
+const path = `/layanan/${slug}`;
+const localizedServicePath = localizedPath(path, locale);
+const [shell, marqueeResponse] = await Promise.all([
+  getSiteShellData(locale),
+  cms.requestOnce<DataResponse<MarqueeImage[]>>('/marquee-images'),
+]);
+const contact = normalizeContactInfo(shell.contact);
+const faqs = service.faqs ?? [];
+const testimonials = service.testimonials ?? [];
+const firstPrice = service.pricingData?.packages?.[0]?.price;
+const title = service.meta_title
+  || `Jasa ${service.name} Resmi & Terpercaya | Awan Kusuma Legalitas`;
+const description = service.meta_description
+  || `Jasa ${service.name} resmi, cepat & terpercaya bersama Awan Kusuma.${firstPrice ? ` Harga mulai ${firstPrice}.` : ''} Proses transparan dan konsultasi gratis.`;
+const serviceUrl = new URL(localizedServicePath, SITE_URL).href;
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `Jasa ${service.name}`,
+    description: service.description || `Layanan ${service.name} profesional dari Awan Kusuma Legalitas.`,
+    provider: {
+      '@type': 'LegalService',
+      name: 'Awan Kusuma Legalitas',
+      url: SITE_URL,
+      telephone: contact.whatsapp_display,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: contact.address,
+        addressLocality: 'Tangerang',
+        addressRegion: 'Banten',
+        addressCountry: 'ID',
+      },
+    },
+    areaServed: { '@type': 'Country', name: 'Indonesia' },
+    url: serviceUrl,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Beranda', item: new URL(localizedPath('/', locale), SITE_URL).href },
+      { '@type': 'ListItem', position: 2, name: 'Layanan', item: new URL(localizedPath('/layanan', locale), SITE_URL).href },
+      { '@type': 'ListItem', position: 3, name: service.name, item: serviceUrl },
+    ],
+  },
+  ...(faqs.length > 0 ? [{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+    })),
+  }] : []),
+];
+
+function safeJsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+---
+
+<BaseLayout title={title} description={description} locale={locale} path={path}>
+  {schemas.map((schema) => <script is:inline type="application/ld+json" set:html={safeJsonLd(schema)}></script>)}
+
+  <SiteShell locale={locale} path={path}>
+    <main class="relative min-h-screen w-full bg-white font-sans">
+      <div class="absolute left-6 top-[100px] z-20 lg:left-12">
+        <a
+          href={localizedPath('/layanan', locale)}
+          class="flex items-center gap-2 rounded-full border border-slate-100 bg-white/80 px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 shadow-sm backdrop-blur-md transition-all hover:text-elm hover:shadow-md"
+        >
+          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Kembali
+        </a>
+      </div>
+
+      <div class="w-full overflow-hidden">
+        <ServiceHero
+          name={service.name}
+          description={service.hero_description || service.description}
+          whatsappNumber={contact.whatsapp}
+        />
+
+        {service.aboutAndBenefits && (
+          <ServiceAboutAndBenefits
+            client:visible={{ rootMargin: '300px' }}
+            data={service.aboutAndBenefits}
+            serviceName={service.name}
+          />
+        )}
+
+        <ServiceTrustAndProcess
+          client:visible={{ rootMargin: '300px' }}
+          theme="dark"
+          data={{
+            clients_count: service.clients_count ?? null,
+            processing_time: service.processing_time ?? null,
+            workflow_title: service.workflow_title ?? null,
+            workflows: service.workflows ?? [],
+          }}
+        />
+
+        <div id="pricing-section" class="scroll-mt-10"></div>
+
+        {service.pricingData && (
+          <ServicePricingSection
+            client:visible={{ rootMargin: '300px' }}
+            data={service.pricingData}
+            serviceName={service.name}
+            whatsappNumber={contact.whatsapp}
+            theme="dark"
+          />
+        )}
+
+        {service.subServices && service.subServices.length > 0 && (
+          <div class="relative z-20 flex flex-col gap-10 bg-white lg:gap-20">
+            {service.subServices.map((sub, index) => (
+              <div
+                id={sub.id || `sub-service-${index + 1}`}
+                class:list={[
+                  'scroll-mt-32',
+                  index > 0 ? 'border-t border-slate-100/60 pt-10 lg:pt-20' : 'pt-10',
+                ]}
+              >
+                <ServicePricingSection
+                  client:visible={{ rootMargin: '300px' }}
+                  title={sub.name}
+                  description={sub.description}
+                  data={sub.pricingData}
+                  serviceName={sub.name}
+                  whatsappNumber={contact.whatsapp}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {service.addonsData && (
+          <div class="relative z-20 mt-20 border-t border-slate-100 bg-slate-50">
+            <ServicePricingSection
+              client:visible={{ rootMargin: '300px' }}
+              data={service.addonsData}
+              title="Paket Layanan Tambahan"
+              description="Perizinan usaha dan pengurusan pajak dalam satu layanan. Temukan kemudahan pengurusannya bersama Awan Kusuma Legalitas."
+              serviceName={service.name}
+              whatsappNumber={contact.whatsapp}
+              theme="light"
+            />
+          </div>
+        )}
+      </div>
+
+      {testimonials.length > 0 && (
+        <div class="relative z-20 bg-white">
+          <ServiceTestimonials
+            client:visible={{ rootMargin: '300px' }}
+            testimonials={testimonials}
+            serviceName={service.name}
+          />
+        </div>
+      )}
+
+      <ServiceFAQAndCTA
+        client:visible={{ rootMargin: '300px' }}
+        faqs={faqs}
+        serviceName={service.name}
+        contactInfo={contact}
+      />
+
+      <div class="border-t border-slate-100/50 bg-slate-50/20 py-10">
+        <MarqueeImages images={marqueeResponse?.data || []} class="bg-transparent" />
+      </div>
+    </main>
+  </SiteShell>
+</BaseLayout>

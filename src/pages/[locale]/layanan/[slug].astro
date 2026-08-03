@@ -1,0 +1,23 @@
+---
+import ServiceDetailPage from '../../../pages-content/ServiceDetailPage.astro';
+import { getServiceDetailEntries } from '../../../lib/service-details';
+
+export async function getStaticPaths() {
+  const entries = await Promise.all([
+    getServiceDetailEntries('en'),
+    getServiceDetailEntries('zh'),
+  ]);
+
+  return entries.flatMap((localeEntries, index) => {
+    const locale = index === 0 ? 'en' as const : 'zh' as const;
+    return localeEntries.map((entry) => ({
+      params: { locale, slug: entry.slug },
+      props: { locale, ...entry },
+    }));
+  });
+}
+
+const { locale, slug, category, service } = Astro.props;
+---
+
+<ServiceDetailPage locale={locale} slug={slug} category={category} service={service} />
