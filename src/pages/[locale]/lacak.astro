@@ -1,0 +1,12 @@
+---
+import TrackingPage from '../../pages-content/TrackingPage.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: 'en' }, props: { locale: 'en' as const } },
+    { params: { locale: 'zh' }, props: { locale: 'zh' as const } },
+  ];
+}
+const { locale } = Astro.props;
+---
+<TrackingPage locale={locale} />

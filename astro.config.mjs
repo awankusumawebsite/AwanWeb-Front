@@ -5,11 +5,17 @@ import { defineConfig } from 'astro/config';
 import { fileURLToPath } from 'node:url';
 
 const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url));
+const excludedSitemapRoute = /^\/(?:en\/|zh\/)?(?:faq|lacak|login)(?:\/|$)/;
 
 export default defineConfig({
   site: 'https://awankusuma.com',
   output: 'static',
-  integrations: [react(), sitemap()],
+  integrations: [
+    react(),
+    sitemap({
+      filter: (page) => !excludedSitemapRoute.test(new URL(page).pathname),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
     resolve: {

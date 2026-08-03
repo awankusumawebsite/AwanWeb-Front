@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LoginIsland from '../islands/LoginIsland';
+import type { Locale } from '../config/site';
+import { loginCopy } from '../content/auth';
+import { backendOrigin } from '../lib/runtime-api';
+import { localizedPath } from '../lib/i18n';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const copy = loginCopy[locale];
+const cmsOrigin = backendOrigin(import.meta.env.PUBLIC_BACKEND_URL);
+---
+
+<BaseLayout
+  title="Akses Portal | Awan Kusuma Legalitas"
+  description={copy.description}
+  locale={locale}
+  path="/login"
+  noindex
+>
+  <main class="flex min-h-screen w-full overflow-hidden bg-white font-sans selection:bg-elm selection:text-white">
+    <section class="relative hidden min-h-screen w-[45%] flex-col justify-between overflow-hidden bg-big-stone p-16 lg:flex xl:w-1/2 xl:p-24" aria-label="Awan Kusuma Legalitas">
+      <img src="/images/mockups/photo-1542744173-8e7e53415bb0.webp" alt="" class="absolute inset-0 size-full object-cover opacity-30 grayscale" />
+      <div class="absolute inset-0 bg-gradient-to-t from-big-stone via-big-stone/20 to-big-stone/90"></div>
+      <img src="/assets/image/logo.png" width="56" height="56" alt="Awan Kusuma Legalitas" class="relative z-10 brightness-0 invert" />
+      <div class="relative z-10 mb-16 mt-auto max-w-xl">
+        <h2 class="mb-6 text-4xl font-black leading-tight tracking-tighter text-white xl:text-5xl">{copy.brandHeading}</h2>
+        <p class="max-w-md text-sm font-medium leading-relaxed text-slate-300">{copy.brandDescription}</p>
+      </div>
+      <p class="relative z-10 text-[10px] font-bold uppercase tracking-widest text-white/40">PT Awan Kusuma Legalitas</p>
+    </section>
+
+    <section class="flex min-h-screen w-full items-center justify-center overflow-y-auto bg-[#fafafa] p-6 sm:p-12 lg:w-[55%] lg:p-16 xl:w-1/2">
+      <LoginIsland
+        client:load
+        locale={locale}
+        copy={copy}
+        homeHref={localizedPath('/', locale)}
+        contactHref={localizedPath('/kontak', locale)}
+        trackingHref={localizedPath('/lacak', locale)}
+        mitraHref={localizedPath('/mitra', locale)}
+        backendOrigin={cmsOrigin}
+      />
+    </section>
+  </main>
+</BaseLayout>
