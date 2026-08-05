@@ -3,7 +3,7 @@ import { cms } from './cms';
 
 const ARTICLES_PER_PAGE = 9;
 const ARTICLE_FETCH_CONCURRENCY = 2;
-const CMS_RESPONSE_ATTEMPTS = 3;
+const CMS_RESPONSE_ATTEMPTS = 5;
 
 interface DataResponse<T> {
   data: T;
@@ -313,15 +313,16 @@ export async function fetchArticleSummaries(locale: Locale): Promise<ArticleSumm
   );
   async function fetchSummaryPage(page: number): Promise<ArticleSummaryResponse> {
     for (let attempt = 0; attempt < CMS_RESPONSE_ATTEMPTS; attempt += 1) {
-      // `requestOnce` deduplicates the normal build path. If a CDN edge returns a
-      // malformed-but-200 response, bypass that cached result for the retry.
+      // `requestOnce` deduplicates the normal build path. If the CMS temporarily
+      // returns a malformed-but-200 response, bypass the cached result and give
+      // the origin enough recovery time before trying again.
       const response = attempt === 0
         ? await cms.requestOnce<ArticleSummaryResponse>(endpoint(page))
         : await cms.request<ArticleSummaryResponse>(endpoint(page));
       if (response?.data && Array.isArray(response.data)) return response;
 
       if (attempt < CMS_RESPONSE_ATTEMPTS - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+        await new Promise((resolve) => setTimeout(resolve, 1_000 * (2 ** attempt)));
       }
     }
 
