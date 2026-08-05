@@ -186,6 +186,7 @@ if (!existsSync(htaccessPath)) {
 } else {
   const htaccess = readFileSync(htaccessPath, 'utf8');
   for (const legacyRoute of [
+    'DirectorySlash Off',
     'www\\.awankusuma\\.com',
     'about-us',
     'tracking',
