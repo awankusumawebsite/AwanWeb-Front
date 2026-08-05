@@ -1,8 +1,12 @@
 # Runbook Migrasi Astro ke DomaiNesia
 
-Dokumen ini adalah panduan staging, cutover, dan rollback frontend Astro. Seluruh
-langkah bersifat **manual sampai informasi hosting terverifikasi**. Menjalankan CI
-di repository tidak mengunggah atau mengaktifkan website.
+Dokumen ini adalah panduan staging, cutover, dan rollback frontend Astro.
+Workflow staging mengunggah dan mengaktifkan release noindex secara otomatis;
+workflow production hanya berjalan melalui dispatch yang dilindungi Environment
+`production`, atau melalui trigger CMS setelah feature flag sengaja diaktifkan.
+
+Checklist operator langkah demi langkah tersedia di
+[`PRODUCTION-CUTOVER-GUIDE.md`](./PRODUCTION-CUTOVER-GUIDE.md).
 
 ## 1. Keadaan Saat Ini
 
