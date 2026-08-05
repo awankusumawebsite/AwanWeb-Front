@@ -1,6 +1,7 @@
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504, 507, 508, 525]);
 const DEFAULT_CMS_ORIGIN = 'https://cms.awankusuma.com';
 const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_BUILD_CONCURRENCY = 1;
 
 type FetchLike = typeof fetch;
 
@@ -8,6 +9,7 @@ interface CmsClientOptions {
   baseUrl?: string;
   fetchImpl?: FetchLike;
   timeoutMs?: number;
+  maxConcurrentRequests?: number;
 }
 
 interface CmsRequestOptions extends RequestInit {
@@ -78,11 +80,29 @@ export function createCmsClient({
   baseUrl = import.meta.env.PUBLIC_BACKEND_URL || DEFAULT_CMS_ORIGIN,
   fetchImpl = fetch,
   timeoutMs = Number(import.meta.env.CMS_BUILD_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS,
+  maxConcurrentRequests = Number(import.meta.env.CMS_BUILD_CONCURRENCY) || DEFAULT_BUILD_CONCURRENCY,
 }: CmsClientOptions = {}) {
   const origin = normalizeBaseUrl(baseUrl);
   const buildRequests = new Map<string, Promise<unknown>>();
+  const maxConcurrent = Math.max(1, Math.floor(maxConcurrentRequests));
+  let activeRequests = 0;
+  const queuedRequests: Array<() => void> = [];
 
-  async function request<T>(
+  async function runQueued<T>(operation: () => Promise<T>): Promise<T> {
+    if (activeRequests >= maxConcurrent) {
+      await new Promise<void>((resolve) => queuedRequests.push(resolve));
+    }
+
+    activeRequests += 1;
+    try {
+      return await operation();
+    } finally {
+      activeRequests -= 1;
+      queuedRequests.shift()?.();
+    }
+  }
+
+  async function requestUnqueued<T>(
     path: string,
     { allowNotFound = false, retryCount = 2, ...options }: CmsRequestOptions = {},
   ): Promise<T | null> {
@@ -101,7 +121,7 @@ export function createCmsClient({
     } catch (cause) {
       if (retryCount > 0) {
         await wait(retryDelay(null, 2 - retryCount));
-        return request<T>(path, { ...options, allowNotFound, retryCount: retryCount - 1 });
+        return requestUnqueued<T>(path, { ...options, allowNotFound, retryCount: retryCount - 1 });
       }
 
       throw new CmsApiError({
@@ -116,7 +136,7 @@ export function createCmsClient({
     if (!response.ok) {
       if (RETRYABLE_STATUS.has(response.status) && retryCount > 0) {
         await wait(retryDelay(response, 2 - retryCount));
-        return request<T>(path, { ...options, allowNotFound, retryCount: retryCount - 1 });
+        return requestUnqueued<T>(path, { ...options, allowNotFound, retryCount: retryCount - 1 });
       }
 
       throw new CmsApiError({
@@ -138,6 +158,10 @@ export function createCmsClient({
         cause,
       });
     }
+  }
+
+  function request<T>(path: string, options: CmsRequestOptions = {}): Promise<T | null> {
+    return runQueued(() => requestUnqueued<T>(path, options));
   }
 
   function requestOnce<T>(

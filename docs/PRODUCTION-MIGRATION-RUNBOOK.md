@@ -87,6 +87,7 @@ berasal dari host key yang fingerprint-nya telah diverifikasi, bukan hasil
 ```bash
 PUBLIC_BACKEND_URL=https://cms.awankusuma.com \
 CMS_BUILD_TIMEOUT_MS=30000 \
+CMS_BUILD_CONCURRENCY=1 \
 MIGRATION_NOINDEX=true \
 PUBLIC_ANALYTICS_ENABLED=false \
 npm run build
@@ -102,6 +103,7 @@ Staging harus menghasilkan `noindex, nofollow`, `robots.txt` dengan
 ```bash
 PUBLIC_BACKEND_URL=https://cms.awankusuma.com \
 CMS_BUILD_TIMEOUT_MS=30000 \
+CMS_BUILD_CONCURRENCY=1 \
 MIGRATION_NOINDEX=false \
 PUBLIC_ANALYTICS_ENABLED=true \
 npm run build

@@ -28,6 +28,8 @@ jobs:
       # Shared hosting can occasionally take longer than 10s to answer a cold
       # CMS request. The build still fails closed after the client retries.
       CMS_BUILD_TIMEOUT_MS: 30000
+      # Keep the cPanel-backed CMS stable while Astro enumerates static routes.
+      CMS_BUILD_CONCURRENCY: 1
       MIGRATION_NOINDEX: true
       PUBLIC_ANALYTICS_ENABLED: false
     steps:
