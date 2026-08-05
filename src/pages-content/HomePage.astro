@@ -28,7 +28,7 @@ const [messages, shell, home] = await Promise.all([
 const aboutCopy = Object.fromEntries([
   'companyName', 'companyTag', 'paragraph1', 'paragraph2', 'seeMore',
   'sectionHeading', 'sectionSubheading', 'aboutUsCard', 'aboutUsSubtitle',
-  'whyUsCard', 'whyUsSubtitle', 'visiMisiLink', 'budayaLink',
+  'whyUsCard', 'whyUsSubtitle', 'viewText', 'visiMisiLink', 'budayaLink',
 ].map((key) => [key, translate(messages, `homeAbout.${key}`)]));
 ---
 
