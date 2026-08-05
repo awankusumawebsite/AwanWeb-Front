@@ -14,7 +14,8 @@ di repository tidak mengunggah atau mengaktifkan website.
 - CI Astro menguji, membangun artifact noindex, dan menyimpannya selama tujuh
   hari. Artifact menyertakan hidden file `.htaccess` secara eksplisit.
 - Remote lokal mengarah ke repository GitHub Astro dan workflow atomic staging
-  sudah aktif. Release staging terakhir yang tercatat adalah `458f558`.
+  sudah aktif. Deployment pertama dengan release ID composite lulus pada commit
+  `b8a539b` tanpa mengubah kontrak noindex staging.
 - `staging.awankusuma.com` sudah dibuat dan merespons HTTPS dari document root
   `/home/ryuumeco/staging.awankusuma.com`.
 - Smoke test dan acceptance staging telah dinyatakan selesai pada 5 Agustus 2026.
