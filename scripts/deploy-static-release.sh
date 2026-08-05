@@ -44,9 +44,10 @@ archive_path="$control_root/$archive_name"
 checksum_path="${archive_path}.sha256"
 temporary_release="$release_root/.${release_sha}.tmp.$$"
 temporary_link="$deploy_home/.frontend-staging-current.tmp.$$"
+release_list="$release_root/.release-list.$$"
 
 cleanup() {
-  rm -f -- "$temporary_link" "$archive_path" "$checksum_path"
+  rm -f -- "$temporary_link" "$archive_path" "$checksum_path" "$release_list"
   if [ -d "$temporary_release" ]; then
     rm -rf -- "$temporary_release"
   fi
@@ -77,14 +78,15 @@ fi
   sha256sum -c "${archive_name}.sha256"
 )
 
-while IFS= read -r member; do
-  case "$member" in
-    /*|../*|*/../*|*/..)
-      printf 'Path archive tidak aman: %s\n' "$member" >&2
-      exit 1
-      ;;
-  esac
-done < <(tar -tzf "$archive_path")
+if ! tar -tzf "$archive_path" | awk '
+  /^\// || /^\.\.\// || /\/\.\.\// || /\/\.\.$/ {
+    printf "Path archive tidak aman: %s\\n", $0 > "/dev/stderr"
+    invalid = 1
+  }
+  END { exit invalid }
+'; then
+  exit 1
+fi
 
 validate_release() {
   local candidate="$1"
@@ -160,21 +162,29 @@ if [ -L "$deploy_home/frontend-current" ]; then
   active_production="$(readlink -f -- "$deploy_home/frontend-current")"
 fi
 
-kept=0
-mapfile -t release_directories < <(ls -1dt -- "$release_root"/* 2>/dev/null || true)
-for candidate in "${release_directories[@]}"; do
-  candidate_name="$(basename -- "$candidate")"
-  [[ "$candidate_name" =~ ^[0-9a-f]{40}$ ]] || continue
+retain_releases() {
+  local kept=0 candidate candidate_name
 
-  kept=$((kept + 1))
-  if [ "$kept" -le 5 ] \
-    || [ "$candidate" = "$active_staging" ] \
-    || { [ -n "$active_production" ] && [ "$candidate" = "$active_production" ]; }; then
-    continue
-  fi
+  ls -1dt -- "$release_root"/* > "$release_list" 2>/dev/null || true
 
-  rm -rf -- "$candidate"
-done
+  while IFS= read -r candidate; do
+    candidate_name="$(basename -- "$candidate")"
+    [[ "$candidate_name" =~ ^[0-9a-f]{40}$ ]] || continue
+
+    kept=$((kept + 1))
+    if [ "$kept" -le 5 ] \
+      || [ "$candidate" = "$active_staging" ] \
+      || { [ -n "$active_production" ] && [ "$candidate" = "$active_production" ]; }; then
+      continue
+    fi
+
+    rm -rf -- "$candidate"
+  done < "$release_list"
+}
+
+if ! retain_releases; then
+  printf 'WARNING: release cleanup gagal; active release tetap sehat.\n' >&2
+fi
 
 printf '%s\t%s\t%s\n' \
   "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
