@@ -3,6 +3,7 @@ import { cms } from './cms';
 
 const ARTICLES_PER_PAGE = 9;
 const ARTICLE_FETCH_CONCURRENCY = 2;
+const CMS_RESPONSE_ATTEMPTS = 3;
 
 interface DataResponse<T> {
   data: T;
@@ -310,22 +311,31 @@ export async function fetchArticleSummaries(locale: Locale): Promise<ArticleSumm
   const endpoint = (page: number) => (
     `/blog/articles?locale=${encodeURIComponent(locale)}&per_page=100&page=${page}`
   );
-  const firstPage = await cms.requestOnce<ArticleSummaryResponse>(endpoint(1));
-  if (!firstPage?.data || !Array.isArray(firstPage.data)) {
-    throw new Error(`CMS tidak mengembalikan ringkasan artikel untuk locale ${locale}.`);
+  async function fetchSummaryPage(page: number): Promise<ArticleSummaryResponse> {
+    for (let attempt = 0; attempt < CMS_RESPONSE_ATTEMPTS; attempt += 1) {
+      // `requestOnce` deduplicates the normal build path. If a CDN edge returns a
+      // malformed-but-200 response, bypass that cached result for the retry.
+      const response = attempt === 0
+        ? await cms.requestOnce<ArticleSummaryResponse>(endpoint(page))
+        : await cms.request<ArticleSummaryResponse>(endpoint(page));
+      if (response?.data && Array.isArray(response.data)) return response;
+
+      if (attempt < CMS_RESPONSE_ATTEMPTS - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+      }
+    }
+
+    const scope = page === 1 ? `untuk locale ${locale}` : `${locale}/page/${page}`;
+    throw new Error(`CMS tidak mengembalikan ringkasan artikel ${scope}.`);
   }
+
+  const firstPage = await fetchSummaryPage(1);
 
   const lastPage = positiveInteger(firstPage.last_page, 1);
   const remainingPages = await mapWithConcurrency(
     Array.from({ length: Math.max(0, lastPage - 1) }, (_, index) => index + 2),
     ARTICLE_FETCH_CONCURRENCY,
-    async (page) => {
-      const response = await cms.requestOnce<ArticleSummaryResponse>(endpoint(page));
-      if (!response?.data || !Array.isArray(response.data)) {
-        throw new Error(`CMS tidak mengembalikan ringkasan artikel ${locale}/page/${page}.`);
-      }
-      return response.data;
-    },
+    async (page) => (await fetchSummaryPage(page)).data,
   );
 
   return [firstPage.data, ...remainingPages].flat();
