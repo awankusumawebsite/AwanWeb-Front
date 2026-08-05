@@ -11,23 +11,28 @@ di repository tidak mengunggah atau mengaktifkan website.
 - `AwanWeb-Astro` menghasilkan file statis pada `dist/`; tidak memerlukan Node.js
   pada shared hosting.
 - Next/Vercel harus tetap hidup sebagai rollback sampai Astro production stabil.
-- CI Astro hanya menguji dan menyimpan artifact noindex selama tujuh hari.
-- Belum ada remote Git, credential hosting, subdomain staging, ataupun workflow
-  deployment aktif untuk Astro.
+- CI Astro menguji, membangun artifact noindex, dan menyimpannya selama tujuh
+  hari. Artifact menyertakan hidden file `.htaccess` secara eksplisit.
+- Remote lokal sudah diarahkan ke repository GitHub baru dan workflow atomic
+  staging sudah tersedia di working tree. Belum ada push atau deployment Astro.
+- `staging.awankusuma.com` sudah dibuat dan merespons HTTPS dari document root
+  `/home/ryuumeco/staging.awankusuma.com`.
 
 ## 2. Informasi Manual yang Wajib Diverifikasi
 
 Jangan mengaktifkan deployment sebelum semua kotak berikut terisi.
 
-- [ ] Document root aktual domain `awankusuma.com` di cPanel: `____________`
-- [ ] Subdomain staging dibuat, disarankan `astro-preview.awankusuma.com`.
-- [ ] Document root staging: `____________`
-- [ ] Symlink di document root didukung untuk subdomain staging.
-- [ ] Repository GitHub tujuan `AwanWeb-Astro`: `____________`
-- [ ] Metode transfer dipilih: SFTP/SSH (utama) atau FTPS + HTTPS trigger.
+- [x] Document root aktual domain `awankusuma.com` di cPanel:
+      `/home/ryuumeco/awankusuma.com`.
+- [x] Subdomain staging: `staging.awankusuma.com`.
+- [x] Document root staging: `/home/ryuumeco/staging.awankusuma.com`.
+- [x] Symlink didukung oleh akun hosting.
+- [x] Repository GitHub tujuan:
+      `awankusumawebsite/AwanWeb-Front`.
+- [x] Metode transfer: SSH/SCP dengan key khusus deployment staging.
 - [ ] Nilai credential disimpan sebagai GitHub Environment secret, bukan file.
-- [ ] Akses Cloudflare DNS tersedia untuk fase cutover.
-- [ ] IP origin DomaiNesia untuk frontend sudah diverifikasi dari cPanel/provider.
+- [x] Akses Cloudflare DNS tersedia untuk fase staging/cutover.
+- [x] Origin DomaiNesia staging sudah diverifikasi melalui record DNS dan HTTPS.
 
 Nilai secret, token, password, dan private key tidak boleh ditulis di dokumen ini.
 
@@ -55,6 +60,25 @@ Document root staging diarahkan ke symlink stabil yang menuju
 `frontend-staging-current`. Document root production baru dihubungkan ke
 `frontend-current` saat cutover; path aktualnya harus mengikuti hasil verifikasi
 cPanel, bukan asumsi dari struktur lama.
+
+Workflow `.github/workflows/ci.yml` membangun artifact sekali, lalu job staging
+yang bergantung pada gate tersebut melakukan checksum, upload ke deploy-control,
+ekstraksi immutable, validasi file wajib, pergantian pointer atomic, health check,
+rollback pointer bila gagal, dan retensi sedikitnya lima release SHA.
+
+GitHub Environment `staging` wajib memiliki secret berikut sebelum push pertama:
+
+```text
+STAGING_SSH_HOST
+STAGING_SSH_PORT
+STAGING_SSH_USER
+STAGING_SSH_PRIVATE_KEY
+STAGING_SSH_KNOWN_HOSTS
+```
+
+Private key harus khusus GitHub Actions staging. `STAGING_SSH_KNOWN_HOSTS` harus
+berasal dari host key yang fingerprint-nya telah diverifikasi, bukan hasil
+`ssh-keyscan` yang dipercaya tanpa pembanding.
 
 ## 4. Kontrak Build
 
@@ -118,7 +142,22 @@ release; selalu jalankan `npm run build` secara utuh.
 
 Tahap ini baru boleh dilakukan setelah document root staging terverifikasi.
 
-1. Buat backup/arsip document root staging bila folder sudah berisi file.
+1. Pertahankan halaman staging yang sekarang sebagai bootstrap release agar
+   perubahan document root tidak menimbulkan jeda layanan:
+
+   ```bash
+   cd /home/ryuumeco
+   mkdir -p /home/ryuumeco/frontend-releases
+   mv /home/ryuumeco/staging.awankusuma.com \
+     /home/ryuumeco/frontend-releases/bootstrap-20260805
+   ln -s /home/ryuumeco/frontend-releases/bootstrap-20260805 \
+     /home/ryuumeco/frontend-staging-current
+   ln -s /home/ryuumeco/frontend-staging-current \
+     /home/ryuumeco/staging.awankusuma.com
+   ```
+
+   Sebelum menjalankan blok tersebut, pastikan ketiga target tujuan belum ada.
+   Sesudahnya, `curl -fsS https://staging.awankusuma.com/` harus tetap sukses.
 2. Buat direktori release dan shared:
 
    ```bash
@@ -128,16 +167,19 @@ Tahap ini baru boleh dilakukan setelah document root staging terverifikasi.
    chmod 700 /home/ryuumeco/frontend-shared/deploy-control
    ```
 
-3. Upload archive hasil build staging beserta SHA-256 ke lokasi non-public.
-4. Verifikasi checksum sebelum ekstraksi:
+3. Tambahkan public key deployment ke `~/.ssh/authorized_keys`, buat GitHub
+   Environment `staging`, lalu isi kelima secret yang tercantum di atas.
+4. Upload archive hasil build staging beserta SHA-256 ke lokasi non-public.
+   Workflow melakukan tahap ini otomatis setelah gate build hijau.
+5. Verifikasi checksum sebelum ekstraksi:
 
    ```bash
    cd /home/ryuumeco/frontend-shared/deploy-control
    sha256sum -c frontend.sha256
    ```
 
-5. Ekstrak ke direktori baru bernama full Git SHA. Jangan menimpa release lama.
-6. Verifikasi minimal:
+6. Ekstrak ke direktori baru bernama full Git SHA. Jangan menimpa release lama.
+7. Verifikasi minimal:
 
    ```bash
    test -f /home/ryuumeco/frontend-releases/GIT_SHA/index.html
@@ -146,7 +188,7 @@ Tahap ini baru boleh dilakukan setelah document root staging terverifikasi.
    test -d /home/ryuumeco/frontend-releases/GIT_SHA/_astro
    ```
 
-7. Buat symlink sementara, lalu rename secara atomic:
+8. Buat symlink sementara, lalu rename secara atomic:
 
    ```bash
    ln -s /home/ryuumeco/frontend-releases/GIT_SHA \
@@ -155,9 +197,10 @@ Tahap ini baru boleh dilakukan setelah document root staging terverifikasi.
      /home/ryuumeco/frontend-staging-current
    ```
 
-8. Hubungkan document root staging yang sudah diverifikasi ke symlink tersebut.
-   Jangan memakai command ini sebelum path document root diketahui.
-9. Simpan sedikitnya lima release terakhir dan jangan hapus target symlink aktif.
+9. Document root staging harus tetap berupa symlink absolut ke
+   `/home/ryuumeco/frontend-staging-current`; remote deploy script akan gagal
+   aman bila kontrak ini berubah.
+10. Simpan sedikitnya lima release terakhir dan jangan hapus target symlink aktif.
 
 Catatan: bila `mv -T` tidak tersedia pada shared hosting, gunakan temporary link
 di parent yang sama dan `mv -f`; uji dahulu pada staging, bukan production.

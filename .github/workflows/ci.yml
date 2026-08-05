@@ -1,5 +1,8 @@
 name: Astro static CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [master]
@@ -12,7 +15,7 @@ concurrency:
   # GitHub keeps at most one running and one pending build for this group.
   # A newer CMS event replaces an older pending event without interrupting an
   # artifact that is already being built.
-  group: astro-static-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'production' }}
+  group: astro-static-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'staging' }}
   cancel-in-progress: false
 
 jobs:
@@ -40,4 +43,112 @@ jobs:
           name: astro-static-${{ github.sha }}
           path: dist/
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
+
+  deploy-staging:
+    name: Deploy immutable release to staging
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: staging
+      url: https://staging.awankusuma.com
+    env:
+      STAGING_DEPLOY_HOME: /home/ryuumeco
+      STAGING_URL: https://staging.awankusuma.com
+      STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+      STAGING_SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+      STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+      STAGING_SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+      STAGING_SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: astro-static-${{ github.sha }}
+          path: dist/
+
+      - name: Validate staging deployment configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for variable in \
+            STAGING_SSH_HOST \
+            STAGING_SSH_PORT \
+            STAGING_SSH_USER \
+            STAGING_SSH_PRIVATE_KEY \
+            STAGING_SSH_KNOWN_HOSTS
+          do
+            if [ -z "${!variable:-}" ]; then
+              printf 'GitHub Environment staging belum memiliki %s\n' "$variable" >&2
+              exit 1
+            fi
+          done
+          [[ "$STAGING_SSH_PORT" =~ ^[0-9]+$ ]]
+
+      - name: Configure pinned SSH host key
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$STAGING_SSH_PRIVATE_KEY" \
+            | tr -d '\r' > "$HOME/.ssh/id_staging"
+          printf '%s\n' "$STAGING_SSH_KNOWN_HOSTS" \
+            | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_staging" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/id_staging" >/dev/null
+
+      - name: Package and checksum artifact
+        id: package
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          archive="frontend-${GITHUB_SHA}.tar.gz"
+          tar -C dist -czf "$archive" .
+          sha256sum "$archive" > "${archive}.sha256"
+          printf 'archive=%s\n' "$archive" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact to non-public deploy control
+        shell: bash
+        env:
+          ARCHIVE: ${{ steps.package.outputs.archive }}
+        run: |
+          set -Eeuo pipefail
+          ssh_options=(
+            -i "$HOME/.ssh/id_staging"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=15
+          )
+          ssh -p "$STAGING_SSH_PORT" "${ssh_options[@]}" \
+            "$STAGING_SSH_USER@$STAGING_SSH_HOST" \
+            "mkdir -p '$STAGING_DEPLOY_HOME/frontend-shared/deploy-control' && chmod 700 '$STAGING_DEPLOY_HOME/frontend-shared/deploy-control'"
+          scp -P "$STAGING_SSH_PORT" "${ssh_options[@]}" \
+            "$ARCHIVE" "${ARCHIVE}.sha256" \
+            "$STAGING_SSH_USER@$STAGING_SSH_HOST:$STAGING_DEPLOY_HOME/frontend-shared/deploy-control/"
+
+      - name: Verify, activate, health-check, and retain releases
+        shell: bash
+        env:
+          ARCHIVE: ${{ steps.package.outputs.archive }}
+        run: |
+          set -Eeuo pipefail
+          ssh_options=(
+            -i "$HOME/.ssh/id_staging"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=15
+          )
+          ssh -p "$STAGING_SSH_PORT" "${ssh_options[@]}" \
+            "$STAGING_SSH_USER@$STAGING_SSH_HOST" \
+            bash -s -- \
+              "$GITHUB_SHA" \
+              "$ARCHIVE" \
+              "$STAGING_DEPLOY_HOME" \
+              "$STAGING_URL" \
+            < scripts/deploy-static-release.sh

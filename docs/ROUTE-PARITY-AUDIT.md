@@ -12,14 +12,14 @@ sudah berpindah; staging DomaiNesia tetap wajib.
 | Layanan dinamis | Lulus lokal | 27 slug × 3 locale |
 | Artikel dinamis | Lulus lokal | listing, kategori, pagination, 21 slug × 3 locale saat audit |
 | Login dan public tracking | Lulus lokal | React island, Laravel tetap enforcement |
-| Customer dan mitra portal | Lulus lokal | Static shell + runtime API |
+| Mitra portal | Lulus lokal | Static shell + runtime API; customer portal dipensiunkan |
 | Navbar auth-aware | Lulus lokal | Guest nol `/auth/me`; authenticated dideduplikasi |
 | SEO dasar | Lulus lokal | canonical, hreflang, sitemap, robots branch test |
 | Redirect legacy | Siap di artifact | Harus diuji pada Apache staging |
 | Optimasi gambar CMS | Lulus build/browser | 104 image, 46,70 MB → 10,76 MB |
-| CMS build trigger | Siap lokal, nonaktif | Debounce Redis + repository dispatch; menunggu remote/staging |
+| CMS build trigger | Siap lokal, nonaktif | Debounce Redis + repository dispatch; menunggu deploy staging |
 | Tools React | Diblokir maintenance | `pdf-liner` dan `surat-kuasa` belum parity |
-| Visual/performance staging | Belum | Membutuhkan URL staging aktual |
+| Visual/performance staging | Belum | URL tersedia; menunggu deploy atomic pertama |
 
 ## Matriks Route
 
@@ -39,7 +39,7 @@ sudah berpindah; staging DomaiNesia tetap wajib.
 | `/tools` | sama | Tetap maintenance/noindex sesuai backend |
 | `/tools/<slug>` | sama bila aktif saat build | HTML/URL renderer tersedia |
 | `/login` | sama | Static/noindex + auth island |
-| `/lacak` | sama | Public tracking + customer portal island |
+| `/lacak` | sama | Public tracking berbasis kode; customer portal dipensiunkan |
 | `/mitra` | sama | Static/noindex + notary portal island |
 | `/mitra/orders/<code>` | `/mitra?order=<code>` | Apache 302 menjaga link lama |
 | `/api/admin-redirect` | tidak diperlukan | Navbar/login memakai origin panel Laravel terverifikasi |
@@ -101,11 +101,13 @@ broken image, nol request image ke CDN setelah hydration, dan nol console error.
 
 ## Gap yang Masih Memblokir Cutover
 
-1. URL dan document root staging belum tersedia.
-2. Remote Git dan metode deployment Astro belum dipilih.
+1. Bootstrap symlink document root staging dan GitHub Environment secrets belum
+   selesai.
+2. Remote Git sudah dikonfigurasi lokal dan workflow SSH atomic tersedia, tetapi
+   repository belum di-push serta belum ada deployment pertama.
 3. `.htaccess` belum diuji pada LiteSpeed/Apache DomaiNesia.
 4. Visual regression dan Core Web Vitals pada origin staging belum diukur.
-5. Build trigger CMS belum dapat diuji end-to-end tanpa remote dan staging;
+5. Build trigger CMS belum dapat diuji end-to-end sebelum remote dan staging aktif;
    implementasi source serta test backend sudah tersedia dalam keadaan nonaktif.
 6. Tools React belum parity dan production Tools masih maintenance.
 7. Cutover/rollback DNS belum diuji melalui rehearsal staging.
@@ -114,8 +116,8 @@ broken image, nol request image ke CDN setelah hydration, dan nol console error.
 
 - Vitest: 74 test lulus.
 - Astro check: 0 error, 0 warning, 0 hint.
-- Static build: 202 halaman.
-- Artifact: 377 file setelah optimizer.
+- Static build staging terbaru: 208 halaman.
+- Artifact: 705 file setelah optimizer responsive.
 - Static validator: seluruh route wajib, internal link, sitemap, robots, dan
   `.htaccess` gate lulus.
 - Browser smoke mobile: enam template penting merespons 200 tanpa broken image,
