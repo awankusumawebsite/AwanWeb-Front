@@ -30,6 +30,6 @@ const { locale, articles, heading, subheading, viewAll } = Astro.props;
         <a href={localizedPath('/info-bisnis', locale)} class="group flex items-center gap-5 transition-opacity"><span class="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:border-elm group-hover:bg-elm group-hover:duration-500"><svg class="h-4 w-4 text-elm transition-[color,transform] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-1 group-hover:text-white group-hover:duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span><span class="text-sm font-black uppercase tracking-widest text-[#0f172a] transition-colors duration-300 group-hover:text-elm group-hover:duration-500">{viewAll}</span></a>
       </div>
     </div>
-    <DragCursorIsland client:visible={{ rootMargin: '400px' }} selector="[data-article-cursor-card]" text="LIHAT" />
+    <DragCursorIsland client:load selector="[data-article-cursor-card]" text="LIHAT" />
   </section>
 )}
