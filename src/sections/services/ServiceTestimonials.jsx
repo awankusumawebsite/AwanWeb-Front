@@ -11,13 +11,24 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+const defaultCopy = {
+  kicker: "Suara Klien",
+  title: "Bukti Nyata",
+  titleAccent: "Kepercayaan",
+  descriptionTemplate: "Pengalaman langsung klien yang telah menggunakan layanan {service}.",
+  previous: "Testimonial sebelumnya",
+  next: "Testimonial berikutnya",
+};
+
 /**
  * @param {{
  *   testimonials?: Array<{ name: string; role?: string | null; quote: string; avatar?: string | null }>;
  *   serviceName?: string;
+ *   copy?: Record<string, any>;
  * }} props
  */
-export default function ServiceTestimonials({ testimonials = [], serviceName = "" }) {
+export default function ServiceTestimonials({ testimonials = [], serviceName = "", copy = defaultCopy }) {
+  const labels = { ...defaultCopy, ...copy };
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -60,15 +71,15 @@ export default function ServiceTestimonials({ testimonials = [], serviceName = "
           <div className="inline-flex items-center gap-3 text-elm mb-4">
             <span className="w-2 h-2 bg-elm rotate-45 shrink-0" />
             <span className="text-[11px] font-black tracking-[0.2em] uppercase text-big-stone">
-              Suara Klien
+              {labels.kicker}
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-big-stone tracking-tight leading-[1.05]">
-            Bukti Nyata <br className="hidden md:block"/>
-            <span className="text-transparent bg-clip-text bg-elm">Kepercayaan</span>
+            {labels.title} <br className="hidden md:block"/>
+            <span className="text-transparent bg-clip-text bg-elm">{labels.titleAccent}</span>
           </h2>
           <p className="mt-5 text-slate-500 font-medium text-base lg:text-lg max-w-2xl text-center">
-            Pengalaman langsung klien yang telah menggunakan layanan {serviceName}.
+            {labels.descriptionTemplate.replace("{service}", serviceName)}
           </p>
         </div>
 
@@ -164,10 +175,10 @@ export default function ServiceTestimonials({ testimonials = [], serviceName = "
              
              {/* Custom Navigation */}
              <div className="flex items-center gap-3">
-               <button aria-label="Testimonial sebelumnya" className="st-nav-prev w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
+               <button aria-label={labels.previous} className="st-nav-prev w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                </button>
-               <button aria-label="Testimonial berikutnya" className="st-nav-next w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
+               <button aria-label={labels.next} className="st-nav-next w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                </button>
              </div>

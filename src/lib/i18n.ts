@@ -52,14 +52,21 @@ export function localizedUrl(path: string, locale: Locale): string {
   return new URL(localizedPath(path, locale), SITE_URL).href;
 }
 
-export function alternateLocaleUrls(path: string): Record<Locale | 'x-default', string> {
+export type AlternateLocaleUrls = Partial<Record<Locale, string>> & { 'x-default': string };
+
+export function alternateLocaleUrls(
+  path: string,
+  availableLocales: readonly Locale[] = LOCALES,
+): AlternateLocaleUrls {
+  const locales = LOCALES.filter((locale) => availableLocales.includes(locale));
+  const defaultLocale = locales.includes(DEFAULT_LOCALE) ? DEFAULT_LOCALE : (locales[0] ?? DEFAULT_LOCALE);
   const languages = Object.fromEntries(
-    LOCALES.map((locale) => [locale, localizedUrl(path, locale)]),
-  ) as Record<Locale, string>;
+    locales.map((locale) => [locale, localizedUrl(path, locale)]),
+  ) as Partial<Record<Locale, string>>;
 
   return {
     ...languages,
-    'x-default': localizedUrl(path, DEFAULT_LOCALE),
+    'x-default': localizedUrl(path, defaultLocale),
   };
 }
 

@@ -14,9 +14,10 @@ import { backendOrigin } from '../../lib/runtime-api';
 interface Props {
   locale: Locale;
   path: string;
+  availableLocales?: readonly Locale[];
 }
 
-const { locale, path } = Astro.props;
+const { locale, path, availableLocales } = Astro.props;
 const [messages, shell] = await Promise.all([
   getMessages(locale),
   getSiteShellData(locale),
@@ -81,7 +82,7 @@ const transitionLabels = {
   ) : (
     <>
       <Preloader text={preloaderText} transitionLabels={transitionLabels} />
-      <Navbar locale={locale} path={path} messages={messages} categories={shell.categories} backendOrigin={backendOrigin(import.meta.env.PUBLIC_BACKEND_URL)} />
+      <Navbar locale={locale} path={path} messages={messages} categories={shell.categories} backendOrigin={backendOrigin(import.meta.env.PUBLIC_BACKEND_URL)} availableLocales={availableLocales} />
       <div id="main-content" class="relative flex min-h-screen w-full flex-col">
         {pageMaintenance ? <MaintenanceScreen locale={locale} partial /> : <slot />}
       </div>

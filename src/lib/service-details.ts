@@ -76,6 +76,11 @@ export interface ServiceDetail {
   faqs?: ServiceFaq[];
   testimonials?: ServiceTestimonial[];
   updated_at?: string | null;
+  available_locales?: Locale[];
+  requested_locale?: Locale;
+  requested_locale_available?: boolean;
+  resolved_locale?: Locale | null;
+  is_fallback?: boolean;
 }
 
 export interface ServiceRoute {
@@ -89,11 +94,12 @@ export interface ServiceDetailEntry extends ServiceRoute {
 
 const localeEntries = new Map<Locale, Promise<ServiceDetailEntry[]>>();
 
-export function uniqueServiceRoutes(groups: ServiceMenuGroup[]): ServiceRoute[] {
+export function uniqueServiceRoutes(groups: ServiceMenuGroup[], locale?: Locale): ServiceRoute[] {
   const routes = new Map<string, ServiceRoute>();
 
   for (const group of groups) {
     for (const item of group.items) {
+      if (locale && item.available_locales && !item.available_locales.includes(locale)) continue;
       const slug = serviceParentSlug(item.slug).trim();
       if (!slug || routes.has(slug)) continue;
       routes.set(slug, { slug, category: group.category });
@@ -125,13 +131,13 @@ async function mapWithConcurrency<T, R>(
 
 async function fetchServiceEntries(locale: Locale): Promise<ServiceDetailEntry[]> {
   const menu = await cms.requestOnce<DataResponse<ServiceMenuGroup[]>>(
-    `/services?locale=${encodeURIComponent(locale)}`,
+    `/services?locale=${encodeURIComponent(locale)}&strict_locale=1`,
   );
-  const routes = uniqueServiceRoutes(menu?.data ?? []);
+  const routes = uniqueServiceRoutes(menu?.data ?? [], locale);
 
-  return mapWithConcurrency(routes, 3, async (route) => {
+  const entries = await mapWithConcurrency(routes, 3, async (route) => {
     const response = await cms.requestOnce<DataResponse<ServiceDetail>>(
-      `/services/${encodeURIComponent(route.slug)}?locale=${encodeURIComponent(locale)}`,
+      `/services/${encodeURIComponent(route.slug)}?locale=${encodeURIComponent(locale)}&strict_locale=1`,
     );
 
     if (!response?.data) {
@@ -140,6 +146,11 @@ async function fetchServiceEntries(locale: Locale): Promise<ServiceDetailEntry[]
 
     return { ...route, service: response.data };
   });
+
+  return entries.filter(({ service }) => (
+    service.requested_locale_available !== false
+    && (!service.available_locales || service.available_locales.includes(locale))
+  ));
 }
 
 export function getServiceDetailEntries(locale: Locale): Promise<ServiceDetailEntry[]> {

@@ -2,7 +2,8 @@
 import MarqueeImages from '../components/MarqueeImages.astro';
 import SiteShell from '../components/layout/SiteShell.astro';
 import type { Locale } from '../config/site';
-import { SITE_URL } from '../config/site';
+import { SITE_URL, isLocale } from '../config/site';
+import { serviceDetailCopy } from '../content/service-detail-copy';
 import { normalizeContactInfo } from '../data/contact';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { cms } from '../lib/cms';
@@ -33,6 +34,9 @@ interface MarqueeImage {
 }
 
 const { locale, slug, service } = Astro.props;
+const apiAvailableLocales = service.available_locales?.filter(isLocale) ?? [];
+const availableLocales = apiAvailableLocales.length > 0 ? apiAvailableLocales : [locale];
+const copy = serviceDetailCopy[locale];
 const path = `/layanan/${slug}`;
 const localizedServicePath = localizedPath(path, locale);
 const [shell, marqueeResponse] = await Promise.all([
@@ -43,18 +47,19 @@ const contact = normalizeContactInfo(shell.contact);
 const faqs = service.faqs ?? [];
 const testimonials = service.testimonials ?? [];
 const firstPrice = service.pricingData?.packages?.[0]?.price;
+const localizedJoin = (...parts: string[]) => parts.filter(Boolean).join(locale === 'zh' ? '' : ' ');
 const title = service.meta_title
-  || `Jasa ${service.name} Resmi & Terpercaya | Awan Kusuma Legalitas`;
+  || localizedJoin(copy.seo.titlePrefix, service.name, copy.seo.titleSuffix);
 const description = service.meta_description
-  || `Jasa ${service.name} resmi, cepat & terpercaya bersama Awan Kusuma.${firstPrice ? ` Harga mulai ${firstPrice}.` : ''} Proses transparan dan konsultasi gratis.`;
+  || `${localizedJoin(copy.seo.descriptionPrefix, service.name, copy.seo.descriptionBody)}${firstPrice ? ` ${localizedJoin(copy.seo.pricePrefix, String(firstPrice))}.` : ''} ${copy.seo.descriptionSuffix}`;
 const serviceUrl = new URL(localizedServicePath, SITE_URL).href;
 
 const schemas = [
   {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    name: `Jasa ${service.name}`,
-    description: service.description || `Layanan ${service.name} profesional dari Awan Kusuma Legalitas.`,
+    name: localizedJoin(copy.seo.titlePrefix, service.name),
+    description: service.description || localizedJoin(service.name, copy.seo.schemaFallback),
     provider: {
       '@type': 'LegalService',
       name: 'Awan Kusuma Legalitas',
@@ -75,8 +80,8 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Beranda', item: new URL(localizedPath('/', locale), SITE_URL).href },
-      { '@type': 'ListItem', position: 2, name: 'Layanan', item: new URL(localizedPath('/layanan', locale), SITE_URL).href },
+      { '@type': 'ListItem', position: 1, name: copy.seo.home, item: new URL(localizedPath('/', locale), SITE_URL).href },
+      { '@type': 'ListItem', position: 2, name: copy.seo.services, item: new URL(localizedPath('/layanan', locale), SITE_URL).href },
       { '@type': 'ListItem', position: 3, name: service.name, item: serviceUrl },
     ],
   },
@@ -96,10 +101,10 @@ function safeJsonLd(value: unknown) {
 }
 ---
 
-<BaseLayout title={title} description={description} locale={locale} path={path}>
+<BaseLayout title={title} description={description} locale={locale} path={path} availableLocales={availableLocales}>
   {schemas.map((schema) => <script is:inline type="application/ld+json" set:html={safeJsonLd(schema)}></script>)}
 
-  <SiteShell locale={locale} path={path}>
+  <SiteShell locale={locale} path={path} availableLocales={availableLocales}>
     <main class="relative min-h-screen w-full bg-white font-sans">
       <div class="absolute left-6 top-[100px] z-20 lg:left-12">
         <a
@@ -107,7 +112,7 @@ function safeJsonLd(value: unknown) {
           class="flex items-center gap-2 rounded-full border border-slate-100 bg-white/80 px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 shadow-sm backdrop-blur-md transition-all hover:text-elm hover:shadow-md"
         >
           <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-          Kembali
+          {copy.back}
         </a>
       </div>
 
@@ -116,6 +121,7 @@ function safeJsonLd(value: unknown) {
           name={service.name}
           description={service.hero_description || service.description}
           whatsappNumber={contact.whatsapp}
+          copy={copy.hero}
         />
 
         {service.aboutAndBenefits && (
@@ -123,6 +129,7 @@ function safeJsonLd(value: unknown) {
             client:load
             data={service.aboutAndBenefits}
             serviceName={service.name}
+            copy={copy.about}
           />
         )}
 
@@ -135,6 +142,7 @@ function safeJsonLd(value: unknown) {
             workflow_title: service.workflow_title ?? null,
             workflows: service.workflows ?? [],
           }}
+          copy={copy.process}
         />
 
         <div id="pricing-section" class="scroll-mt-10"></div>
@@ -146,6 +154,7 @@ function safeJsonLd(value: unknown) {
             serviceName={service.name}
             whatsappNumber={contact.whatsapp}
             theme="dark"
+            copy={copy.pricing}
           />
         )}
 
@@ -166,6 +175,7 @@ function safeJsonLd(value: unknown) {
                   data={sub.pricingData}
                   serviceName={sub.name}
                   whatsappNumber={contact.whatsapp}
+                  copy={copy.pricing}
                 />
               </div>
             ))}
@@ -177,11 +187,12 @@ function safeJsonLd(value: unknown) {
             <ServicePricingSection
               client:visible={{ rootMargin: '300px' }}
               data={service.addonsData}
-              title="Paket Layanan Tambahan"
-              description="Perizinan usaha dan pengurusan pajak dalam satu layanan. Temukan kemudahan pengurusannya bersama Awan Kusuma Legalitas."
+              title={copy.addons.title}
+              description={copy.addons.description}
               serviceName={service.name}
               whatsappNumber={contact.whatsapp}
               theme="light"
+              copy={copy.pricing}
             />
           </div>
         )}
@@ -193,6 +204,7 @@ function safeJsonLd(value: unknown) {
             client:visible={{ rootMargin: '300px' }}
             testimonials={testimonials}
             serviceName={service.name}
+            copy={copy.testimonials}
           />
         </div>
       )}
@@ -202,6 +214,7 @@ function safeJsonLd(value: unknown) {
         faqs={faqs}
         serviceName={service.name}
         contactInfo={contact}
+        copy={copy.faq}
       />
 
       <div class="border-t border-slate-100/50 bg-slate-50/20 py-10">

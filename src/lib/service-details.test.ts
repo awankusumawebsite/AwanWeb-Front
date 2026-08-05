@@ -37,4 +37,27 @@ describe('uniqueServiceRoutes', () => {
 
     expect(uniqueServiceRoutes(groups)).toEqual([]);
   });
+
+  it('tidak membuat route locale yang belum dipublikasikan admin', () => {
+    const groups: ServiceMenuGroup[] = [{
+      category: 'Pendirian',
+      items: [
+        {
+          name: 'Pendirian PT',
+          slug: 'pendirian-pt',
+          available_locales: ['id'],
+        },
+        {
+          name: 'Pendirian CV',
+          slug: 'pendirian-cv',
+          available_locales: ['id', 'en'],
+        },
+      ],
+    }];
+
+    expect(uniqueServiceRoutes(groups, 'en')).toEqual([
+      { slug: 'pendirian-cv', category: 'Pendirian' },
+    ]);
+    expect(uniqueServiceRoutes(groups, 'zh')).toEqual([]);
+  });
 });

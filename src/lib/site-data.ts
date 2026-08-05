@@ -7,6 +7,8 @@ export interface ServiceMenuItem {
   description?: string | null;
   icon_name?: string | null;
   hide_from_menu?: boolean;
+  available_locales?: Locale[];
+  requested_locale_available?: boolean;
 }
 
 export interface ServiceMenuGroup {
@@ -47,7 +49,7 @@ const FALLBACK_CONTACT: ContactInfo = {
 
 export async function getSiteShellData(locale: Locale): Promise<SiteShellData> {
   const [services, contact, status] = await Promise.all([
-    cms.requestOnce<DataResponse<ServiceMenuGroup[]>>(`/services?locale=${encodeURIComponent(locale)}`),
+    cms.requestOnce<DataResponse<ServiceMenuGroup[]>>(`/services?locale=${encodeURIComponent(locale)}&strict_locale=1`),
     cms.requestOnce<DataResponse<ContactInfo>>('/contact'),
     cms.requestOnce<SystemStatus>('/system/status'),
   ]);

@@ -7,7 +7,13 @@ import SplitTextReveal from "@/components/animations/SplitTextReveal";
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
-export default function ServiceAboutAndBenefits({ data, serviceName }) {
+const defaultCopy = {
+  kicker: "Fundamental Layanan",
+  titleTemplate: "Apa itu {service}?",
+};
+
+export default function ServiceAboutAndBenefits({ data, serviceName, copy = defaultCopy }) {
+  const labels = { ...defaultCopy, ...copy };
   const sectionRef = useRef(null);
   const pathRef = useRef(null);
   const containerRef = useRef(null);
@@ -188,12 +194,12 @@ export default function ServiceAboutAndBenefits({ data, serviceName }) {
              <div className="flex items-center gap-4">
                 <span className="w-8 h-[1px] bg-elm inline-block"></span>
                 <span className="text-elm font-bold tracking-widest uppercase text-[10px] md:text-xs">
-                  Fundamental Layanan
+                  {labels.kicker}
                 </span>
              </div>
              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter uppercase leading-none text-big-stone">
                 <SplitTextReveal 
-                   text={data.title || `Apa itu ${serviceName}?`} 
+                   text={data.title || labels.titleTemplate.replace("{service}", serviceName)}
                    triggerOnScroll={true} 
                 />
              </h2>

@@ -12,6 +12,7 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
   noindex?: boolean;
+  availableLocales?: readonly Locale[];
 }
 
 const {
@@ -22,6 +23,7 @@ const {
   image,
   type = 'website',
   noindex = import.meta.env.MIGRATION_NOINDEX !== 'false',
+  availableLocales,
 } = Astro.props;
 ---
 
@@ -57,6 +59,7 @@ const {
       image={image}
       type={type}
       noindex={noindex}
+      availableLocales={availableLocales}
     />
     <title>{title}</title>
   </head>

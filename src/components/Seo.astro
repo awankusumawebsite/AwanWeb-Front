@@ -14,6 +14,7 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
   noindex?: boolean;
+  availableLocales?: readonly Locale[];
 }
 
 const {
@@ -24,10 +25,11 @@ const {
   image = '/assets/image/og-image.png',
   type = 'website',
   noindex = false,
+  availableLocales,
 } = Astro.props;
 
 const canonical = localizedUrl(path, locale);
-const alternateUrls = alternateLocaleUrls(path);
+const alternateUrls = alternateLocaleUrls(path, availableLocales);
 const imageUrl = new URL(image, SITE_URL).href;
 ---
 
@@ -43,7 +45,7 @@ const imageUrl = new URL(image, SITE_URL).href;
 <meta property="og:locale" content={OPEN_GRAPH_LOCALES[locale]} />
 {
   Object.entries(OPEN_GRAPH_LOCALES)
-    .filter(([language]) => language !== locale)
+    .filter(([language]) => language !== locale && (!availableLocales || availableLocales.includes(language as Locale)))
     .map(([, openGraphLocale]) => <meta property="og:locale:alternate" content={openGraphLocale} />)
 }
 <meta property="og:site_name" content="Awan Kusuma Legalitas" />

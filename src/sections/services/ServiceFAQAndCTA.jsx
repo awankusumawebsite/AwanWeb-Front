@@ -5,14 +5,36 @@ import { gsap } from "@/lib/gsap";
 import { Plus } from "lucide-react";
 import { fallbackContactInfo } from "@/data/contact";
 
+const defaultCopy = {
+  kicker: "Mulai Konsultasi",
+  contact: "Hubungi Kami",
+  serviceQuestionTemplate: "Punya pertanyaan lebih spesifik mengenai layanan {service}?",
+  generalPrompt: "Ceritakan kebutuhan bisnis Anda kepada kami.",
+  fullName: "Nama Lengkap",
+  whatsappNumber: "Nomor WhatsApp",
+  message: "Pesan / Pertanyaan",
+  send: "Kirim Pesan",
+  titleLine1: "Pertanyaan",
+  titleLine2: "Umum",
+  descriptionTemplate: "Temukan jawaban cepat untuk keraguan Anda seputar {service}.",
+  fallbackService: "layanan kami",
+  whatsappGreeting: "Halo Awan Kusuma Legalitas! 👋",
+  whatsappIntro: "Saya {name} ingin berkonsultasi{servicePart}.",
+  whatsappServiceTemplate: " mengenai layanan {service}",
+  whatsappPhone: "Nomor HP",
+  whatsappMessage: "Pesan",
+};
+
 /**
  * @param {{
  *   faqs?: Array<{ question: string; answer: string }>;
  *   serviceName?: string;
  *   contactInfo?: typeof fallbackContactInfo;
+ *   copy?: Record<string, any>;
  * }} props
  */
-export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactInfo: contactInfoProp }) {
+export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactInfo: contactInfoProp, copy = defaultCopy }) {
+  const labels = { ...defaultCopy, ...copy };
   const contactInfo = contactInfoProp || fallbackContactInfo;
   const containerRef = useRef(null);
   const [openIndex, setOpenIndex] = useState(null);
@@ -33,7 +55,13 @@ export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactI
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const text = `Halo Awan Kusuma Legalitas! 👋\n\nSaya ${form.name} ingin berkonsultasi${serviceName ? ` mengenai layanan ${serviceName}` : ""}.\n\n*Nomor HP:* ${form.phone}\n\n*Pesan:*\n${form.message}`;
+    const servicePart = serviceName
+      ? labels.whatsappServiceTemplate.replace("{service}", serviceName)
+      : "";
+    const intro = labels.whatsappIntro
+      .replace("{name}", form.name)
+      .replace("{servicePart}", servicePart);
+    const text = `${labels.whatsappGreeting}\n\n${intro}\n\n*${labels.whatsappPhone}:* ${form.phone}\n\n*${labels.whatsappMessage}:*\n${form.message}`;
     window.open(
       `https://wa.me/${contactInfo.whatsapp}?text=${encodeURIComponent(text)}`,
       "_blank"
@@ -115,15 +143,15 @@ export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactI
               <div className="mb-8">
                 <div className="inline-flex items-center gap-2 text-elm mb-4">
                   <span className="w-1.5 h-1.5 bg-elm rotate-45 shrink-0" />
-                  <span className="text-[10px] font-black tracking-[0.2em] uppercase">Mulai Konsultasi</span>
+                  <span className="text-[10px] font-black tracking-[0.2em] uppercase">{labels.kicker}</span>
                 </div>
                 <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase mb-2">
-                  Hubungi Kami
+                  {labels.contact}
                 </h3>
                 <p className="text-slate-500 font-medium text-sm leading-relaxed">
                   {serviceName
-                    ? `Punya pertanyaan lebih spesifik mengenai layanan ${serviceName} ?`
-                    : "Ceritakan kebutuhan bisnis Anda kepada kami."}
+                    ? labels.serviceQuestionTemplate.replace("{service}", serviceName)
+                    : labels.generalPrompt}
                 </p>
               </div>
 
@@ -142,7 +170,7 @@ export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactI
                     htmlFor="faq-name"
                     className="absolute top-0 left-0 text-[10px] tracking-widest uppercase font-black text-slate-400 peer-placeholder-shown:top-4 peer-placeholder-shown:text-[14px] peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:capitalize peer-placeholder-shown:text-slate-400 peer-focus:top-0 peer-focus:text-[10px] peer-focus:tracking-widest peer-focus:text-elm peer-focus:uppercase peer-focus:font-black transition-all duration-300 pointer-events-none"
                   >
-                    Nama Lengkap
+                    {labels.fullName}
                   </label>
                 </div>
 
@@ -160,7 +188,7 @@ export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactI
                     htmlFor="faq-phone"
                     className="absolute top-0 left-0 text-[10px] tracking-widest uppercase font-black text-slate-400 peer-placeholder-shown:top-4 peer-placeholder-shown:text-[14px] peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:capitalize peer-placeholder-shown:text-slate-400 peer-focus:top-0 peer-focus:text-[10px] peer-focus:tracking-widest peer-focus:text-elm peer-focus:uppercase peer-focus:font-black transition-all duration-300 pointer-events-none"
                   >
-                    Nomor WhatsApp
+                    {labels.whatsappNumber}
                   </label>
                 </div>
 
@@ -178,7 +206,7 @@ export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactI
                     htmlFor="faq-message"
                     className="absolute top-0 left-0 text-[10px] tracking-widest uppercase font-black text-slate-400 peer-placeholder-shown:top-4 peer-placeholder-shown:text-[14px] peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:capitalize peer-placeholder-shown:text-slate-400 peer-focus:top-0 peer-focus:text-[10px] peer-focus:tracking-widest peer-focus:text-elm peer-focus:uppercase peer-focus:font-black transition-all duration-300 pointer-events-none"
                   >
-                    Pesan / Pertanyaan
+                    {labels.message}
                   </label>
                 </div>
 
@@ -187,7 +215,7 @@ export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactI
                   className="w-full mt-4 py-4 rounded-xl bg-elm text-white font-black text-[12px] tracking-widest uppercase hover:bg-big-stone transition-all duration-300 shadow-xl shadow-elm/20 hover:shadow-big-stone/30 hover:-translate-y-1 flex items-center justify-center gap-3 overflow-hidden relative group"
                 >
                   <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
-                  <span className="relative z-10">KIRIM PESAN</span>
+                  <span className="relative z-10">{labels.send}</span>
                 </button>
               </form>
             </div>
@@ -198,10 +226,10 @@ export default function ServiceFAQAndCTA({ faqs = [], serviceName = "", contactI
             <div className="faq-col lg:col-span-7 w-full order-1 lg:order-2 flex flex-col">
               <div className="faq-header mb-10">
                 <h2 className="text-3xl md:text-5xl font-black text-big-stone tracking-tight uppercase mb-4">
-                  Pertanyaan <br className="hidden lg:block"/> Umum
+                  {labels.titleLine1} <br className="hidden lg:block"/> {labels.titleLine2}
                 </h2>
                 <p className="text-slate-500 text-base md:text-lg leading-relaxed max-w-lg">
-                  Temukan jawaban cepat untuk keraguan Anda seputar {serviceName || "layanan kami"}.
+                  {labels.descriptionTemplate.replace("{service}", serviceName || labels.fallbackService)}
                 </p>
               </div>
 

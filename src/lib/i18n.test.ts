@@ -37,6 +37,19 @@ describe('locale routing parity', () => {
     });
   });
 
+  it('only advertises locale variants that actually exist', () => {
+    expect(alternateLocaleUrls('/layanan/pendirian-pt', ['id'])).toEqual({
+      id: 'https://awankusuma.com/layanan/pendirian-pt',
+      'x-default': 'https://awankusuma.com/layanan/pendirian-pt',
+    });
+
+    expect(alternateLocaleUrls('/layanan/pendirian-pt', ['id', 'en'])).toEqual({
+      id: 'https://awankusuma.com/layanan/pendirian-pt',
+      en: 'https://awankusuma.com/en/layanan/pendirian-pt',
+      'x-default': 'https://awankusuma.com/layanan/pendirian-pt',
+    });
+  });
+
   it('interpolates translated variables without changing missing placeholders', async () => {
     const messages = await getMessages('id');
 

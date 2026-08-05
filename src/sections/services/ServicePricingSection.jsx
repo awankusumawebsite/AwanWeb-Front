@@ -4,6 +4,20 @@ import { useState, useEffect, useRef } from "react";
 import { CheckCircle2, FileText } from "lucide-react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 
+const defaultCopy = {
+  unavailable: "Informasi harga untuk layanan ini sedang disiapkan.",
+  title: "Pilih Paket Kebutuhan",
+  description: "Transparan, tanpa biaya tersembunyi. Mulailah perjalanan bisnis Anda dengan fondasi legalitas yang kokoh bersama tim Awan Kusuma.",
+  priceFeatures: "Harga & Fitur",
+  requirements: "Syarat Dokumen",
+  popular: "Paling Populer",
+  generalRequirements: "Persyaratan Umum",
+  requirementsFallback: "Hubungi kami untuk detail persyaratan.",
+  orderNow: "Pesan Sekarang",
+  whatsappTemplate: "Halo Awan Kusuma Legalitas! 👋 Saya tertarik dengan paket *{package}*{servicePart}. Bisa konsultasi lebih lanjut?",
+  whatsappServiceTemplate: " untuk layanan *{service}*",
+};
+
 
 /**
  * @param {{
@@ -13,9 +27,11 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
  *   serviceName?: string;
  *   whatsappNumber?: string;
  *   theme?: string;
+ *   copy?: Record<string, any>;
  * }} props
  */
-export default function ServicePricingSection({ data, title = null, description = null, serviceName = "", whatsappNumber = "6285159358044", theme = "light" }) {
+export default function ServicePricingSection({ data, title = null, description = null, serviceName = "", whatsappNumber = "6285159358044", theme = "light", copy = defaultCopy }) {
+  const labels = { ...defaultCopy, ...copy };
   const [activeTab, setActiveTab] = useState("harga"); // 'harga' | 'syarat'
   const containerRef = useRef(null);
 
@@ -67,7 +83,7 @@ export default function ServicePricingSection({ data, title = null, description 
   if (!data || !data.packages) {
     return (
       <section className="py-24 px-6 lg:px-12 w-full text-center">
-        <p className="text-slate-400">Informasi harga untuk layanan ini sedang disiapkan.</p>
+        <p className="text-slate-400">{labels.unavailable}</p>
       </section>
     );
   }
@@ -80,10 +96,10 @@ export default function ServicePricingSection({ data, title = null, description 
       
       <div className="text-center mb-16 pricing-header">
         <h2 className={`text-3xl md:text-5xl font-black tracking-tight mb-6 uppercase transition-colors duration-1000 ${theme === 'dark' ? 'text-white' : 'text-big-stone'}`}>
-          {title || "Pilih Paket Kebutuhan"}
+          {title || labels.title}
         </h2>
         <p className={`max-w-2xl mx-auto text-lg leading-relaxed transition-colors duration-1000 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>
-          {description || "Transparan, tanpa biaya tersembunyi. Mulailah perjalanan bisnis Anda dengan fondasi legalitas yang kokoh bersama tim Awan Kusuma."}
+          {description || labels.description}
         </p>
       </div>
 
@@ -100,14 +116,14 @@ export default function ServicePricingSection({ data, title = null, description 
           onClick={() => setActiveTab('harga')}
           className={`relative z-10 w-[150px] py-3 text-[12px] tracking-[0.15em] uppercase font-extrabold transition-colors duration-300 ${activeTab === 'harga' ? 'text-elm' : (theme === 'dark' ? 'text-slate-300 hover:text-white' : 'text-slate-400 hover:text-slate-600')}`}
         >
-          Harga & Fitur
+          {labels.priceFeatures}
         </button>
         
         <button 
           onClick={() => setActiveTab('syarat')}
           className={`relative z-10 w-[150px] py-3 text-[12px] tracking-[0.15em] uppercase font-extrabold transition-colors duration-300 ${activeTab === 'syarat' ? 'text-elm' : (theme === 'dark' ? 'text-slate-300 hover:text-white' : 'text-slate-400 hover:text-slate-600')}`}
         >
-          Syarat Dokumen
+          {labels.requirements}
         </button>
       </div>
 
@@ -131,7 +147,7 @@ export default function ServicePricingSection({ data, title = null, description 
               {/* Badge (Custom or Popular) */}
               {(pkg.badge || isPopular) && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-400 text-white text-[10px] font-black tracking-widest uppercase py-1.5 px-5 rounded-full shadow-md whitespace-nowrap">
-                  {pkg.badge || "Most Popular"}
+                  {pkg.badge || labels.popular}
                 </div>
               )}
               
@@ -170,7 +186,7 @@ export default function ServicePricingSection({ data, title = null, description 
                 {/* Tab: Syarat */}
                 <div className={`absolute top-0 left-0 w-full transition-all duration-500 ease-out ${activeTab === 'syarat' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 translate-y-4 absolute pointer-events-none'}`}>
                   {isPopular ? (
-                     <div className="mb-4 inline-block px-3 py-1 bg-orange-50 text-orange-600 font-bold text-[10px] tracking-widest uppercase rounded-md">Persyaratan Umum</div>
+                     <div className="mb-4 inline-block px-3 py-1 bg-orange-50 text-orange-600 font-bold text-[10px] tracking-widest uppercase rounded-md">{labels.generalRequirements}</div>
                   ) : null}
                   <ul className="flex flex-col gap-3.5">
                      {(pkg.requirements || data.requirements) ? (pkg.requirements || data.requirements).map((req, rIdx) => (
@@ -179,7 +195,7 @@ export default function ServicePricingSection({ data, title = null, description 
                         <span className="text-[14px] text-slate-600 leading-relaxed font-medium">{req}</span>
                       </li>
                     )) : (
-                      <li className="text-sm text-slate-400">Hubungi kami untuk detail persyaratan.</li>
+                      <li className="text-sm text-slate-400">{labels.requirementsFallback}</li>
                     )}
                   </ul>
                 </div>
@@ -189,7 +205,14 @@ export default function ServicePricingSection({ data, title = null, description 
               {/* CTA Button */}
               <div className="pt-8 mt-auto border-t border-slate-100">
                 <a
-                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Halo Awan Kusuma Legalitas! 👋 Saya tertarik dengan paket *${pkg.name}*${serviceName ? ` untuk layanan *${serviceName}*` : ""}. Bisa konsultasi lebih lanjut?`)}`}
+                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+                    labels.whatsappTemplate
+                      .replace("{package}", pkg.name)
+                      .replace(
+                        "{servicePart}",
+                        serviceName ? labels.whatsappServiceTemplate.replace("{service}", serviceName) : ""
+                      )
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`block w-full py-4 rounded-full font-extrabold text-[13px] tracking-widest uppercase transition-all duration-300 text-center ${
@@ -198,7 +221,7 @@ export default function ServicePricingSection({ data, title = null, description 
                       : "bg-slate-50 text-slate-600 hover:bg-elm hover:text-white"
                   }`}
                 >
-                  Pesan Sekarang
+                  {labels.orderNow}
                 </a>
               </div>
             </div>

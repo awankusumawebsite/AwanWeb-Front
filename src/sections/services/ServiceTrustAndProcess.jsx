@@ -4,28 +4,22 @@ import { useRef, useEffect } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { MessageSquare, FileText, Settings, CheckCircle } from "lucide-react";
 
-const defaultSteps = [
-  {
-    icon: MessageSquare,
-    title: "Konsultasi Gratis",
-    description: "Diskusikan kebutuhan bisnis Anda dengan tim ahli kami.",
-  },
-  {
-    icon: FileText,
-    title: "Lengkapi Dokumen",
-    description: "Serahkan dokumen yang dibutuhkan secara online.",
-  },
-  {
-    icon: Settings,
-    title: "Proses Pengurusan",
-    description: "Tim legal kami akan mengurus semua proses ke instansi.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Dokumen Selesai",
-    description: "Dokumen resmi siap dan langsung dikirim ke Anda.",
-  },
-];
+const defaultCopy = {
+  kicker: "Alur Kerja",
+  titleHtml: 'Semudah <br /><span class="text-white">4 Langkah</span>',
+  description: "Proses yang sederhana, transparan, dan tanpa ribet. Kami yang mengurus kompleksitas birokrasi, Anda yang fokus mengembangkan bisnis.",
+  clients: "Klien Terlayani",
+  processingTime: "Hari Kerja Proses",
+  officialNotary: "Notaris Resmi",
+  free: "Gratis",
+  initialConsultation: "Konsultasi Awal",
+  steps: [
+    { title: "Konsultasi Gratis", description: "Diskusikan kebutuhan bisnis Anda dengan tim ahli kami." },
+    { title: "Lengkapi Dokumen", description: "Serahkan dokumen yang dibutuhkan secara online." },
+    { title: "Proses Pengurusan", description: "Tim legal kami akan mengurus semua proses ke instansi." },
+    { title: "Dokumen Selesai", description: "Dokumen resmi siap dan langsung dikirim ke Anda." },
+  ],
+};
 
 const fallbackIcons = [MessageSquare, FileText, Settings, CheckCircle];
 
@@ -41,7 +35,12 @@ function sanitizeHtml(html) {
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
 }
 
-export default function ServiceTrustAndProcess({ theme = "light", data = {} }) {
+export default function ServiceTrustAndProcess({ theme = "light", data = {}, copy = defaultCopy }) {
+  const labels = { ...defaultCopy, ...copy };
+  const defaultSteps = labels.steps.map((step, index) => ({
+    ...step,
+    icon: fallbackIcons[index % fallbackIcons.length],
+  }));
   const containerRef = useRef(null);
   const trustRef = useRef(null);
   const processRef = useRef(null);
@@ -145,17 +144,17 @@ export default function ServiceTrustAndProcess({ theme = "light", data = {} }) {
                 <div className={`inline-flex items-center gap-3 mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-elm'}`}>
                   <span className={`w-2 h-2 rotate-45 shrink-0 ${theme === 'dark' ? 'bg-slate-300' : 'bg-elm'}`} />
                   <span className={`text-[11px] font-black tracking-[0.2em] uppercase ${theme === 'dark' ? 'text-slate-400' : 'text-big-stone'}`}>
-                    Alur Kerja
+                    {labels.kicker}
                   </span>
                 </div>
                 <h2 
                   className={`text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] mb-5 transition-colors duration-1000 ${theme === 'dark' ? 'text-slate-300' : 'text-big-stone'}`}
                   dangerouslySetInnerHTML={{ 
-                    __html: sanitizeHtml(data?.workflow_title) || 'Semudah <br /><span class="text-white">4 Langkah</span>' 
+                    __html: sanitizeHtml(data?.workflow_title) || sanitizeHtml(labels.titleHtml)
                   }}
                 />
                 <p className={`text-base lg:text-lg leading-relaxed max-w-lg mb-10 xl:mb-16 transition-colors duration-1000 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                  Proses yang sederhana, transparan, dan tanpa ribet. Kami yang mengurus kompleksitas birokrasi, Anda yang fokus mengembangkan bisnis.
+                  {labels.description}
                 </p>
               </div>
 
@@ -167,7 +166,7 @@ export default function ServiceTrustAndProcess({ theme = "light", data = {} }) {
                     {data?.clients_count ? `${data.clients_count}+` : "500+"}
                   </span>
                   <span className={`text-xs md:text-sm font-bold uppercase tracking-widest mt-1 transition-colors duration-1000 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Klien Terlayani
+                    {labels.clients}
                   </span>
                 </div>
                 <div className="trust-stat flex flex-col gap-1.5 border-l-[3px] border-elm/30 pl-4 lg:pl-5">
@@ -175,7 +174,7 @@ export default function ServiceTrustAndProcess({ theme = "light", data = {} }) {
                     {data?.processing_time || "7-10"}
                   </span>
                   <span className={`text-xs md:text-sm font-bold uppercase tracking-widest mt-1 transition-colors duration-1000 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Hari Kerja Proses
+                    {labels.processingTime}
                   </span>
                 </div>
                 <div className="trust-stat flex flex-col gap-1.5 border-l-[3px] border-elm/30 pl-4 lg:pl-5">
@@ -183,15 +182,15 @@ export default function ServiceTrustAndProcess({ theme = "light", data = {} }) {
                     100%
                   </span>
                   <span className={`text-xs md:text-sm font-bold uppercase tracking-widest mt-1 transition-colors duration-1000 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Notaris Resmi
+                    {labels.officialNotary}
                   </span>
                 </div>
                 <div className="trust-stat flex flex-col gap-1.5 border-l-[3px] border-elm/30 pl-4 lg:pl-5">
                   <span className={`text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter transition-colors duration-1000 ${theme === 'dark' ? 'text-white' : 'text-big-stone'}`}>
-                    Gratis
+                    {labels.free}
                   </span>
                   <span className={`text-xs md:text-sm font-bold uppercase tracking-widest mt-1 transition-colors duration-1000 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Konsultasi Awal
+                    {labels.initialConsultation}
                   </span>
                 </div>
               </div>

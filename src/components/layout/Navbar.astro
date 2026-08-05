@@ -13,9 +13,10 @@ interface Props {
   messages: MessageTree;
   categories?: ServiceMenuGroup[];
   backendOrigin: string;
+  availableLocales?: readonly Locale[];
 }
 
-const { locale, path, messages, categories = [], backendOrigin } = Astro.props;
+const { locale, path, messages, categories = [], backendOrigin, availableLocales } = Astro.props;
 const navItems = [
   { key: 'about', href: '/tentang-kami' },
   { key: 'services', href: '/layanan', services: true },
@@ -27,7 +28,7 @@ const localeLinks = [
   { code: 'id' as const, label: 'ID', flag: '🇮🇩', name: 'Indonesia' },
   { code: 'en' as const, label: 'EN', flag: '🇬🇧', name: 'English' },
   { code: 'zh' as const, label: 'ZH', flag: '🇨🇳', name: '中文' },
-].map((item) => ({
+].filter((item) => !availableLocales || availableLocales.includes(item.code)).map((item) => ({
   ...item,
   href: localizedPath(path, item.code),
   active: locale === item.code,

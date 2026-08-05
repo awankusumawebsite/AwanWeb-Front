@@ -81,10 +81,10 @@ for (const file of htmlFiles) {
     const canonicalUrls = [...html.matchAll(/<link\s+[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
       .map((match) => match[1]);
     const h1Count = [...html.matchAll(/<h1(?:\s[^>]*)?>/gi)].length;
-    const hreflangs = new Set(
-      [...html.matchAll(/<link\s+[^>]*rel=["']alternate["'][^>]*hreflang=["']([^"']+)["'][^>]*>/gi)]
-        .map((match) => match[1].toLowerCase()),
-    );
+    const hreflangLinks = [...html.matchAll(/<link\s+[^>]*rel=["']alternate["'][^>]*hreflang=["']([^"']+)["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
+      .map((match) => ({ language: match[1].toLowerCase(), href: match[2] }));
+    const hreflangs = new Set(hreflangLinks.map(({ language }) => language));
+    const pageLocale = pagePath.startsWith('/en/') ? 'en' : pagePath.startsWith('/zh/') ? 'zh' : 'id';
     const jsonLdBlocks = [...html.matchAll(/<script\s+[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
 
     if (titles.length !== 1 || !titles[0]?.[1].trim()) failures.push(`Title SEO tidak valid di ${pagePath}`);
@@ -93,8 +93,17 @@ for (const file of htmlFiles) {
       failures.push(`Canonical SEO tidak valid di ${pagePath}`);
     }
     if (h1Count !== 1) failures.push(`Jumlah H1 harus tepat satu di ${pagePath}, ditemukan ${h1Count}`);
-    for (const locale of ['id', 'en', 'zh', 'x-default']) {
+    for (const locale of [pageLocale, 'x-default']) {
       if (!hreflangs.has(locale)) failures.push(`Hreflang ${locale} tidak tersedia di ${pagePath}`);
+    }
+    for (const { language, href } of hreflangLinks) {
+      if (!['id', 'en', 'zh', 'x-default'].includes(language)) {
+        failures.push(`Hreflang tidak dikenal di ${pagePath}: ${language}`);
+      }
+      const alternateUrl = new URL(href, 'https://awankusuma.com');
+      if (alternateUrl.origin !== 'https://awankusuma.com' || !outputExists(alternateUrl.pathname)) {
+        failures.push(`Target hreflang tidak dibangun di ${pagePath}: ${href}`);
+      }
     }
     if (jsonLdBlocks.length === 0) failures.push(`JSON-LD tidak tersedia di ${pagePath}`);
     for (const [, json] of jsonLdBlocks) {
