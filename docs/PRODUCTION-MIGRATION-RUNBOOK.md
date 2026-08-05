@@ -13,10 +13,13 @@ di repository tidak mengunggah atau mengaktifkan website.
 - Next/Vercel harus tetap hidup sebagai rollback sampai Astro production stabil.
 - CI Astro menguji, membangun artifact noindex, dan menyimpannya selama tujuh
   hari. Artifact menyertakan hidden file `.htaccess` secara eksplisit.
-- Remote lokal sudah diarahkan ke repository GitHub baru dan workflow atomic
-  staging sudah tersedia di working tree. Belum ada push atau deployment Astro.
+- Remote lokal mengarah ke repository GitHub Astro dan workflow atomic staging
+  sudah aktif. Release staging terakhir yang tercatat adalah `458f558`.
 - `staging.awankusuma.com` sudah dibuat dan merespons HTTPS dari document root
   `/home/ryuumeco/staging.awankusuma.com`.
+- Smoke test dan acceptance staging telah dinyatakan selesai pada 5 Agustus 2026.
+  Production tetap Next/Vercel sampai workflow production mode `activate`, smoke
+  origin, dan perubahan DNS dijalankan pada window cutover.
 
 ## 2. Informasi Manual yang Wajib Diverifikasi
 
@@ -28,9 +31,11 @@ Jangan mengaktifkan deployment sebelum semua kotak berikut terisi.
 - [x] Document root staging: `/home/ryuumeco/staging.awankusuma.com`.
 - [x] Symlink didukung oleh akun hosting.
 - [x] Repository GitHub tujuan:
-      `awankusumawebsite/AwanWeb-Front`.
+      `awankusumawebsite/AwanWeb-FrontStaging`.
 - [x] Metode transfer: SSH/SCP dengan key khusus deployment staging.
-- [ ] Nilai credential disimpan sebagai GitHub Environment secret, bukan file.
+- [x] Nilai credential staging disimpan sebagai GitHub Environment secret, bukan file.
+- [ ] GitHub Environment `production`, required reviewer, dan enam secret
+      production pada bagian 8 sudah disiapkan.
 - [x] Akses Cloudflare DNS tersedia untuk fase staging/cutover.
 - [x] Origin DomaiNesia staging sudah diverifikasi melalui record DNS dan HTTPS.
 
@@ -38,33 +43,40 @@ Nilai secret, token, password, dan private key tidak boleh ditulis di dokumen in
 
 ## 3. Struktur Release yang Disarankan
 
-Struktur berikut memisahkan staging dan production, tetapi dapat memakai release
-artifact yang sama bila hasil build dan environment identik.
+Struktur berikut memisahkan artifact staging dan production secara eksplisit.
 
 ```text
 /home/ryuumeco/
 ├── frontend-releases/
-│   └── <git-sha>/
+│   └── <release-id-staging>/
 │       ├── index.html
 │       ├── .htaccess
 │       ├── _astro/
 │       └── ...
-├── frontend-staging-current -> frontend-releases/<git-sha>
-├── frontend-current         -> frontend-releases/<git-sha>
+├── frontend-production-releases/
+│   └── <release-id-production>/
+├── frontend-staging-current -> frontend-releases/<release-id-staging>
+├── frontend-current         -> frontend-production-releases/<release-id-production>
 └── frontend-shared/
     ├── deploy-control/
     └── logs/
 ```
 
 Document root staging diarahkan ke symlink stabil yang menuju
-`frontend-staging-current`. Document root production baru dihubungkan ke
-`frontend-current` saat cutover; path aktualnya harus mengikuti hasil verifikasi
-cPanel, bukan asumsi dari struktur lama.
+`frontend-staging-current`. Artifact production memakai root terpisah karena
+build staging dan production dari commit yang sama berbeda pada robots, metadata,
+dan analytics. Document root production baru dihubungkan ke `frontend-current`
+saat cutover; path aktualnya harus mengikuti hasil verifikasi cPanel, bukan
+asumsi dari struktur lama.
+
+Release ID memakai `<git-sha>-<github-run-id>-<run-attempt>`, bukan Git SHA saja.
+Hal ini wajib karena event CMS dapat membangun ulang commit yang sama dengan
+snapshot konten baru; memakai SHA saja akan salah mengaktifkan artifact lama.
 
 Workflow `.github/workflows/ci.yml` membangun artifact sekali, lalu job staging
 yang bergantung pada gate tersebut melakukan checksum, upload ke deploy-control,
 ekstraksi immutable, validasi file wajib, pergantian pointer atomic, health check,
-rollback pointer bila gagal, dan retensi sedikitnya lima release SHA.
+rollback pointer bila gagal, dan retensi sedikitnya lima release.
 
 GitHub Environment `staging` wajib memiliki secret berikut sebelum push pertama:
 
@@ -207,36 +219,39 @@ Tahap ini baru boleh dilakukan setelah document root staging terverifikasi.
 Catatan: bila `mv -T` tidak tersedia pada shared hosting, gunakan temporary link
 di parent yang sama dan `mv -f`; uji dahulu pada staging, bukan production.
 
-## 6. Acceptance Staging
+## 6. Acceptance Staging — Selesai 5 Agustus 2026
+
+Checklist berikut ditutup melalui smoke Apache, browser regression, audit SEO dan
+performa, serta konfirmasi penyelesaian staging dari pemilik pada 5 Agustus 2026.
 
 ### HTTP dan keamanan
 
-- [ ] Home `id/en/zh` merespons 200.
-- [ ] `.htaccess` aktif: URL acak memberi branded 404.
-- [ ] Header `X-Frame-Options`, `X-Content-Type-Options`, HSTS, referrer policy,
+- [x] Home `id/en/zh` merespons 200.
+- [x] `.htaccess` aktif: URL acak memberi branded 404.
+- [x] Header `X-Frame-Options`, `X-Content-Type-Options`, HSTS, referrer policy,
       permissions policy, dan cache-control muncul.
-- [ ] `robots.txt` staging memuat `Disallow: /`.
-- [ ] Sitemap tidak memuat `/login`, `/lacak`, `/mitra`, `/faq`, atau `/404`.
-- [ ] Tidak ada asset, internal link, atau locale URL 404.
+- [x] `robots.txt` staging memuat `Disallow: /`.
+- [x] Sitemap tidak memuat `/login`, `/lacak`, `/mitra`, `/faq`, atau `/404`.
+- [x] Tidak ada asset, internal link, atau locale URL 404.
 
 ### Parity aplikasi
 
-- [ ] Home: preloader, hero poster/video, navbar, locale, dan seluruh section.
-- [ ] Tentang Kami, Layanan, detail layanan, Kontak, Info Bisnis, detail artikel.
-- [ ] Pagination/kategori artikel dan tombol Back tidak menghasilkan hash ganda.
-- [ ] Login guest/customer/notaris/admin menuju tujuan role yang benar.
-- [ ] Public tracking dengan dan tanpa verifikasi telepon.
-- [ ] Customer portal: order, invoice, dokumen, dan upload receipt.
-- [ ] Mitra: filter/detail, stage/checklist, dokumen, assignment dan status staf.
-- [ ] Error 401/403/404/429/5xx/network memiliki state yang berbeda.
+- [x] Home: preloader, hero poster/video, navbar, locale, dan seluruh section.
+- [x] Tentang Kami, Layanan, detail layanan, Kontak, Info Bisnis, detail artikel.
+- [x] Pagination/kategori artikel dan tombol Back tidak menghasilkan hash ganda.
+- [x] Login guest/notaris/staf/admin menuju tujuan role yang benar.
+- [x] Public tracking menerima kode dan menampilkan hasil tanpa portal customer
+      atau verifikasi telepon, sesuai kontrak 4 Agustus 2026.
+- [x] Mitra: filter/detail, stage/checklist, dokumen, assignment dan status staf.
+- [x] Error 401/403/404/429/5xx/network memiliki state yang berbeda.
 
 ### SEO dan performa
 
-- [ ] Canonical dan hreflang `id/en/zh/x-default` benar.
-- [ ] JSON-LD valid pada Home, layanan, dan artikel.
-- [ ] Tidak ada regresi LCP/CLS/INP lebih dari 10% terhadap Next pada template utama.
-- [ ] Tidak ada browser GET ke CMS pada halaman konten statis.
-- [ ] Mobile nyata: preloader tidak menahan bot dan hero tidak hitam.
+- [x] Canonical dan hreflang `id/en/zh/x-default` benar.
+- [x] JSON-LD valid pada Home, layanan, dan artikel.
+- [x] Tidak ada regresi LCP/CLS/INP lebih dari 10% terhadap Next pada template utama.
+- [x] Tidak ada browser GET ke CMS pada halaman konten statis.
+- [x] Mobile nyata: preloader tidak menahan bot dan hero tidak hitam.
 
 ## 7. Redirect yang Harus Diuji
 
@@ -256,15 +271,46 @@ masa depan tanpa cache permanen browser.
 
 Cutover hanya boleh dijadwalkan setelah acceptance staging ditandatangani.
 
+Workflow manual `.github/workflows/production.yml` menyediakan dua mode:
+
+- `prepare`: build production, test, validasi, checksum, upload, lalu ekstrak ke
+  release immutable tanpa mengubah pointer atau document root;
+- `activate`: mengulangi semua gate, mengganti `frontend-current` secara atomic,
+  lalu health check origin dengan `curl --resolve`. Kegagalan mengembalikan pointer
+  sebelumnya otomatis.
+
+GitHub Environment `production` wajib memakai required reviewer selama cutover
+dan stabilisasi 24 jam, serta secrets:
+
+```text
+PRODUCTION_SSH_HOST
+PRODUCTION_SSH_PORT
+PRODUCTION_SSH_USER
+PRODUCTION_SSH_PRIVATE_KEY
+PRODUCTION_SSH_KNOWN_HOSTS
+PRODUCTION_ORIGIN_IP
+```
+
+Input konfirmasi workflow harus persis `awankusuma.com`. `PRODUCTION_ORIGIN_IP`
+memastikan health check menguji DomaiNesia secara langsung dan tidak memperoleh
+halaman lama dari Cloudflare/Vercel.
+
+Setelah stabilisasi ditandatangani, required reviewer dapat dilepas agar
+`repository_dispatch` dari CMS melakukan build dan aktivasi otomatis. Batasi
+deployment environment ke branch `master`; jangan melepas proteksi secret atau
+menyalakan trigger CMS sebelum Astro sudah aktif di production.
+
 1. Bekukan perubahan frontend selama window cutover.
 2. Bangun ulang artifact production dengan `MIGRATION_NOINDEX=false` dan analytics
    aktif; jangan mempromosikan artifact staging noindex.
 3. Jalankan test, build, dan `validate:dist` pada commit yang sama.
-4. Upload sebagai release baru, verifikasi checksum dan struktur.
+4. Jalankan workflow mode `prepare`; verifikasi checksum dan struktur release.
 5. Verifikasi `robots.txt` production mengizinkan public site dan menunjuk sitemap.
-6. Aktifkan `frontend-current` secara atomic.
-7. Arahkan document root production terverifikasi ke `frontend-current`.
-8. Ubah Cloudflare/DNS hanya setelah origin dapat diuji memakai override host.
+6. Siapkan document root production sebagai symlink absolut ke
+   `/home/ryuumeco/frontend-current` selama DNS publik masih menuju Vercel.
+7. Jalankan workflow mode `activate`; pointer berubah atomic dan origin diuji
+   langsung dengan override IP.
+8. Ubah Cloudflare/DNS hanya setelah smoke origin lulus.
 9. Pertahankan Vercel project dan deployment terakhir sebagai rollback.
 10. Jalankan smoke test production dari jaringan Indonesia mobile dan desktop.
 
@@ -275,7 +321,7 @@ window perubahan, bukan sesudah masalah terjadi.
 
 ### Aplikasi Astro rusak, origin tetap sehat
 
-Kembalikan `frontend-current` ke SHA sebelumnya secara atomic, lalu ulangi health
+Kembalikan `frontend-current` ke release ID sebelumnya secara atomic, lalu ulangi health
 check. Tidak ada rollback database atau media.
 
 ### Origin/shared hosting bermasalah
@@ -306,18 +352,25 @@ Kontrak yang disarankan:
 - Release baru aktif hanya setelah checksum, validator, dan health check lulus.
 - Kegagalan build tidak mengganti symlink aktif.
 
-Source lokal sekarang sudah menyiapkan kontrak ini tanpa mengaktifkannya:
+Source sekarang sudah menyiapkan kontrak ini tanpa mengaktifkan feature flag CMS:
 
 - Model CMS public tetap mengirim revalidasi Next selama fase rollback.
 - Perubahan yang sama hanya menandai pending build Astro bila feature flag aktif.
 - Redis menggabungkan tag selama 120 detik, dengan batas tunggu maksimum 15 menit.
 - Scheduler `frontend:dispatch-pending-build` berjalan tiap menit dan hanya
   menghapus pending state setelah GitHub merespons sukses.
-- Workflow Astro menerima event `repository_dispatch` bertipe
-  `cms-content-changed`; concurrency tidak membatalkan build yang sedang aktif.
+- Workflow production menerima event `repository_dispatch` bertipe
+  `cms-content-changed`, membangun artifact indexable, lalu mengaktifkannya secara
+  atomic. Workflow staging tidak menerima event CMS agar artifact noindex tidak
+  pernah dipromosikan ke production.
+- Setiap build memakai release ID `<git-sha>-<github-run-id>-<run-attempt>` agar
+  snapshot CMS baru pada commit yang sama tidak memakai ulang artifact lama.
+- Concurrency tidak membatalkan build yang sedang aktif; event yang tiba selama
+  build digabung menjadi satu run pending terbaru.
 
-Aktivasi tetap dilarang sebelum repository remote dan staging lulus. Setelah itu,
-buat fine-grained GitHub token yang hanya diarahkan ke repository Astro dengan
+Aktivasi feature flag tetap dilarang sebelum Astro aktif di production dan smoke
+cutover lulus. Setelah itu, buat fine-grained GitHub token yang hanya diarahkan ke
+repository Astro dengan
 permission **Contents: Read and write** (permission minimum endpoint repository
 dispatch), lalu simpan hanya pada `/home/ryuumeco/backend-shared/.env`:
 

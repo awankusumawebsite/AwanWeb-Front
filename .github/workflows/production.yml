@@ -1,0 +1,180 @@
+name: Astro production release
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_mode:
+        description: Prepare only, or atomically activate after the origin is ready
+        required: true
+        default: prepare
+        type: choice
+        options:
+          - prepare
+          - activate
+      confirm_production:
+        description: Type awankusuma.com to authorize a production release
+        required: true
+        type: string
+  repository_dispatch:
+    types: [cms-content-changed]
+
+concurrency:
+  group: astro-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Build and validate production artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PUBLIC_BACKEND_URL: https://cms.awankusuma.com
+      CMS_BUILD_TIMEOUT_MS: 30000
+      CMS_BUILD_CONCURRENCY: 1
+      MIGRATION_NOINDEX: false
+      PUBLIC_ANALYTICS_ENABLED: true
+    steps:
+      - name: Validate manual production confirmation
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          CONFIRM_PRODUCTION: ${{ inputs.confirm_production }}
+        run: |
+          if [ "$CONFIRM_PRODUCTION" != awankusuma.com ]; then
+            printf 'Konfirmasi production harus persis awankusuma.com.\n' >&2
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run validate:dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astro-production-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+
+  deploy:
+    name: ${{ (github.event_name == 'repository_dispatch' || inputs.deployment_mode == 'activate') && 'Activate production release' || 'Prepare production release' }}
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://awankusuma.com
+    env:
+      RELEASE_ID: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      DEPLOYMENT_MODE: ${{ github.event_name == 'repository_dispatch' && 'activate' || inputs.deployment_mode }}
+      PRODUCTION_DEPLOY_HOME: /home/ryuumeco
+      PRODUCTION_URL: https://awankusuma.com
+      PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+      PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+      PRODUCTION_SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+      PRODUCTION_SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+      PRODUCTION_ORIGIN_IP: ${{ secrets.PRODUCTION_ORIGIN_IP }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: astro-production-${{ github.sha }}
+          path: dist/
+
+      - name: Validate production deployment configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for variable in \
+            PRODUCTION_SSH_HOST \
+            PRODUCTION_SSH_PORT \
+            PRODUCTION_SSH_USER \
+            PRODUCTION_SSH_PRIVATE_KEY \
+            PRODUCTION_SSH_KNOWN_HOSTS
+          do
+            if [ -z "${!variable:-}" ]; then
+              printf 'GitHub Environment production belum memiliki %s\n' "$variable" >&2
+              exit 1
+            fi
+          done
+          [[ "$PRODUCTION_SSH_PORT" =~ ^[0-9]+$ ]]
+          if [ "$DEPLOYMENT_MODE" = activate ] \
+            && [ -z "${PRODUCTION_ORIGIN_IP:-}" ]; then
+            printf 'Mode activate memerlukan PRODUCTION_ORIGIN_IP.\n' >&2
+            exit 1
+          fi
+
+      - name: Configure pinned SSH host key
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$PRODUCTION_SSH_PRIVATE_KEY" \
+            | tr -d '\r' > "$HOME/.ssh/id_production"
+          printf '%s\n' "$PRODUCTION_SSH_KNOWN_HOSTS" \
+            | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_production" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/id_production" >/dev/null
+
+      - name: Package and checksum artifact
+        id: package
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          archive="frontend-production-${RELEASE_ID}.tar.gz"
+          tar -C dist -czf "$archive" .
+          sha256sum "$archive" > "${archive}.sha256"
+          printf 'archive=%s\n' "$archive" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact to non-public deploy control
+        shell: bash
+        env:
+          ARCHIVE: ${{ steps.package.outputs.archive }}
+        run: |
+          set -Eeuo pipefail
+          ssh_options=(
+            -i "$HOME/.ssh/id_production"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=15
+          )
+          ssh -p "$PRODUCTION_SSH_PORT" "${ssh_options[@]}" \
+            "$PRODUCTION_SSH_USER@$PRODUCTION_SSH_HOST" \
+            "mkdir -p '$PRODUCTION_DEPLOY_HOME/frontend-shared/deploy-control' && chmod 700 '$PRODUCTION_DEPLOY_HOME/frontend-shared/deploy-control'"
+          scp -P "$PRODUCTION_SSH_PORT" "${ssh_options[@]}" \
+            "$ARCHIVE" "${ARCHIVE}.sha256" \
+            "$PRODUCTION_SSH_USER@$PRODUCTION_SSH_HOST:$PRODUCTION_DEPLOY_HOME/frontend-shared/deploy-control/"
+
+      - name: Verify and prepare or activate immutable release
+        shell: bash
+        env:
+          ARCHIVE: ${{ steps.package.outputs.archive }}
+        run: |
+          set -Eeuo pipefail
+          ssh_options=(
+            -i "$HOME/.ssh/id_production"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=15
+          )
+          ssh -p "$PRODUCTION_SSH_PORT" "${ssh_options[@]}" \
+            "$PRODUCTION_SSH_USER@$PRODUCTION_SSH_HOST" \
+            bash -s -- \
+              "$RELEASE_ID" \
+              "$ARCHIVE" \
+              "$PRODUCTION_DEPLOY_HOME" \
+              "$PRODUCTION_URL" \
+              "$DEPLOYMENT_MODE" \
+              "$PRODUCTION_ORIGIN_IP" \
+            < scripts/deploy-production-release.sh

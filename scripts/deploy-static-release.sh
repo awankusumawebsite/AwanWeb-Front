@@ -3,21 +3,21 @@
 set -Eeuo pipefail
 
 if [ "$#" -ne 4 ]; then
-  printf 'Usage: %s <git-sha> <archive-name> <deploy-home> <staging-url>\n' "$0" >&2
+  printf 'Usage: %s <release-id> <archive-name> <deploy-home> <staging-url>\n' "$0" >&2
   exit 64
 fi
 
-release_sha="$1"
+release_id="$1"
 archive_name="$2"
 deploy_home="${3%/}"
 staging_url="${4%/}"
 
-if [[ ! "$release_sha" =~ ^[0-9a-f]{40}$ ]]; then
-  printf 'Git SHA tidak valid: %s\n' "$release_sha" >&2
+if [[ ! "$release_id" =~ ^[0-9a-f]{40}(-[0-9]+-[0-9]+)?$ ]]; then
+  printf 'Release ID tidak valid: %s\n' "$release_id" >&2
   exit 64
 fi
 
-expected_archive="frontend-${release_sha}.tar.gz"
+expected_archive="frontend-${release_id}.tar.gz"
 if [ "$archive_name" != "$expected_archive" ]; then
   printf 'Nama archive tidak sesuai SHA: %s\n' "$archive_name" >&2
   exit 64
@@ -37,12 +37,12 @@ release_root="$deploy_home/frontend-releases"
 shared_root="$deploy_home/frontend-shared"
 control_root="$shared_root/deploy-control"
 log_root="$shared_root/logs"
-release_dir="$release_root/$release_sha"
+release_dir="$release_root/$release_id"
 staging_link="$deploy_home/frontend-staging-current"
 document_root="$deploy_home/staging.awankusuma.com"
 archive_path="$control_root/$archive_name"
 checksum_path="${archive_path}.sha256"
-temporary_release="$release_root/.${release_sha}.tmp.$$"
+temporary_release="$release_root/.${release_id}.tmp.$$"
 temporary_link="$deploy_home/.frontend-staging-current.tmp.$$"
 release_list="$release_root/.release-list.$$"
 
@@ -169,7 +169,7 @@ retain_releases() {
 
   while IFS= read -r candidate; do
     candidate_name="$(basename -- "$candidate")"
-    [[ "$candidate_name" =~ ^[0-9a-f]{40}$ ]] || continue
+    [[ "$candidate_name" =~ ^[0-9a-f]{40}(-[0-9]+-[0-9]+)?$ ]] || continue
 
     kept=$((kept + 1))
     if [ "$kept" -le 5 ] \
@@ -188,8 +188,8 @@ fi
 
 printf '%s\t%s\t%s\n' \
   "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-  "$release_sha" \
+  "$release_id" \
   "$staging_url" \
   >> "$log_root/staging-deploy.log"
 
-printf 'STAGING_DEPLOY_OK %s\n' "$release_sha"
+printf 'STAGING_DEPLOY_OK %s\n' "$release_id"

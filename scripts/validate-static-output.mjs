@@ -209,6 +209,13 @@ if (!existsSync(robotsPath)) {
   if (process.env.MIGRATION_NOINDEX !== 'false' && !robots.includes('Disallow: /')) {
     failures.push('Build staging tidak memblokir crawler melalui robots.txt.');
   }
+  if (process.env.MIGRATION_NOINDEX === 'false' && /^Disallow: \/$/m.test(robots)) {
+    failures.push('Build production masih memblokir seluruh crawler melalui robots.txt.');
+  }
+  if (process.env.MIGRATION_NOINDEX === 'false'
+    && !robots.includes('Sitemap: https://awankusuma.com/sitemap-index.xml')) {
+    failures.push('Build production tidak menunjuk sitemap production pada robots.txt.');
+  }
 }
 
 if (failures.length > 0) {
