@@ -30,7 +30,6 @@ export interface TrackingStage {
   name: string;
   description?: string;
   status: string;
-  eta_date?: string | null;
   completed_at?: string | null;
   customer_note?: string | null;
   checklist_items?: Array<{
@@ -48,65 +47,11 @@ export interface TrackingOrder {
   service_name?: string | null;
   status: string;
   progress_percent?: number;
-  overall_eta?: string | null;
+  target_days?: number | null;
+  target_deadline?: string | null;
   public_note?: string | null;
   stages?: TrackingStage[];
   documents?: TrackingDocument[];
-}
-
-export interface CustomerOrderSummary {
-  id: number;
-  tracking_code: string;
-  title: string;
-  status: string;
-  progress: number;
-  service_name?: string | null;
-  notary_office?: string | null;
-  public_note?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
-export interface CustomerOrderDetail extends Omit<CustomerOrderSummary, 'notary_office'> {
-  notary_office?: string | Record<string, unknown> | null;
-  stages: TrackingStage[];
-  documents: TrackingDocument[];
-}
-
-export interface CustomerInvoiceSummary {
-  id: number;
-  invoice_number: string;
-  order_title?: string | null;
-  tracking_code?: string | null;
-  status: string;
-  total: number | string;
-  issued_at?: string | null;
-  due_at?: string | null;
-  payment_receipt?: boolean;
-  has_payment_receipt?: boolean;
-}
-
-export interface CustomerInvoiceDetail extends CustomerInvoiceSummary {
-  order?: { title?: string; tracking_code?: string } | null;
-  subtotal?: number | string;
-  discount?: number | string;
-  tax?: number | string;
-  paid_at?: string | null;
-  notes?: string | null;
-  items?: Array<{
-    id: number;
-    description: string;
-    quantity: number | string;
-    unit_price: number | string;
-    amount: number | string;
-  }>;
-}
-
-export interface PaymentMethod {
-  id: number;
-  bank_name: string;
-  account_number: string;
-  account_name: string;
 }
 
 export interface NotaryOrderSummary {
@@ -136,7 +81,6 @@ export interface NotaryStage {
   name: string;
   status: string;
   description?: string;
-  eta_date?: string | null;
   is_final?: boolean;
   checklist_items: NotaryChecklistItem[];
 }
@@ -366,44 +310,6 @@ export function createRuntimeApi({
     setSessionHint(false);
   }
 
-  async function customerOrders(): Promise<CustomerOrderSummary[]> {
-    const body = await request('portal/orders');
-    const result = Array.isArray(body.orders) ? body.orders : body.data;
-    return Array.isArray(result) ? result as CustomerOrderSummary[] : [];
-  }
-
-  async function customerOrderDetail(trackingCode: string): Promise<CustomerOrderDetail> {
-    const body = await request(`portal/orders/${encodeURIComponent(trackingCode)}`);
-    return body.order as CustomerOrderDetail;
-  }
-
-  async function customerInvoices(): Promise<CustomerInvoiceSummary[]> {
-    const body = await request('portal/invoices');
-    return Array.isArray(body.invoices) ? body.invoices as CustomerInvoiceSummary[] : [];
-  }
-
-  async function customerInvoiceDetail(invoiceNumber: string): Promise<{
-    invoice: CustomerInvoiceDetail;
-    paymentMethods: PaymentMethod[];
-    adminWhatsapp: string;
-  }> {
-    const body = await request(`portal/invoices/${encodeURIComponent(invoiceNumber)}`);
-    return {
-      invoice: body.invoice as CustomerInvoiceDetail,
-      paymentMethods: Array.isArray(body.payment_methods) ? body.payment_methods as PaymentMethod[] : [],
-      adminWhatsapp: typeof body.admin_whatsapp === 'string' ? body.admin_whatsapp : '',
-    };
-  }
-
-  async function uploadInvoiceReceipt(invoiceNumber: string, file: File): Promise<void> {
-    const form = new FormData();
-    form.append('receipt', file);
-    await request(`portal/invoices/${encodeURIComponent(invoiceNumber)}/upload-receipt`, {
-      method: 'POST',
-      body: form,
-    }, true);
-  }
-
   async function notaryOrders(): Promise<NotaryOrderSummary[]> {
     const body = await request('portal/mitra/orders');
     return Array.isArray(body.orders) ? body.orders as NotaryOrderSummary[] : [];
@@ -460,8 +366,7 @@ export function createRuntimeApi({
   async function lookupTracking(
     code: string,
     locale: string,
-    phoneLast4?: string,
-  ): Promise<{ requiresVerification: boolean; order: TrackingOrder | null }> {
+  ): Promise<TrackingOrder | null> {
     let response: Response;
     try {
       response = await fetchImpl(apiUrl(`tracking/lookup?locale=${encodeURIComponent(locale)}`, base), {
@@ -470,7 +375,7 @@ export function createRuntimeApi({
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, phone_last4: phoneLast4 || null }),
+        body: JSON.stringify({ code }),
       });
     } catch {
       throw new PortalApiError({
@@ -489,14 +394,7 @@ export function createRuntimeApi({
       });
     }
 
-    if (body.requires_verification === true) {
-      return { requiresVerification: true, order: null };
-    }
-
-    return {
-      requiresVerification: false,
-      order: (body.data || null) as TrackingOrder | null,
-    };
+    return (body.data || null) as TrackingOrder | null;
   }
 
   return {
@@ -504,11 +402,6 @@ export function createRuntimeApi({
     login,
     currentUser,
     logout,
-    customerOrders,
-    customerOrderDetail,
-    customerInvoices,
-    customerInvoiceDetail,
-    uploadInvoiceReceipt,
     notaryOrders,
     notaryOrderDetail,
     completeNotaryStage,
@@ -525,16 +418,9 @@ export function createRuntimeApi({
 export function trackingDocumentUrl(
   code: string,
   documentId: number,
-  phoneLast4 = '',
   origin?: string,
 ): string {
-  const url = new URL(apiUrl(`tracking/documents/${encodeURIComponent(code)}/${documentId}/download`, origin));
-  if (phoneLast4) url.searchParams.set('phone_last4', phoneLast4);
-  return url.href;
-}
-
-export function customerDocumentUrl(documentId: number, origin?: string): string {
-  return apiUrl(`portal/documents/${documentId}/download`, origin);
+  return apiUrl(`tracking/documents/${encodeURIComponent(code)}/${documentId}/download`, origin);
 }
 
 export function notaryDocumentUrl(documentId: number, origin?: string): string {

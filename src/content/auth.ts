@@ -60,7 +60,7 @@ export const loginCopy: Record<Locale, LoginCopy> = {
     noAccount: 'Do not have an account?',
     contact: 'Contact our team.',
     brandHeading: 'Stay in Control of Your Legal Assets.',
-    brandDescription: 'Track legal processes, documents, and invoices in one secure portal.',
+    brandDescription: 'Manage assigned legal workflows and documents in one secure internal portal.',
   },
   zh: {
     back: '返回首页',

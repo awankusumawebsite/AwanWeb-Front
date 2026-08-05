@@ -21,14 +21,14 @@ const marqueePartners = [...safePartners, ...safePartners];
 const duration = Math.max(35, safePartners.length * 3.5);
 ---
 
-<section class="relative w-full overflow-hidden border-b border-black/5 bg-white py-16 md:py-24">
+<section data-partners-marquee class="relative w-full overflow-hidden border-b border-black/5 bg-white py-16 md:py-24">
   <h2 class="relative z-20 mb-14 px-6 text-center text-xs font-black uppercase tracking-[0.4em] md:text-sm md:tracking-[0.6em]">{heading}</h2>
   <div class="relative w-full overflow-hidden">
     <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent md:w-32"></div>
     <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent md:w-32"></div>
-    <div data-partner-track class="flex w-max items-center" style={`--partner-duration:${duration}s`}>
+    <div data-partner-track class="relative z-0 flex w-max cursor-ew-resize items-center" style={`--partner-duration:${duration}s`}>
       {marqueePartners.map((partner) => (
-        <div class="flex h-[120px] w-[180px] shrink-0 flex-col items-center justify-center gap-3 md:h-[150px] md:w-[240px]">
+        <div data-partner-item class="partner-marquee-item flex h-[120px] w-[180px] shrink-0 flex-col items-center justify-center gap-3 will-change-transform md:h-[150px] md:w-[240px]">
           <img
             src={homeMediaUrl(partner.logo_url || partner.logo)}
             alt={partner.name}
@@ -44,6 +44,37 @@ const duration = Math.max(35, safePartners.length * 3.5);
     </div>
   </div>
 </section>
+
+<script>
+  const section = document.querySelector<HTMLElement>('[data-partners-marquee]');
+  const track = section?.querySelector<HTMLElement>('[data-partner-track]');
+  const partnerItems = section?.querySelectorAll<HTMLElement>('[data-partner-item]');
+
+  if (section && track && partnerItems?.length) {
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        track.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+      },
+      { rootMargin: '150px' },
+    );
+
+    const centerObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          (entry.target as HTMLElement).dataset.partnerCenter = entry.isIntersecting ? 'true' : 'false';
+        });
+      },
+      {
+        root: null,
+        rootMargin: '0px -42% 0px -42%',
+        threshold: 0.1,
+      },
+    );
+
+    visibilityObserver.observe(section);
+    partnerItems.forEach((item) => centerObserver.observe(item));
+  }
+</script>
 
 <style>
   [data-partner-track] {

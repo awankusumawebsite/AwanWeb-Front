@@ -1,0 +1,255 @@
+---
+interface Labels {
+  login: string;
+  account: string;
+  activeAccount: string;
+  adminDashboard: string;
+  partnerPortal: string;
+  customerPortal: string;
+  logout: string;
+  retry: string;
+}
+
+interface Props {
+  variant: 'desktop' | 'mobile';
+  backendOrigin: string;
+  loginHref: string;
+  customerHref: string;
+  partnerHref: string;
+  labels: Labels;
+}
+
+const { variant, backendOrigin, loginHref, customerHref, partnerHref, labels } = Astro.props;
+const config = JSON.stringify({ backendOrigin, loginHref, customerHref, partnerHref, labels });
+const guestClass = variant === 'desktop'
+  ? 'whitespace-nowrap rounded-full border border-elm px-4 py-2 text-[11px] font-bold text-elm transition-colors hover:bg-elm hover:text-white xl:px-5 xl:py-2.5 xl:text-xs'
+  : 'flex w-full items-center justify-center rounded-full border border-slate-600 px-6 py-4 text-sm font-bold tracking-widest text-white transition-colors hover:bg-white/10';
+---
+
+<div data-auth-nav data-variant={variant} data-config={config} class="contents">
+  <a href={loginHref} class={guestClass}>{labels.login}</a>
+</div>
+
+<script>
+  import { authDestination, resolveAuthNavigation, type AuthNavigationState } from '../../lib/auth-navigation';
+  import { createRuntimeApi, hasSessionHint } from '../../lib/runtime-api';
+
+  interface AuthLabels {
+    login: string;
+    account: string;
+    activeAccount: string;
+    adminDashboard: string;
+    partnerPortal: string;
+    customerPortal: string;
+    logout: string;
+    retry: string;
+  }
+
+  interface AuthConfig {
+    backendOrigin: string;
+    loginHref: string;
+    customerHref: string;
+    partnerHref: string;
+    labels: AuthLabels;
+  }
+
+  interface AuthRoot extends HTMLElement {
+    __authConfig?: AuthConfig;
+  }
+
+  let session: AuthNavigationState = { status: 'guest', user: null };
+  let checking = false;
+  let sessionRequest: Promise<AuthNavigationState> | undefined;
+
+  const icon = (name: 'user' | 'chevron' | 'dashboard' | 'logout' | 'refresh', size: number) => {
+    const paths = {
+      user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
+      chevron: '<path d="m6 9 6 6 6-6"></path>',
+      dashboard: '<rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect>',
+      logout: '<path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>',
+      refresh: '<path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"></path>',
+    };
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+  };
+
+  function elementFrom(markup: string): HTMLElement {
+    const template = document.createElement('template');
+    template.innerHTML = markup.trim();
+    return template.content.firstElementChild as HTMLElement;
+  }
+
+  function configFor(root: AuthRoot): AuthConfig {
+    if (!root.__authConfig) root.__authConfig = JSON.parse(root.dataset.config || '{}') as AuthConfig;
+    return root.__authConfig;
+  }
+
+  function renderGuest(root: AuthRoot, config: AuthConfig) {
+    const desktop = root.dataset.variant === 'desktop';
+    const link = document.createElement('a');
+    link.href = config.loginHref;
+    link.className = desktop
+      ? 'whitespace-nowrap rounded-full border border-elm px-4 py-2 text-[11px] font-bold text-elm transition-colors hover:bg-elm hover:text-white xl:px-5 xl:py-2.5 xl:text-xs'
+      : 'flex w-full items-center justify-center rounded-full border border-slate-600 px-6 py-4 text-sm font-bold tracking-widest text-white transition-colors hover:bg-white/10';
+    link.textContent = config.labels.login;
+    root.replaceChildren(link);
+  }
+
+  function renderChecking(root: AuthRoot, config: AuthConfig) {
+    const skeleton = document.createElement('span');
+    skeleton.className = root.dataset.variant === 'desktop'
+      ? 'h-9 w-20 animate-pulse rounded-full bg-slate-200'
+      : 'h-12 w-full animate-pulse rounded-full bg-white/10';
+    skeleton.setAttribute('aria-label', config.labels.account);
+    root.replaceChildren(skeleton);
+  }
+
+  function renderUnavailable(root: AuthRoot, config: AuthConfig) {
+    const desktop = root.dataset.variant === 'desktop';
+    const button = elementFrom(`<button type="button" data-auth-retry class="${desktop
+      ? 'inline-flex items-center gap-2 rounded-full border border-amber-300 px-4 py-2 text-[11px] font-bold text-amber-700 hover:bg-amber-50'
+      : 'inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-400/60 px-6 py-4 text-sm font-bold tracking-widest text-amber-300'}">${icon('refresh', 14)}<span></span></button>`);
+    const label = button.querySelector('span');
+    if (label) label.textContent = config.labels.retry;
+    button.addEventListener('click', () => void loadSession(true));
+    root.replaceChildren(button);
+  }
+
+  function destinationFor(config: AuthConfig, role: string | null | undefined) {
+    const destination = authDestination(role);
+    if (destination === 'admin') return { href: `${config.backendOrigin}/admin`, label: config.labels.adminDashboard };
+    if (destination === 'mitra') return { href: config.partnerHref, label: config.labels.partnerPortal };
+    return { href: config.customerHref, label: config.labels.customerPortal };
+  }
+
+  function attachLogout(button: Element, config: AuthConfig) {
+    button.addEventListener('click', async () => {
+      checking = true;
+      renderAll();
+      try {
+        await createRuntimeApi({ origin: config.backendOrigin }).logout();
+        window.dispatchEvent(new Event('awan-auth-change'));
+        window.location.assign(config.loginHref);
+      } catch {
+        checking = false;
+        session = { status: 'unavailable', user: null };
+        renderAll();
+      }
+    });
+  }
+
+  function renderAuthenticated(root: AuthRoot, config: AuthConfig) {
+    if (session.status !== 'authenticated') return;
+    const user = session.user;
+    const destination = destinationFor(config, user.role);
+
+    if (root.dataset.variant === 'mobile') {
+      const panel = elementFrom(`<div class="flex w-full flex-col gap-3"><div class="rounded-2xl border border-white/10 px-5 py-4 text-white"><p data-active-label class="text-[10px] font-bold uppercase tracking-widest text-white/50"></p><p data-auth-email class="mt-1 truncate text-sm font-bold"></p></div><a data-dashboard class="flex w-full items-center justify-center gap-2 rounded-full border border-elm px-6 py-4 text-sm font-bold tracking-widest text-elm">${icon('dashboard', 18)}<span></span></a><button data-auth-logout type="button" class="flex w-full items-center justify-center gap-2 rounded-full border border-red-500/50 px-6 py-4 text-sm font-bold tracking-widest text-red-400">${icon('logout', 18)}<span></span></button></div>`);
+      const activeLabel = panel.querySelector<HTMLElement>('[data-active-label]');
+      const email = panel.querySelector<HTMLElement>('[data-auth-email]');
+      const dashboard = panel.querySelector<HTMLAnchorElement>('[data-dashboard]');
+      const dashboardLabel = dashboard?.querySelector('span');
+      const logout = panel.querySelector('[data-auth-logout]');
+      const logoutLabel = logout?.querySelector('span');
+      if (activeLabel) activeLabel.textContent = config.labels.activeAccount;
+      if (email) email.textContent = user.email;
+      if (dashboard) dashboard.href = destination.href;
+      if (dashboardLabel) dashboardLabel.textContent = destination.label;
+      if (logoutLabel) logoutLabel.textContent = config.labels.logout;
+      if (logout) attachLogout(logout, config);
+      root.replaceChildren(panel);
+      return;
+    }
+
+    const panel = elementFrom(`<div data-auth-desktop class="relative"><button data-auth-account type="button" aria-expanded="false" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-elm/20 bg-elm/10 px-4 py-2 text-[11px] font-bold text-elm transition-colors hover:border-elm hover:bg-elm hover:text-white xl:px-5 xl:py-2.5 xl:text-xs">${icon('user', 14)}<span data-auth-name></span><span data-auth-chevron class="transition-transform">${icon('chevron', 14)}</span></button><div data-auth-menu class="invisible absolute right-0 top-full z-50 w-56 translate-y-2 pt-3 opacity-0 transition-[opacity,visibility,transform] duration-300"><div class="flex flex-col gap-1 overflow-hidden rounded-2xl border border-slate-100 bg-white p-2 shadow-xl"><div class="mb-1 border-b border-slate-100 px-4 py-3"><p data-active-label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400"></p><p data-auth-email class="truncate text-xs font-bold text-big-stone"></p></div><a data-dashboard class="flex items-center gap-3 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-600 transition-colors hover:bg-elm/10 hover:text-elm">${icon('dashboard', 16)}<span></span></a><button data-auth-logout type="button" class="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-xs font-bold text-red-600 transition-colors hover:bg-red-50">${icon('logout', 16)}<span></span></button></div></div></div>`);
+    const button = panel.querySelector<HTMLButtonElement>('[data-auth-account]');
+    const menu = panel.querySelector<HTMLElement>('[data-auth-menu]');
+    const chevron = panel.querySelector<HTMLElement>('[data-auth-chevron]');
+    const name = panel.querySelector<HTMLElement>('[data-auth-name]');
+    const activeLabel = panel.querySelector<HTMLElement>('[data-active-label]');
+    const email = panel.querySelector<HTMLElement>('[data-auth-email]');
+    const dashboard = panel.querySelector<HTMLAnchorElement>('[data-dashboard]');
+    const dashboardLabel = dashboard?.querySelector('span');
+    const logout = panel.querySelector('[data-auth-logout]');
+    const logoutLabel = logout?.querySelector('span');
+    if (name) name.textContent = user.name.split(' ')[0];
+    if (activeLabel) activeLabel.textContent = config.labels.activeAccount;
+    if (email) email.textContent = user.email;
+    if (dashboard) dashboard.href = destination.href;
+    if (dashboardLabel) dashboardLabel.textContent = destination.label;
+    if (logoutLabel) logoutLabel.textContent = config.labels.logout;
+    if (logout) attachLogout(logout, config);
+
+    const setOpen = (open: boolean) => {
+      button?.setAttribute('aria-expanded', String(open));
+      menu?.classList.toggle('visible', open);
+      menu?.classList.toggle('invisible', !open);
+      menu?.classList.toggle('translate-y-0', open);
+      menu?.classList.toggle('translate-y-2', !open);
+      menu?.classList.toggle('opacity-100', open);
+      menu?.classList.toggle('opacity-0', !open);
+      chevron?.classList.toggle('rotate-180', open);
+    };
+    button?.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
+    panel.addEventListener('mouseenter', () => setOpen(true));
+    panel.addEventListener('mouseleave', () => setOpen(false));
+    root.replaceChildren(panel);
+  }
+
+  function authRoots(): AuthRoot[] {
+    return [...document.querySelectorAll<AuthRoot>('[data-auth-nav]')];
+  }
+
+  function renderAll() {
+    authRoots().forEach((root) => {
+      const config = configFor(root);
+      if (checking && session.status === 'guest') renderChecking(root, config);
+      else if (session.status === 'unavailable') renderUnavailable(root, config);
+      else if (session.status === 'authenticated') renderAuthenticated(root, config);
+      else renderGuest(root, config);
+    });
+  }
+
+  async function sharedSession(reload = false): Promise<AuthNavigationState> {
+    const root = authRoots()[0];
+    if (!root) return { status: 'guest', user: null };
+    const config = configFor(root);
+    if (reload) sessionRequest = undefined;
+    sessionRequest ??= resolveAuthNavigation(
+      hasSessionHint(),
+      createRuntimeApi({ origin: config.backendOrigin }).currentUser,
+    );
+    return sessionRequest;
+  }
+
+  async function loadSession(reload = false) {
+    if (!hasSessionHint()) {
+      sessionRequest = undefined;
+      checking = false;
+      session = { status: 'guest', user: null };
+      renderAll();
+      return;
+    }
+
+    checking = true;
+    renderAll();
+    session = await sharedSession(reload);
+    checking = false;
+    renderAll();
+  }
+
+  function setupAuthNavigation() {
+    const roots = authRoots();
+    if (roots.length === 0 || roots.every((root) => root.dataset.ready === 'true')) return;
+    roots.forEach((root) => {
+      root.dataset.ready = 'true';
+      configFor(root);
+    });
+    renderAll();
+    void loadSession();
+  }
+
+  setupAuthNavigation();
+  window.addEventListener('storage', () => void loadSession(true));
+  window.addEventListener('awan-auth-change', () => void loadSession(true));
+  document.addEventListener('astro:page-load', setupAuthNavigation);
+</script>

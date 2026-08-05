@@ -193,7 +193,7 @@ export default function KontakHero({ contactInfo, categories = [] }) {
                        </svg>
                     </div>
                     <div>
-                       <h4 className="text-slate-800 font-bold text-[15px] mb-0.5">{t(`trustSignals.${num}.text`)}</h4>
+                       <p className="text-slate-800 font-bold text-[15px] mb-0.5">{t(`trustSignals.${num}.text`)}</p>
                        <p className="text-slate-400 text-[13px] font-medium">{t(`trustSignals.${num}.detail`)}</p>
                     </div>
                  </div>

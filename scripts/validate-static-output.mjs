@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve, sep } from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { extractOptimizableImageUrls } from './remote-image-utils.mjs';
 
 const root = resolve('dist');
@@ -34,8 +35,10 @@ if (!existsSync(root)) {
 
 const files = walk(root);
 const htmlFiles = files.filter((file) => file.endsWith('.html'));
+const artifactBytes = files.reduce((total, file) => total + statSync(file).size, 0);
 const remainingRemoteCmsImages = new Set();
 const optimizedCmsImages = new Set();
+let indexablePages = 0;
 const requiredPages = [
   '/', '/en/', '/zh/',
   '/tentang-kami/', '/en/tentang-kami/', '/zh/tentang-kami/',
@@ -60,6 +63,49 @@ for (const file of htmlFiles) {
       ? `/${relativeFile.slice(0, -'index.html'.length)}`
       : `/${relativeFile}`;
   const html = readFileSync(file, 'utf8');
+  if (/AuthNavIsland|LanguageSwitcherIsland/.test(html)) {
+    failures.push(`Navbar React global kembali masuk artifact di ${pagePath}`);
+  }
+  if (html.includes('data-cms-responsive')) {
+    failures.push(`Marker responsive image belum diproses optimizer di ${pagePath}`);
+  }
+  const robotsContent = html.match(/<meta\s+[^>]*name=["']robots["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1]
+    || html.match(/<meta\s+[^>]*content=["']([^"']*)["'][^>]*name=["']robots["'][^>]*>/i)?.[1]
+    || '';
+  const isIndexable = !/\bnoindex\b/i.test(robotsContent);
+
+  if (isIndexable) {
+    indexablePages += 1;
+    const titles = [...html.matchAll(/<title(?:\s[^>]*)?>([\s\S]*?)<\/title>/gi)];
+    const descriptions = [...html.matchAll(/<meta\s+[^>]*name=["']description["'][^>]*content=["']([^"']+)["'][^>]*>/gi)];
+    const canonicalUrls = [...html.matchAll(/<link\s+[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
+      .map((match) => match[1]);
+    const h1Count = [...html.matchAll(/<h1(?:\s[^>]*)?>/gi)].length;
+    const hreflangs = new Set(
+      [...html.matchAll(/<link\s+[^>]*rel=["']alternate["'][^>]*hreflang=["']([^"']+)["'][^>]*>/gi)]
+        .map((match) => match[1].toLowerCase()),
+    );
+    const jsonLdBlocks = [...html.matchAll(/<script\s+[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+
+    if (titles.length !== 1 || !titles[0]?.[1].trim()) failures.push(`Title SEO tidak valid di ${pagePath}`);
+    if (descriptions.length !== 1) failures.push(`Meta description SEO tidak valid di ${pagePath}`);
+    if (canonicalUrls.length !== 1 || !canonicalUrls[0].startsWith('https://awankusuma.com/')) {
+      failures.push(`Canonical SEO tidak valid di ${pagePath}`);
+    }
+    if (h1Count !== 1) failures.push(`Jumlah H1 harus tepat satu di ${pagePath}, ditemukan ${h1Count}`);
+    for (const locale of ['id', 'en', 'zh', 'x-default']) {
+      if (!hreflangs.has(locale)) failures.push(`Hreflang ${locale} tidak tersedia di ${pagePath}`);
+    }
+    if (jsonLdBlocks.length === 0) failures.push(`JSON-LD tidak tersedia di ${pagePath}`);
+    for (const [, json] of jsonLdBlocks) {
+      try {
+        JSON.parse(json);
+      } catch {
+        failures.push(`JSON-LD tidak valid di ${pagePath}`);
+      }
+    }
+  }
+
   for (const imageUrl of extractOptimizableImageUrls(html)) remainingRemoteCmsImages.add(imageUrl);
   for (const match of html.matchAll(/\/?_media\/cms\/[A-Za-z0-9._-]+\.webp/g)) {
     optimizedCmsImages.add(`/${match[0].replace(/^\//, '')}`);
@@ -86,6 +132,32 @@ if (remainingRemoteCmsImages.size > 0) {
 for (const imagePath of optimizedCmsImages) {
   if (!outputExists(imagePath)) failures.push(`Artifact CMS image tidak ditemukan: ${imagePath}`);
 }
+
+for (const [assetPath, maxBytes] of [
+  ['assets/image/logo-160.webp', 10_000],
+  ['images/mockups/image-5.webp', 60_000],
+  ['images/mockups/photo-1589994965851-a8f479c573a9.webp', 40_000],
+  ['images/mockups/image-1-640.webp', 30_000],
+  ['images/mockups/image-2-320.webp', 10_000],
+  ['images/mockups/image-3-640.webp', 25_000],
+  ['images/mockups/image-4-320.webp', 20_000],
+]) {
+  const file = join(root, assetPath);
+  if (!existsSync(file)) failures.push(`Asset budget tidak ditemukan: /${assetPath}`);
+  else if (statSync(file).size > maxBytes) failures.push(`Asset /${assetPath} melewati budget ${maxBytes} byte.`);
+}
+
+const baseCss = files.find((file) => /[/\\]_astro[/\\]BaseLayout\.[^/\\]+\.css$/.test(file));
+if (!baseCss) {
+  failures.push('Bundle CSS BaseLayout tidak ditemukan.');
+} else {
+  const compressedBytes = gzipSync(readFileSync(baseCss), { level: 9 }).byteLength;
+  if (compressedBytes > 25_000) failures.push(`CSS BaseLayout gzip melewati budget 25 KB: ${compressedBytes} byte.`);
+}
+if (artifactBytes > 60 * 1024 * 1024) {
+  failures.push(`Total artifact melewati budget 60 MiB: ${(artifactBytes / 1024 / 1024).toFixed(2)} MiB.`);
+}
+if (files.length > 800) failures.push(`Jumlah artifact melewati budget 800 file: ${files.length}.`);
 
 const sitemap = files
   .filter((file) => /sitemap.*\.xml$/.test(file))
@@ -137,4 +209,7 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Static output valid: ${htmlFiles.length} HTML, ${files.length} total file, seluruh link internal dan sitemap gate lulus.`);
+console.log(
+  `Static output valid: ${htmlFiles.length} HTML (${indexablePages} indexable), ${files.length} total file; `
+  + 'metadata SEO, performance budget, JSON-LD, link internal, dan sitemap gate lulus.',
+);

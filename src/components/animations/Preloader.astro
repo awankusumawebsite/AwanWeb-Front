@@ -1,0 +1,220 @@
+---
+interface Props {
+  text: string;
+  transitionLabels?: Record<string, string>;
+}
+
+const { text, transitionLabels = {} } = Astro.props;
+const words = text.split(/\s+/).filter(Boolean);
+const blinds = Array.from({ length: 5 });
+---
+
+<div
+  data-preloader
+  data-transition-labels={JSON.stringify(transitionLabels)}
+  class="pointer-events-none fixed inset-0 flex items-center justify-center"
+  style="z-index: 99999"
+  aria-hidden="true"
+>
+  <div class="absolute inset-0 flex size-full overflow-hidden">
+    {
+      blinds.map((_, index) => (
+        <div class="relative h-full flex-1" style={`--blind-index:${index}`}>
+          <div
+            data-preloader-blind="teal"
+            class="absolute -inset-x-px inset-y-0 bg-elm"
+          />
+          <div
+            data-preloader-blind="dark"
+            class="absolute -inset-x-[3px] inset-y-0 bg-big-stone"
+          />
+        </div>
+      ))
+    }
+  </div>
+
+  <div data-preloader-words class="relative z-10 flex items-center justify-center text-3xl font-medium tracking-tight text-white md:text-5xl">
+    {
+      words.map((word, index) => (
+        <span class="mr-3 inline-block overflow-hidden last:mr-0">
+          <span class="word-anim inline-block" style={`--word-index:${index}`}>
+            {word}
+          </span>
+        </span>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  const preloader = document.querySelector<HTMLElement>('[data-preloader]');
+  const skip = document.documentElement.dataset.preloaderMode === 'skip';
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const topLevelRoutes = new Set([
+    '/',
+    '/tentang-kami',
+    '/layanan',
+    '/info-bisnis',
+    '/faq',
+    '/kontak',
+    '/information',
+    '/tools',
+  ]);
+
+  const normalizePath = (pathname: string) => {
+    const withoutLocale = pathname.replace(/^\/(?:id|en|zh)(?=\/|$)/, '') || '/';
+    return withoutLocale === '' ? '/' : withoutLocale.replace(/\/$/, '') || '/';
+  };
+
+  const isTransitionRoute = (pathname: string) => topLevelRoutes.has(normalizePath(pathname));
+
+  const transitionLabels = (() => {
+    try {
+      return JSON.parse(preloader?.dataset.transitionLabels || '{}') as Record<string, string>;
+    } catch {
+      return {};
+    }
+  })();
+
+  const wordContainer = preloader?.querySelector<HTMLElement>('[data-preloader-words]');
+
+  const setTransitionLabel = (href: string) => {
+    if (!wordContainer) return;
+
+    const targetPath = normalizePath(new URL(href, window.location.href).pathname);
+    const label = transitionLabels[targetPath];
+    if (!label) return;
+
+    wordContainer.replaceChildren();
+    label.split(/\s+/).filter(Boolean).forEach((word) => {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'mr-3 inline-block overflow-hidden last:mr-0';
+
+      const wordElement = document.createElement('span');
+      wordElement.className = 'word-anim inline-block';
+      wordElement.textContent = word;
+
+      wrapper.append(wordElement);
+      wordContainer.append(wrapper);
+    });
+  };
+
+  const animateElements = (
+    elements: NodeListOf<HTMLElement> | HTMLElement[],
+    keyframes: Keyframe[],
+    options: KeyframeAnimationOptions,
+  ) => {
+    const animations: Animation[] = [];
+    elements.forEach((element, index) => {
+      animations.push(
+        element.animate(keyframes, {
+          ...options,
+          delay: Number(options.delay || 0) + index * 80,
+          fill: 'forwards',
+        }),
+      );
+    });
+    return animations;
+  };
+
+  const finishPreloader = () => {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    if (preloader) {
+      preloader.style.display = 'none';
+      preloader.style.visibility = 'hidden';
+    }
+    if (!skip) document.documentElement.dataset.preloaderMode = 'complete';
+    window.dispatchEvent(new CustomEvent('preloaderComplete'));
+  };
+
+  if (skip) {
+    finishPreloader();
+  } else {
+    window.history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    document.body.style.overflow = 'hidden';
+    const startedAt = Number(window.__PRELOADER_STARTED_AT || performance.now());
+    window.setTimeout(finishPreloader, Math.max(0, 1_550 - (performance.now() - startedAt)));
+  }
+
+  const playTransitionIn = (href: string) => {
+    if (!preloader || skip || window.__IS_BOT || prefersReducedMotion) {
+      window.location.href = href;
+      return;
+    }
+
+    setTransitionLabel(href);
+
+    const tealBlinds = preloader.querySelectorAll<HTMLElement>('[data-preloader-blind="teal"]');
+    const darkBlinds = preloader.querySelectorAll<HTMLElement>('[data-preloader-blind="dark"]');
+    const words = preloader.querySelectorAll<HTMLElement>('.word-anim');
+
+    preloader.style.display = 'flex';
+    preloader.style.visibility = 'visible';
+    document.body.style.overflow = 'hidden';
+
+    tealBlinds.forEach((blind) => {
+      blind.style.transformOrigin = 'bottom';
+      blind.style.transform = 'scaleY(0)';
+    });
+    darkBlinds.forEach((blind) => {
+      blind.style.transformOrigin = 'bottom';
+      blind.style.transform = 'scaleY(0)';
+    });
+    words.forEach((word) => {
+      word.style.opacity = '0';
+      word.style.transform = 'translateY(100%)';
+    });
+
+    animateElements(
+      tealBlinds,
+      [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }],
+      { duration: 800, easing: 'cubic-bezier(0.87, 0, 0.13, 1)' },
+    );
+    animateElements(
+      darkBlinds,
+      [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }],
+      { duration: 800, delay: 150, easing: 'cubic-bezier(0.87, 0, 0.13, 1)' },
+    );
+    animateElements(
+      words,
+      [
+        { opacity: 0, transform: 'translateY(100%)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ],
+      { duration: 600, delay: 500, easing: 'cubic-bezier(0.76, 0, 0.24, 1)' },
+    );
+
+    window.setTimeout(() => {
+      window.location.href = href;
+    }, 1_150);
+  };
+
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    const anchor = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>('a[href]');
+    if (!anchor) return;
+
+    if (anchor.target && anchor.target !== '_self') return;
+    if (anchor.hasAttribute('download')) return;
+
+    const targetUrl = new URL(anchor.href, window.location.href);
+    if (targetUrl.origin !== window.location.origin) return;
+
+    const currentPath = normalizePath(window.location.pathname);
+    const targetPath = normalizePath(targetUrl.pathname);
+    const isSamePath = currentPath === targetPath;
+
+    if (isSamePath && targetUrl.hash) return;
+    if (isSamePath && window.location.search === targetUrl.search) return;
+    if (!isTransitionRoute(targetUrl.pathname)) return;
+
+    event.preventDefault();
+    playTransitionIn(targetUrl.href);
+  });
+</script>

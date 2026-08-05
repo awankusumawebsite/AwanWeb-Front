@@ -145,7 +145,7 @@ export default function ServiceTestimonials({ testimonials = [], serviceName = "
                           )}
                         </div>
                         <div>
-                          <h4 className={`text-base md:text-lg font-bold tracking-tight ${isElm ? 'text-white' : 'text-big-stone'}`}>{item.name}</h4>
+                          <h3 className={`text-base md:text-lg font-bold tracking-tight ${isElm ? 'text-white' : 'text-big-stone'}`}>{item.name}</h3>
                           <p className={`text-sm font-medium mt-0.5 ${isElm ? 'text-white/80' : 'text-slate-500'}`}>{item.role}</p>
                         </div>
                       </div>
@@ -164,10 +164,10 @@ export default function ServiceTestimonials({ testimonials = [], serviceName = "
              
              {/* Custom Navigation */}
              <div className="flex items-center gap-3">
-               <button className="st-nav-prev w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
+               <button aria-label="Testimonial sebelumnya" className="st-nav-prev w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                </button>
-               <button className="st-nav-next w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
+               <button aria-label="Testimonial berikutnya" className="st-nav-next w-12 h-12 rounded-full flex items-center justify-center text-white bg-big-stone hover:bg-elm hover:-translate-y-0.5 transition-all outline-none focus:outline-none shadow-md hover:shadow-lg">
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                </button>
              </div>

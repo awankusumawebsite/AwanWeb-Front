@@ -120,14 +120,14 @@ function safeJsonLd(value: unknown) {
 
         {service.aboutAndBenefits && (
           <ServiceAboutAndBenefits
-            client:visible={{ rootMargin: '300px' }}
+            client:load
             data={service.aboutAndBenefits}
             serviceName={service.name}
           />
         )}
 
         <ServiceTrustAndProcess
-          client:visible={{ rootMargin: '300px' }}
+          client:visible={{ rootMargin: '600px' }}
           theme="dark"
           data={{
             clients_count: service.clients_count ?? null,

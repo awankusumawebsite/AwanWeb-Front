@@ -1,0 +1,122 @@
+---
+import type { Locale } from '../../config/site';
+
+interface LocaleLink {
+  code: Locale;
+  label: string;
+  flag: string;
+  name: string;
+  href: string;
+  active: boolean;
+}
+
+interface Props {
+  links: LocaleLink[];
+  variant?: 'desktop' | 'mobile';
+}
+
+const { links, variant = 'desktop' } = Astro.props;
+const current = links.find((link) => link.active) ?? links[0];
+---
+
+{
+  variant === 'mobile' ? (
+    <div class="menu-item mt-6 flex items-center gap-2">
+      {links.map((link) => (
+        <a
+          href={link.href}
+          lang={link.code}
+          hreflang={link.code}
+          class:list={[
+            'flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs font-bold tracking-widest transition-all duration-300',
+            link.active
+              ? 'bg-white text-black'
+              : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white',
+          ]}
+        >
+          <span class="text-sm">{link.flag}</span>
+          <span>{link.label}</span>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div data-language-switcher class="relative z-50">
+      <button
+        data-language-toggle
+        type="button"
+        class="flex items-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-bold tracking-wider text-black transition-colors duration-300 hover:bg-black/5 focus:outline-none"
+        aria-label="Switch language"
+        aria-haspopup="menu"
+        aria-expanded="false"
+      >
+        <span class="text-sm">{current.flag}</span>
+        <span>{current.label}</span>
+        <svg data-language-arrow class="h-3 w-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      <div
+        data-language-menu
+        class="absolute right-0 top-full mt-2 hidden w-[160px] origin-top-right animate-[language-menu-in_180ms_ease-out] overflow-hidden rounded-xl border border-gray-100 bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)]"
+        role="menu"
+      >
+        {links.map((link) => (
+          <a
+            href={link.href}
+            lang={link.code}
+            hreflang={link.code}
+            role="menuitem"
+            aria-current={link.active ? 'true' : undefined}
+            class:list={[
+              'flex w-full items-center gap-3 px-4 py-3 text-left text-[13px] font-semibold transition-colors duration-200',
+              link.active ? 'bg-elm/10 text-elm' : 'text-slate-700 hover:bg-gray-50 hover:text-elm',
+            ]}
+          >
+            <span class="text-base">{link.flag}</span>
+            <span>{link.name}</span>
+            {link.active && (
+              <svg class="ml-auto h-3.5 w-3.5 text-elm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+              </svg>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+<script>
+  function setupLanguageSwitchers() {
+    document.querySelectorAll<HTMLElement>('[data-language-switcher]').forEach((root) => {
+      if (root.dataset.ready === 'true') return;
+      root.dataset.ready = 'true';
+
+      const toggle = root.querySelector<HTMLButtonElement>('[data-language-toggle]');
+      const menu = root.querySelector<HTMLElement>('[data-language-menu]');
+      const arrow = root.querySelector<HTMLElement>('[data-language-arrow]');
+      if (!toggle || !menu) return;
+
+      const setOpen = (open: boolean) => {
+        toggle.setAttribute('aria-expanded', String(open));
+        menu.classList.toggle('hidden', !open);
+        arrow?.classList.toggle('rotate-180', open);
+      };
+
+      toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+      root.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          setOpen(false);
+          toggle.focus();
+        }
+      });
+      document.addEventListener('mousedown', (event) => {
+        if (!root.contains(event.target as Node)) setOpen(false);
+      });
+    });
+  }
+
+  setupLanguageSwitchers();
+  document.addEventListener('astro:page-load', setupLanguageSwitchers);
+</script>

@@ -1,5 +1,6 @@
 ---
 import type { Locale } from '../../config/site';
+import SplitTextReveal from '../animations/SplitTextRevealIsland';
 import type { MessageTree } from '../../lib/i18n';
 import { localizedPath, translate } from '../../lib/i18n';
 import type { ServiceMenuGroup } from '../../lib/site-data';
@@ -82,8 +83,32 @@ const columns = [
       <div class="flex flex-col justify-end lg:flex-1">
         <p class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">{translate(messages, 'footer.companyTagline')}</p>
         <div class="text-4xl font-black uppercase leading-[0.95] tracking-tight text-big-stone md:text-5xl lg:text-6xl" aria-hidden="true">
-          <span class="block">{translate(messages, 'footer.heading1')}</span>
-          <span class="block">{translate(messages, 'footer.heading2')}</span>
+          <span class="block">
+            <SplitTextReveal
+              client:visible={{ rootMargin: '600px' }}
+              text={translate(messages, 'footer.heading1')}
+              triggerOnScroll={true}
+              scrollStart="top 95%"
+              delay={0}
+              duration={1}
+              stagger={0.04}
+              xOffset={30}
+              className="text-4xl font-black uppercase leading-none tracking-tight text-big-stone md:text-5xl lg:text-6xl"
+            />
+          </span>
+          <span class="block">
+            <SplitTextReveal
+              client:visible={{ rootMargin: '600px' }}
+              text={translate(messages, 'footer.heading2')}
+              triggerOnScroll={true}
+              scrollStart="top 95%"
+              delay={0.1}
+              duration={1}
+              stagger={0.04}
+              xOffset={30}
+              className="text-4xl font-black uppercase leading-none tracking-tight text-big-stone md:text-5xl lg:text-6xl"
+            />
+          </span>
         </div>
       </div>
 

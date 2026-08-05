@@ -3,7 +3,7 @@ import type { Locale } from '../../config/site';
 import { getMessages, translate } from '../../lib/i18n';
 import { getSiteShellData, isPageInMaintenance } from '../../lib/site-data';
 import Analytics from '../common/Analytics.astro';
-import Preloader from '../common/Preloader.astro';
+import Preloader from '../animations/Preloader.astro';
 import TrackingNotice from '../common/TrackingNotice.astro';
 import FloatingWhatsApp from '../global/FloatingWhatsApp.astro';
 import Footer from './Footer.astro';
@@ -61,6 +61,15 @@ const preloaderText = path === '/'
         : path === '/tools'
           ? 'Tools'
           : translate(messages, 'navbar.contact');
+const transitionLabels = {
+  '/': 'Awan Kusuma Legalitas',
+  '/tentang-kami': translate(messages, 'navbar.about'),
+  '/layanan': translate(messages, 'navbar.services'),
+  '/info-bisnis': translate(messages, 'navbar.articles'),
+  '/tools': 'Tools',
+  '/lacak': translate(messages, 'navbar.tracking'),
+  '/kontak': translate(messages, 'navbar.contact'),
+};
 ---
 
 <script is:inline type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
@@ -71,7 +80,7 @@ const preloaderText = path === '/'
     <MaintenanceScreen locale={locale} />
   ) : (
     <>
-      <Preloader text={preloaderText} />
+      <Preloader text={preloaderText} transitionLabels={transitionLabels} />
       <Navbar locale={locale} path={path} messages={messages} categories={shell.categories} backendOrigin={backendOrigin(import.meta.env.PUBLIC_BACKEND_URL)} />
       <div id="main-content" class="relative flex min-h-screen w-full flex-col">
         {pageMaintenance ? <MaintenanceScreen locale={locale} partial /> : <slot />}

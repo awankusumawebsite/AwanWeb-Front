@@ -1,5 +1,6 @@
 ---
 import ArticleCard from '../article/ArticleCard.astro';
+import DragCursorIsland from '../animations/DragCursorIsland';
 import type { Locale } from '../../config/site';
 import type { ArticleSummary } from '../../lib/articles';
 import { localizedPath } from '../../lib/i18n';
@@ -18,16 +19,17 @@ const { locale, articles, heading, subheading, viewAll } = Astro.props;
 {articles.length > 0 && (
   <section class="relative w-full bg-white px-5 py-15 font-sans lg:px-8 md:py-20">
     <div class="mx-auto max-w-280">
-      <div class="mb-10 flex flex-col items-start md:mb-12">
+      <div class="mb-8 flex flex-col items-start md:mb-12">
         <h2 class="mb-3 text-3xl font-extrabold uppercase leading-tight tracking-tight text-big-stone md:text-4xl lg:text-[42px]">{heading}</h2>
-        <p class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-elm">◆ {subheading}</p>
+        <p class="flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest text-elm"><span class="-translate-y-px text-lg leading-none">◆</span>{subheading}</p>
       </div>
-      <div class="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
+      <div class="grid grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 md:gap-x-8 md:gap-y-12">
         {articles.map((article, index) => <ArticleCard article={article} locale={locale} priority={index === 0} />)}
       </div>
-      <div class="mt-12 flex justify-end">
-        <a href={localizedPath('/info-bisnis', locale)} class="group flex items-center gap-5 text-sm font-black uppercase tracking-widest text-big-stone transition-colors hover:text-elm"><span class="flex size-12 items-center justify-center rounded-full border border-gray-300 text-elm transition-colors group-hover:border-elm group-hover:bg-elm group-hover:text-white">→</span>{viewAll}</a>
+      <div class="mt-10 flex justify-end md:mt-14">
+        <a href={localizedPath('/info-bisnis', locale)} class="group flex items-center gap-5 transition-opacity"><span class="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:border-elm group-hover:bg-elm group-hover:duration-500"><svg class="h-4 w-4 text-elm transition-[color,transform] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-1 group-hover:text-white group-hover:duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span><span class="text-sm font-black uppercase tracking-widest text-[#0f172a] transition-colors duration-300 group-hover:text-elm group-hover:duration-500">{viewAll}</span></a>
       </div>
     </div>
+    <DragCursorIsland client:visible={{ rootMargin: '400px' }} selector="[data-article-cursor-card]" text="LIHAT" />
   </section>
 )}

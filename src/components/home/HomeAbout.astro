@@ -1,5 +1,6 @@
 ---
 import type { Locale } from '../../config/site';
+import DragCursorIsland from '../animations/DragCursorIsland';
 import { localizedPath } from '../../lib/i18n';
 
 interface Props {
@@ -10,16 +11,22 @@ interface Props {
 const { locale, copy } = Astro.props;
 const aboutPath = localizedPath('/tentang-kami', locale);
 const gallery = [
-  ['/images/mockups/image-1.webp', 'Ruang kerja tim Awan Kusuma Legalitas'],
-  ['/images/mockups/image-2.webp', 'Tim legal sedang berdiskusi'],
-  ['/images/mockups/image-3.webp', 'Konsultasi hukum dengan klien'],
-  ['/images/mockups/image-4.webp', 'Fasilitas kantor profesional'],
+  { src: '/images/mockups/image-1.webp', compact: '/images/mockups/image-1-640.webp', compactWidth: 640, alt: 'Ruang kerja tim Awan Kusuma Legalitas' },
+  { src: '/images/mockups/image-2.webp', compact: '/images/mockups/image-2-320.webp', compactWidth: 320, alt: 'Tim legal sedang berdiskusi' },
+  { src: '/images/mockups/image-3.webp', compact: '/images/mockups/image-3-640.webp', compactWidth: 640, alt: 'Konsultasi hukum dengan klien' },
+  { src: '/images/mockups/image-4.webp', compact: '/images/mockups/image-4-320.webp', compactWidth: 320, alt: 'Fasilitas kantor profesional' },
 ];
 ---
 
 <section data-home-about class="relative z-10 w-full bg-white pb-10 pt-10 md:pb-20 md:pt-16">
+  <div class="pointer-events-none absolute left-0 top-0 z-10 w-full -translate-y-[99%] overflow-hidden leading-none">
+    <svg class="relative block h-[50px] w-full md:h-[80px] lg:h-[120px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
+      <path data-home-about-curve fill="#ffffff" d="M-10,100 C480,100 960,100 1450,100 Z"></path>
+    </svg>
+  </div>
+
   <div class="mx-auto flex max-w-7xl flex-col items-center px-10 md:px-20 lg:px-32">
-    <div class="mb-16 flex w-full max-w-xl flex-col items-center text-left md:mb-28">
+    <div class="mb-16 flex w-full max-w-xl flex-col items-center text-left md:mb-32">
       <p class="mb-6 w-full text-sm font-medium leading-snug text-black sm:text-base md:text-lg lg:text-xl">
         <strong>{copy.companyName} <span class="text-orange-400">{copy.companyTag}</span></strong><br />
         {copy.paragraph1}
@@ -27,43 +34,126 @@ const gallery = [
       <p class="mb-10 w-full text-sm font-medium leading-snug text-black sm:text-base md:text-lg lg:text-xl">
         {copy.paragraph2}
       </p>
-      <a href={aboutPath} class="group flex items-center gap-4 self-start">
-        <span class="flex size-10 items-center justify-center rounded-full border border-gray-300 transition-colors group-hover:border-elm group-hover:bg-elm">
-          <span class="text-lg text-black transition-colors group-hover:text-white">→</span>
+      <a href={aboutPath} class="group flex items-center gap-4 self-start transition-opacity">
+        <span class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:border-elm group-hover:bg-elm group-hover:duration-500 md:h-10 md:w-10 lg:h-12 lg:w-12">
+          <svg class="h-4 w-4 text-[#111] transition-[color,transform] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-1 group-hover:text-white group-hover:duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path>
+          </svg>
         </span>
         <span class="text-xs font-extrabold uppercase tracking-widest text-black transition-colors group-hover:text-elm">{copy.seeMore}</span>
       </a>
     </div>
   </div>
 
-  <div class="mb-20 w-full overflow-hidden px-4 md:px-20 lg:px-35">
+  <div class="mb-16 w-full overflow-hidden px-4 md:mb-32 md:px-20 lg:px-35">
     <div class="grid min-w-[700px] grid-cols-12 items-start gap-3">
-      {gallery.map(([src, alt], index) => (
+      {gallery.map((image, index) => (
         <div class:list={['relative overflow-hidden rounded-md', index % 2 === 0 ? 'col-span-4 aspect-[4/3]' : 'col-span-2 mt-10 aspect-[2/3]']}>
-          <img src={src} alt={alt} width="620" height="465" loading="lazy" decoding="async" class="absolute inset-0 size-full object-cover" />
+          <img
+            src={image.src}
+            srcset={`${image.compact} ${image.compactWidth}w, ${image.src} ${index % 2 === 0 ? 960 : 480}w`}
+            sizes={index % 2 === 0 ? '(min-width: 1280px) 390px, (min-width: 768px) 30vw, 225px' : '(min-width: 1280px) 195px, (min-width: 768px) 15vw, 110px'}
+            alt={image.alt}
+            width="620"
+            height="465"
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 size-full object-cover"
+          />
         </div>
       ))}
     </div>
   </div>
 
-  <div class="mx-auto w-full max-w-7xl px-6 md:px-12 lg:px-20">
-    <h2 class="text-2xl font-black uppercase leading-tight tracking-tight text-big-stone md:text-4xl lg:text-5xl">{copy.sectionHeading}</h2>
-    <p class="mt-2 text-xs font-extrabold uppercase tracking-[0.2em] text-elm md:text-sm">◆ {copy.sectionSubheading}</p>
-    <div class="mt-10 grid grid-cols-1 gap-6 border-y border-black/10 py-10 md:grid-cols-2">
-      <a href={aboutPath} class="group relative aspect-[4/3] overflow-hidden rounded-2xl md:aspect-[16/10]">
-        <img src="/images/mockups/photo-1589994965851-a8f479c573a9.webp" alt={copy.aboutUsCard} width="800" height="500" loading="lazy" class="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105" />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-        <div class="absolute inset-x-0 bottom-0 p-7 text-white"><h3 class="text-2xl font-black uppercase">{copy.aboutUsCard}</h3><p class="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-white/70">{copy.aboutUsSubtitle}</p></div>
+  <div class="mt-10 w-full md:mt-16">
+    <div class="mx-auto max-w-7xl px-6 md:px-12 lg:px-20">
+      <div class="mb-8 lg:mb-12">
+        <h2 class="text-2xl font-black uppercase leading-tight tracking-tight text-big-stone md:text-3xl lg:text-4xl xl:text-5xl">{copy.sectionHeading}</h2>
+        <div class="mt-2 flex items-center gap-2 md:mt-3 md:gap-3">
+          <span class="h-2 w-2 shrink-0 rotate-45 bg-elm md:h-2.5 md:w-2.5" aria-hidden="true"></span>
+          <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-elm md:text-sm">{copy.sectionSubheading}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mx-auto w-full max-w-7xl border-t border-black/10 transition-colors duration-500 hover:border-elm"></div>
+
+    <div class="mx-auto max-w-7xl px-6 pb-16 pt-10 md:px-12 md:pb-20 md:pt-14 lg:px-20">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:gap-10">
+        <a href={aboutPath} data-drag-cursor-card class="group relative block aspect-[4/3] w-full isolate overflow-hidden rounded-xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] transition-shadow duration-700 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] md:aspect-[16/10] lg:rounded-2xl">
+          <img src="/images/mockups/photo-1589994965851-a8f479c573a9.webp" alt={copy.aboutUsCard} width="800" height="500" loading="lazy" class="absolute inset-0 -z-10 size-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105" />
+          <div class="absolute inset-0 z-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-700 group-hover:opacity-90"></div>
+          <div class="absolute bottom-0 left-0 z-10 w-full p-6 text-white transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:-translate-y-2 md:p-8 lg:p-10">
+            <h3 class="mb-1 line-clamp-2 text-xl font-black uppercase leading-none tracking-tight text-white md:mb-2 md:text-2xl lg:text-3xl">{copy.aboutUsCard}</h3>
+            <p class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-white/70 transition-[color,transform] delay-100 duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-1 group-hover:text-white"><span class="w-4 border-t border-elm"></span>{copy.aboutUsSubtitle}</p>
+          </div>
+        </a>
+        <a href={`${aboutPath}#why-us`} data-drag-cursor-card class="group relative block aspect-[4/3] w-full isolate overflow-hidden rounded-xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] transition-shadow duration-700 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] md:aspect-[16/10] lg:rounded-2xl">
+          <img src="/images/mockups/image-5.webp" alt={copy.whyUsCard} width="800" height="500" loading="lazy" class="absolute inset-0 -z-10 size-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105" />
+          <div class="absolute inset-0 z-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-700 group-hover:opacity-90"></div>
+          <div class="absolute bottom-0 left-0 z-10 w-full p-6 text-white transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:-translate-y-2 md:p-8 lg:p-10">
+            <h3 class="mb-1 line-clamp-2 text-xl font-black uppercase leading-none tracking-tight text-white md:mb-2 md:text-2xl lg:text-3xl">{copy.whyUsCard}</h3>
+            <p class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-white/70 transition-[color,transform] delay-100 duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-1 group-hover:text-white"><span class="w-4 border-t border-elm"></span>{copy.whyUsSubtitle}</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="mx-auto w-full max-w-7xl border-t border-black/10 transition-colors duration-500 hover:border-black/20"></div>
+
+    <div class="mx-auto grid max-w-7xl grid-cols-1 md:grid-cols-2">
+      <a href={`${aboutPath}#visi-misi`} class="group relative flex items-center justify-between overflow-hidden border-b border-black/10 px-6 py-6 transition-colors duration-500 hover:border-elm md:border-b-0 md:border-r md:py-8 md:pl-12 md:pr-10 lg:pl-20 lg:pr-14">
+        <span class="relative z-10 text-base font-black uppercase tracking-[0.2em] text-black transition-colors duration-500 group-hover:text-elm md:text-lg">{copy.visiMisiLink}</span>
+        <span class="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-black/10 transition-[background-color,border-color,transform] duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-110 group-hover:border-elm group-hover:bg-elm md:h-10 md:w-10">
+          <svg class="h-3.5 w-3.5 text-black transition-[color,transform] duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-0.5 group-hover:text-white md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </span>
+        <div class="absolute inset-0 -translate-x-full bg-black/[0.02] transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-0"></div>
       </a>
-      <a href={`${aboutPath}#why-us`} class="group relative aspect-[4/3] overflow-hidden rounded-2xl md:aspect-[16/10]">
-        <img src="/images/mockups/image-5.webp" alt={copy.whyUsCard} width="800" height="500" loading="lazy" class="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105" />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-        <div class="absolute inset-x-0 bottom-0 p-7 text-white"><h3 class="text-2xl font-black uppercase">{copy.whyUsCard}</h3><p class="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-white/70">{copy.whyUsSubtitle}</p></div>
+      <a href={`${aboutPath}#culture`} class="group relative flex items-center justify-between overflow-hidden px-6 py-6 transition-colors duration-500 md:py-8 md:pl-10 md:pr-12 lg:pl-14 lg:pr-20">
+        <span class="relative z-10 text-base font-black uppercase tracking-[0.2em] text-black transition-colors duration-500 group-hover:text-elm md:text-lg">{copy.budayaLink}</span>
+        <span class="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-black/10 transition-[background-color,border-color,transform] duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-110 group-hover:border-elm group-hover:bg-elm md:h-10 md:w-10">
+          <svg class="h-3.5 w-3.5 text-black transition-[color,transform] duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-0.5 group-hover:text-white md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </span>
+        <div class="absolute inset-0 translate-x-full bg-black/[0.02] transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-0"></div>
       </a>
     </div>
-    <div class="grid grid-cols-1 border-b border-black/10 md:grid-cols-2">
-      <a href={`${aboutPath}#visi-misi`} class="flex items-center justify-between border-b border-black/10 px-2 py-7 text-sm font-black uppercase tracking-[0.2em] transition-colors hover:text-elm md:border-b-0 md:border-r md:px-8">{copy.visiMisiLink}<span>→</span></a>
-      <a href={`${aboutPath}#culture`} class="flex items-center justify-between px-2 py-7 text-sm font-black uppercase tracking-[0.2em] transition-colors hover:text-elm md:px-8">{copy.budayaLink}<span>→</span></a>
-    </div>
+    <div class="mx-auto w-full max-w-7xl border-b border-black/10 transition-colors duration-500 hover:border-black/20"></div>
   </div>
+  <DragCursorIsland client:visible={{ rootMargin: '400px' }} selector="[data-drag-cursor-card]" text={copy.viewText} />
 </section>
+
+<script>
+  import gsap from 'gsap';
+  import ScrollTrigger from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function setupHomeAboutCurve() {
+    const section = document.querySelector('[data-home-about]');
+    const curve = document.querySelector('[data-home-about-curve]');
+
+    if (!section || !curve) return;
+
+    gsap.fromTo(
+      curve,
+      { attr: { d: 'M-10,100 C480,100 960,100 1450,100 Z' } },
+      {
+        attr: { d: 'M-10,100 C480,20 960,20 1450,100 Z' },
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'top top',
+          scrub: 1.5,
+        },
+      },
+    );
+  }
+
+  setupHomeAboutCurve();
+  document.addEventListener('astro:page-load', setupHomeAboutCurve);
+</script>

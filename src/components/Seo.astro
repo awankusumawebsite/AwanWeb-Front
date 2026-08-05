@@ -41,12 +41,19 @@ const imageUrl = new URL(image, SITE_URL).href;
 }
 <meta property="og:type" content={type} />
 <meta property="og:locale" content={OPEN_GRAPH_LOCALES[locale]} />
+{
+  Object.entries(OPEN_GRAPH_LOCALES)
+    .filter(([language]) => language !== locale)
+    .map(([, openGraphLocale]) => <meta property="og:locale:alternate" content={openGraphLocale} />)
+}
 <meta property="og:site_name" content="Awan Kusuma Legalitas" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={imageUrl} />
+<meta property="og:image:alt" content={title} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={title} />

@@ -2,8 +2,10 @@
 import type { Locale } from '../../config/site';
 import type { MessageTree } from '../../lib/i18n';
 import { localizedPath, translate } from '../../lib/i18n';
+import { getServiceIcon } from '../../lib/service-icons';
 import type { ServiceMenuGroup } from '../../lib/site-data';
-import AuthNavIsland from '../../islands/AuthNavIsland';
+import AuthNav from './AuthNav.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
 
 interface Props {
   locale: Locale;
@@ -21,6 +23,15 @@ const navItems = [
   { key: 'tools', href: '/tools', literal: 'TOOLS' },
   { key: 'tracking', href: '/lacak' },
 ];
+const localeLinks = [
+  { code: 'id' as const, label: 'ID', flag: '🇮🇩', name: 'Indonesia' },
+  { code: 'en' as const, label: 'EN', flag: '🇬🇧', name: 'English' },
+  { code: 'zh' as const, label: 'ZH', flag: '🇨🇳', name: '中文' },
+].map((item) => ({
+  ...item,
+  href: localizedPath(path, item.code),
+  active: locale === item.code,
+}));
 
 const isActive = (href: string) => href === '/'
   ? path === '/'
@@ -39,19 +50,19 @@ const authLabels = {
 
 <div id="site-nav-overlay" class="pointer-events-none fixed inset-0 z-30 hidden bg-black/50 opacity-0 transition-opacity duration-300 lg:block"></div>
 
-<header id="site-header" class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-3 transition-transform duration-300 ease-in-out lg:px-7">
+<header id="site-header" class="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-3 transition-transform duration-300 ease-in-out lg:px-7">
   <nav
     id="site-navbar"
-    class="relative mx-auto flex w-full max-w-5xl items-center justify-between rounded-full px-4 py-1.5 transition-[backdrop-filter,box-shadow,background-color] duration-500"
+    class="relative mx-auto flex w-full max-w-5xl items-center justify-between rounded-full bg-transparent px-4 py-1.5 transition-[backdrop-filter,box-shadow,background-color] duration-500 lg:backdrop-blur-0"
     aria-label="Main Navigation"
   >
     <a href={localizedPath('/', locale)} class="relative z-50 flex items-center gap-1 focus:outline-none" aria-label="Awan Kusuma Legalitas">
       <img
-        src="/assets/image/logo.png"
+        src="/assets/image/logo-160.webp"
         alt="Awan Kusuma Legalitas Logo"
         width="64"
         height="64"
-        fetchpriority="high"
+        decoding="async"
         class="h-12 w-12 object-contain transition-[filter] duration-300 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
       />
     </a>
@@ -90,17 +101,23 @@ const authLabels = {
                               {group.category}
                             </h2>
                             <ul class="flex flex-col gap-2">
-                              {visibleItems.map((service) => (
-                                <li>
-                                  <a
-                                    href={localizedPath(`/layanan/${service.slug.split('#')[0]}`, locale)}
-                                    class="flex items-start gap-2 text-[11px] font-semibold leading-relaxed text-slate-500 transition-colors hover:text-elm lg:text-xs"
-                                  >
-                                    <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-slate-300" aria-hidden="true"></span>
-                                    <span>{service.name}</span>
-                                  </a>
-                                </li>
-                              ))}
+                              {visibleItems.map((service) => {
+                                const Icon = getServiceIcon(service.icon_name);
+
+                                return (
+                                  <li>
+                                    <a
+                                      href={localizedPath(`/layanan/${service.slug.split('#')[0]}`, locale)}
+                                      class="group/service-item flex items-start gap-2 text-slate-500 transition-colors hover:text-elm"
+                                    >
+                                      <span class="mt-0.5 shrink-0 text-slate-400 transition-colors group-hover/service-item:text-elm" aria-hidden="true">
+                                        <Icon size={14} strokeWidth={2} />
+                                      </span>
+                                      <span class="text-[11px] font-semibold leading-relaxed normal-case tracking-normal lg:text-xs">{service.name}</span>
+                                    </a>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           </div>
                         );
@@ -116,20 +133,8 @@ const authLabels = {
     </ul>
 
     <div class="relative z-50 hidden items-center gap-2 lg:flex xl:gap-3">
-      <div class="flex items-center gap-1 text-[10px] font-bold text-slate-600" aria-label="Language">
-        {(['id', 'en', 'zh'] as Locale[]).map((targetLocale) => (
-          <a
-            href={localizedPath(path, targetLocale)}
-            class:list={['rounded-full px-2 py-2 transition-colors hover:text-elm', locale === targetLocale && 'text-elm underline underline-offset-4']}
-            lang={targetLocale}
-            hreflang={targetLocale}
-          >
-            {targetLocale.toUpperCase()}
-          </a>
-        ))}
-      </div>
-      <AuthNavIsland
-        client:load
+      <LanguageSwitcher links={localeLinks} variant="desktop" />
+      <AuthNav
         variant="desktop"
         backendOrigin={backendOrigin}
         loginHref={localizedPath('/login', locale)}
@@ -189,16 +194,9 @@ const authLabels = {
       </div>
     </details>
 
-    <div class="mt-8 flex items-center gap-2">
-      {(['id', 'en', 'zh'] as Locale[]).map((targetLocale) => (
-        <a href={localizedPath(path, targetLocale)} class:list={['rounded-full border border-white/20 px-4 py-2 text-xs font-bold', locale === targetLocale && 'bg-white text-big-stone']}>
-          {targetLocale.toUpperCase()}
-        </a>
-      ))}
-    </div>
+    <LanguageSwitcher links={localeLinks} variant="mobile" />
     <div class="mt-8 flex flex-col gap-3">
-      <AuthNavIsland
-        client:load
+      <AuthNav
         variant="mobile"
         backendOrigin={backendOrigin}
         loginHref={localizedPath('/login', locale)}
@@ -226,10 +224,12 @@ const authLabels = {
 
     const updateHeader = () => {
       const current = window.scrollY;
+      const isScrolled = current > 60;
       header?.classList.toggle('-translate-y-full', current > lastScrollY && current > 50);
-      navbar?.classList.toggle('lg:backdrop-blur-xs', current > 60);
-      navbar?.classList.toggle('lg:shadow-lg', current > 60);
-      navbar?.classList.toggle('bg-white/85', current > 60);
+      navbar?.classList.toggle('lg:backdrop-blur-xs', isScrolled);
+      navbar?.classList.toggle('lg:backdrop-blur-0', !isScrolled);
+      navbar?.classList.toggle('lg:shadow-lg', isScrolled);
+      navbar?.classList.remove('bg-white/85');
       lastScrollY = current;
     };
 
@@ -265,5 +265,6 @@ const authLabels = {
       overlay?.classList.remove('opacity-100');
     });
     window.addEventListener('scroll', updateHeader, { passive: true });
+    updateHeader();
   })();
 </script>

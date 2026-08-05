@@ -3,9 +3,15 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 import { fileURLToPath } from 'node:url';
+import { loadEnv } from 'vite';
 
 const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url));
 const excludedSitemapRoute = /^\/(?:en\/|zh\/)?(?:404|faq|lacak|login|mitra)(?:\/|$)/;
+const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+const env = loadEnv(mode, process.cwd(), '');
+const backendOrigin = (env.PUBLIC_BACKEND_URL || 'https://cms.awankusuma.com')
+  .replace(/\/+$/, '')
+  .replace(/\/api$/, '');
 
 export default defineConfig({
   site: 'https://awankusuma.com',
@@ -18,6 +24,16 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      proxy: {
+        '/__cms': {
+          target: backendOrigin,
+          changeOrigin: true,
+          secure: true,
+          rewrite: (path) => path.replace(/^\/__cms/, ''),
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': fromRoot('./src'),

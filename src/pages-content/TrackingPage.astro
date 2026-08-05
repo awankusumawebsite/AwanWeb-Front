@@ -1,19 +1,21 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteShell from '../components/layout/SiteShell.astro';
-import TrackingPortalIsland from '../islands/TrackingPortalIsland';
+import TrackingPublicIsland from '../islands/TrackingPublicIsland';
 import type { Locale } from '../config/site';
-import { getMessages, localizedPath, translate } from '../lib/i18n';
+import { getMessages, translate } from '../lib/i18n';
 import { backendOrigin } from '../lib/runtime-api';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 const messages = await getMessages(locale);
 const trackingMessages = messages.tracking as Record<string, string>;
-const trackingPath = localizedPath('/lacak', locale);
-const loginHref = localizedPath(`/login?redirect=${encodeURIComponent(trackingPath)}`, locale);
-const contactHref = localizedPath('/kontak', locale);
-const mitraHref = localizedPath('/mitra', locale);
+// Browsers reject direct localhost -> production CMS requests because production
+// intentionally does not allow localhost in its credentialed CORS policy. During
+// local development Vite proxies this prefix to the configured CMS origin.
+const trackingBackendOrigin = import.meta.env.DEV
+  ? '/__cms'
+  : backendOrigin(import.meta.env.PUBLIC_BACKEND_URL);
 ---
 
 <BaseLayout
@@ -24,14 +26,11 @@ const mitraHref = localizedPath('/mitra', locale);
   noindex
 >
   <SiteShell locale={locale} path="/lacak">
-    <TrackingPortalIsland
+    <TrackingPublicIsland
       client:load
       locale={locale}
       messages={trackingMessages}
-      backendOrigin={backendOrigin(import.meta.env.PUBLIC_BACKEND_URL)}
-      loginHref={loginHref}
-      contactHref={contactHref}
-      mitraHref={mitraHref}
+      backendOrigin={trackingBackendOrigin}
     />
   </SiteShell>
 </BaseLayout>

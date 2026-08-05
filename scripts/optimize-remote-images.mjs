@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import sharp from 'sharp';
 import {
   extractOptimizableImageUrls,
+  responsiveWidthsForCmsImage,
   rewriteCmsImageUrls,
   targetWidthForCmsImage,
 } from './remote-image-utils.mjs';
@@ -13,6 +14,7 @@ const outputDirectory = join(root, '_media', 'cms');
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 15_000;
 const CONCURRENCY = 3;
+const FETCH_ATTEMPTS = 3;
 const ALLOWED_REMOTE_IMAGE_HOSTS = new Set([
   'cdn.awankusuma.com',
   'lh3.googleusercontent.com',
@@ -25,7 +27,13 @@ function walk(directory) {
   });
 }
 
-async function download(url) {
+function wait(ms) {
+  return new Promise((resolveWait) => {
+    setTimeout(resolveWait, ms);
+  });
+}
+
+async function downloadOnce(url) {
   const parsed = new URL(url);
   if (parsed.protocol !== 'https:' || !ALLOWED_REMOTE_IMAGE_HOSTS.has(parsed.hostname)) {
     throw new Error('Remote image host tidak diizinkan.');
@@ -47,41 +55,69 @@ async function download(url) {
   return buffer;
 }
 
+async function download(url) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt += 1) {
+    try {
+      return await downloadOnce(url);
+    } catch (error) {
+      lastError = error;
+      if (attempt < FETCH_ATTEMPTS) await wait(attempt * 500);
+    }
+  }
+
+  throw lastError;
+}
+
 async function optimize(url) {
   const input = await download(url);
   const transformer = sharp(input, { animated: true }).rotate();
   const metadata = await transformer.metadata();
+  const targetWidths = responsiveWidthsForCmsImage(url);
   const targetWidth = targetWidthForCmsImage(url);
 
-  let output;
+  const variants = [];
   if ((metadata.pages || 1) > 1) {
     // Jangan merusak animasi yang mungkin sengaja diunggah.
-    output = metadata.format === 'webp'
+    const output = metadata.format === 'webp'
       ? input
       : await transformer.webp({ quality: 80, effort: 4 }).toBuffer();
+    variants.push({ output, width: metadata.width || targetWidth });
   } else {
-    output = await transformer
-      .resize({ width: targetWidth, withoutEnlargement: true })
-      .webp({ quality: 80, effort: 4 })
-      .toBuffer();
-    if (metadata.format === 'webp' && input.byteLength < output.byteLength) output = input;
+    for (const width of targetWidths) {
+      const actualWidth = Math.min(metadata.width || width, width);
+      if (variants.some((variant) => variant.width === actualWidth)) continue;
+      let output = await transformer
+        .clone()
+        .resize({ width, withoutEnlargement: true })
+        .webp({ quality: 80, effort: 4 })
+        .toBuffer();
+      if (width === targetWidth && metadata.format === 'webp' && input.byteLength < output.byteLength) output = input;
+      variants.push({ output, width: actualWidth });
+    }
   }
 
-  // Gunakan content hash, bukan hanya URL. Walaupun upload CMS seharusnya
-  // immutable, content hash mencegah cache browser/CDN menyajikan byte lama
-  // bila sebuah object pernah diganti pada URL yang sama.
-  const hash = createHash('sha256')
-    .update(url)
-    .update(output)
-    .digest('hex')
-    .slice(0, 20);
-  const filename = `${hash}-${Math.min(metadata.width || targetWidth, targetWidth)}.webp`;
-  writeFileSync(join(outputDirectory, filename), output);
+  const writtenVariants = variants.map(({ output, width }) => {
+    // Gunakan content hash, bukan hanya URL. Walaupun upload CMS seharusnya
+    // immutable, content hash mencegah cache browser/CDN menyajikan byte lama
+    // bila sebuah object pernah diganti pada URL yang sama.
+    const hash = createHash('sha256')
+      .update(url)
+      .update(output)
+      .digest('hex')
+      .slice(0, 20);
+    const filename = `${hash}-${width}.webp`;
+    writeFileSync(join(outputDirectory, filename), output);
+    return { localPath: `/_media/cms/${filename}`, width, outputBytes: output.byteLength };
+  });
+  const primary = writtenVariants.at(-1);
 
   return {
-    localPath: `/_media/cms/${filename}`,
+    localPath: primary.localPath,
+    variants: writtenVariants.map(({ localPath, width }) => ({ localPath, width })),
     inputBytes: input.byteLength,
-    outputBytes: output.byteLength,
+    outputBytes: writtenVariants.reduce((total, variant) => total + variant.outputBytes, 0),
   };
 }
 
@@ -114,7 +150,7 @@ async function worker() {
     const url = queue[index];
     try {
       const result = await optimize(url);
-      replacements.set(url, result.localPath);
+      replacements.set(url, { localPath: result.localPath, variants: result.variants });
       inputBytes += result.inputBytes;
       outputBytes += result.outputBytes;
     } catch (error) {

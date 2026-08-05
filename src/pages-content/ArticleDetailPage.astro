@@ -163,6 +163,8 @@ function safeJsonLd(value: unknown) {
             loading="eager"
             fetchpriority="high"
             decoding="async"
+            data-cms-responsive
+            sizes="(min-width: 1280px) 1120px, (min-width: 768px) calc(100vw - 6rem), calc(100vw - 3rem)"
             class="absolute inset-0 h-full w-full object-cover"
           />
         </div>
@@ -187,7 +189,7 @@ function safeJsonLd(value: unknown) {
                   {relatedArticles.map((related) => (
                     <a href={localizedPath(`/info-bisnis/${related.slug}`, locale)} class="group -mx-4 flex items-start gap-4 rounded-xl p-4 transition-colors hover:bg-slate-50">
                       <div class="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100">
-                        <img src={articleImageUrl(related.featured_image || related.image)} alt={related.featured_image_alt || related.title} width="80" height="56" loading="lazy" decoding="async" class="h-full w-full object-cover" />
+                        <img src={articleImageUrl(related.featured_image || related.image)} alt={related.featured_image_alt || related.title} width="80" height="56" loading="lazy" decoding="async" data-cms-responsive sizes="80px" class="h-full w-full object-cover" />
                       </div>
                       <div class="min-w-0 flex-1">
                         <p class="line-clamp-2 text-sm font-bold leading-snug text-slate-800 transition-colors group-hover:text-elm">{related.title}</p>

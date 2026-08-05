@@ -198,6 +198,17 @@ body {
   animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards, tracking-notice-auto-dismiss 5s linear forwards;
 }
 
+@keyframes language-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ── LENIS REQUIRED CSS ── */
 html.lenis, html.lenis body {
   height: auto;
@@ -258,4 +269,3 @@ html[data-preloader-mode="skip"] .article-content {
   background: #01A497 !important;
   width: 32px !important;
 }
-

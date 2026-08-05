@@ -1,6 +1,7 @@
 ---
 import type { Locale } from '../../config/site';
 import { localizedPath } from '../../lib/i18n';
+import { getServiceIcon } from '../../lib/service-icons';
 import { serviceDescription, serviceParentSlug } from '../../lib/services';
 import type { ServiceMenuGroup } from '../../lib/site-data';
 
@@ -22,40 +23,135 @@ const { locale, categories, heading, subheading, viewAll, countTemplate } = Astr
     <p class="mt-2 text-sm font-extrabold uppercase tracking-widest text-elm md:text-base">◆ {subheading}</p>
   </div>
 
-  <div class="w-full">
+  <div data-home-services-accordion class="w-full">
     {categories.slice(0, 5).map((category, index) => {
       const visibleItems = category.items.filter((item) => !item.hide_from_menu);
       if (visibleItems.length === 0) return null;
       return (
-        <details class="group mx-auto max-w-7xl border-t border-black/10 px-6 open:border-elm md:px-12 lg:px-20">
-          <summary class="flex cursor-pointer list-none items-center justify-between py-5 lg:py-6">
-            <div class="flex items-center gap-4 md:gap-8 lg:gap-12">
-              <span class="w-8 shrink-0 text-xs font-medium text-black/40 md:text-sm">({String(index + 1).padStart(2, '0')})</span>
-              <h3 class="text-xl font-black uppercase tracking-tighter transition-transform duration-500 group-hover:translate-x-3 group-open:text-elm sm:text-2xl md:text-3xl lg:text-4xl">{category.category}</h3>
+        <div data-service-row class="group mx-auto max-w-7xl border-t border-black/10 px-6 transition-colors duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] hover:border-elm md:px-12 lg:px-20">
+          <button data-service-toggle type="button" aria-expanded="false" aria-controls={`home-service-panel-${index}`} class="flex w-full cursor-pointer items-center justify-between py-5 text-left focus:outline-none lg:py-6">
+            <div class="flex w-full items-center gap-4 md:gap-8 lg:gap-12">
+              <span class="service-index w-6 shrink-0 text-xs font-medium tracking-tight text-black/40 transition-[color,transform] duration-300 ease-out group-hover:-translate-y-1 group-hover:text-elm md:w-8 md:text-sm">({String(index + 1).padStart(2, '0')})</span>
+              <h3 class="service-title relative text-xl font-black uppercase tracking-tighter transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-4 sm:text-2xl md:translate-x-0 md:text-3xl md:group-hover:translate-x-6 lg:text-4xl">
+                <span class="text-big-stone">{category.category}</span>
+                <span class="service-title-reveal pointer-events-none absolute left-0 top-0 w-0 overflow-hidden whitespace-nowrap text-elm transition-[width] duration-[400ms] ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:w-full">{category.category}</span>
+              </h3>
             </div>
-            <div class="ml-4 flex shrink-0 items-center gap-5">
-              <span class="hidden text-xs font-bold uppercase tracking-widest text-black/30 md:block">{countTemplate.replace('{count}', String(visibleItems.length))}</span>
-              <span class="flex size-9 items-center justify-center rounded-full border border-black/10 text-xl transition-all group-open:rotate-45 group-open:border-elm group-open:bg-elm group-open:text-white">+</span>
+            <div class="ml-4 flex shrink-0 items-center gap-4 md:gap-6">
+              <span class="service-count hidden text-xs font-bold uppercase tracking-widest text-black/30 transition-[color,transform] duration-[400ms] group-hover:-translate-x-3 group-hover:text-elm md:block">{countTemplate.replace('{count}', String(visibleItems.length))}</span>
+              <span class="service-toggle-button flex size-8 items-center justify-center rounded-full border border-black/10 transition-[background-color,border-color] duration-[400ms] ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:border-elm group-hover:bg-elm md:size-10">
+                <svg class="service-toggle-icon size-4 text-big-stone transition-[color,transform] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:rotate-90 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M12 5v14M5 12h14"></path></svg>
+              </span>
             </div>
-          </summary>
-          <div class="grid grid-cols-1 gap-3 pb-10 pt-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:pl-16">
-            {visibleItems.map((item) => {
-              const parentSlug = serviceParentSlug(item.slug);
-              const description = serviceDescription(item, category.items);
-              return (
-                <a href={localizedPath(`/layanan/${parentSlug}`, locale)} class="group/card flex min-h-[140px] flex-col justify-between rounded-xl border border-black/5 bg-[#fafafa] p-5 transition-all hover:border-black/10 hover:bg-white hover:shadow-lg md:min-h-[160px]">
-                  <div class="flex items-start justify-between"><span class="flex size-8 items-center justify-center rounded-lg bg-black/5 text-sm text-elm">◆</span><span class="opacity-0 transition-opacity group-hover/card:opacity-100">↗</span></div>
-                  <div><h4 class="text-base font-bold tracking-tight text-black md:text-lg">{item.name}</h4>{description && <p class="mt-1 line-clamp-2 text-xs font-medium leading-relaxed text-black/50">{description}</p>}</div>
-                </a>
-              );
-            })}
+          </button>
+          <div id={`home-service-panel-${index}`} data-service-panel class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-1000 ease-[cubic-bezier(0.76,0,0.24,1)]">
+            <div class="overflow-hidden">
+              <div class="pb-8 pt-2 md:pb-12 md:pl-16">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+                  {visibleItems.map((item) => {
+                    const Icon = getServiceIcon(item.icon_name);
+                    const parentSlug = serviceParentSlug(item.slug);
+                    const description = serviceDescription(item, category.items);
+                    return (
+                      <a href={localizedPath(`/layanan/${parentSlug}`, locale)} class="group/card relative flex min-h-[140px] flex-col justify-between overflow-hidden rounded-xl border border-black/5 bg-[#fafafa]/80 p-4 transition-[background-color,border-color,box-shadow] duration-500 hover:border-black/10 hover:bg-white hover:shadow-lg md:min-h-[160px] md:rounded-2xl md:p-5">
+                        <div class="mb-4 flex w-full items-start justify-between">
+                          <span class="flex size-8 items-center justify-center rounded-xl bg-black/5 text-black/60 transition-colors duration-500 group-hover/card:bg-elm/10 group-hover/card:text-elm">
+                            <Icon size={16} strokeWidth={1.5} />
+                          </span>
+                          <span class="flex size-6 -translate-y-1 items-center justify-center rounded-full border border-black/5 bg-white text-black opacity-0 shadow-sm transition-[border-color,opacity,transform] duration-500 ease-out group-hover/card:translate-y-0 group-hover/card:border-black/10 group-hover/card:opacity-100"><svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7m0 0H8m9 0v9"></path></svg></span>
+                        </div>
+                        <div class="mt-auto"><h4 class="mb-1 text-base font-bold tracking-tight text-black md:text-lg">{item.name}</h4>{description && <p class="line-clamp-2 text-[11px] font-medium leading-relaxed text-black/50 md:text-xs">{description}</p>}</div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
-        </details>
+        </div>
       );
     })}
   </div>
 
   <div class="mx-auto mt-10 flex max-w-7xl justify-end px-6 md:px-12 lg:px-20">
-    <a href={localizedPath('/layanan', locale)} class="group flex items-center gap-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-elm"><span class="flex size-10 items-center justify-center rounded-full border border-gray-300 transition-colors group-hover:border-elm group-hover:bg-elm group-hover:text-white">→</span>{viewAll}</a>
+    <a href={localizedPath('/layanan', locale)} class="group flex items-center gap-4 transition-opacity"><span class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:border-elm group-hover:bg-elm group-hover:duration-500 md:h-9 md:w-9 lg:h-11 lg:w-11"><svg class="h-3 w-3 text-black transition-[color,transform] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-1 group-hover:text-white group-hover:duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path></svg></span><span class="text-[10px] font-bold uppercase tracking-widest text-black transition-colors duration-300 group-hover:text-elm group-hover:duration-500 md:text-xs">{viewAll}</span></a>
   </div>
 </section>
+
+<script>
+  const accordion = document.querySelector<HTMLElement>('[data-home-services-accordion]');
+
+  accordion?.querySelectorAll<HTMLElement>('[data-service-row]').forEach((row) => {
+    const toggle = row.querySelector<HTMLButtonElement>('[data-service-toggle]');
+
+    toggle?.addEventListener('click', () => {
+      const shouldOpen = !row.classList.contains('is-open');
+
+      accordion.querySelectorAll<HTMLElement>('[data-service-row].is-open').forEach((other) => {
+        other.classList.remove('is-open');
+        other.querySelector<HTMLButtonElement>('[data-service-toggle]')?.setAttribute('aria-expanded', 'false');
+      });
+
+      if (shouldOpen) {
+        row.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>
+
+<style>
+  [data-service-row].is-open {
+    border-color: var(--color-elm);
+  }
+
+  [data-service-row].is-open .service-index {
+    color: var(--color-elm);
+    transform: translateY(-0.25rem);
+  }
+
+  [data-service-row].is-open .service-title {
+    transform: translateX(1rem);
+  }
+
+  [data-service-row].is-open .service-title-reveal {
+    width: 100%;
+  }
+
+  [data-service-row].is-open .service-count {
+    color: var(--color-elm);
+    transform: translateX(-0.75rem);
+  }
+
+  [data-service-row].is-open .service-toggle-button {
+    background-color: var(--color-elm);
+    border-color: var(--color-elm);
+  }
+
+  [data-service-row].is-open .service-toggle-icon {
+    color: white;
+    transform: rotate(135deg);
+  }
+
+  [data-service-row].is-open [data-service-panel] {
+    grid-template-rows: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    [data-service-row].is-open .service-title {
+      transform: translateX(1.5rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-service-panel],
+    .service-index,
+    .service-title,
+    .service-title-reveal,
+    .service-count,
+    .service-toggle-button,
+    .service-toggle-icon {
+      transition-duration: 1ms !important;
+    }
+  }
+</style>
