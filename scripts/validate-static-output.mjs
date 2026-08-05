@@ -196,6 +196,8 @@ if (!existsSync(htaccessPath)) {
     'cookie|privacy',
     'mitra/orders',
     'category=',
+    'THE_REQUEST',
+    'REQUEST_FILENAME}/index.html',
   ]) {
     if (!htaccess.includes(legacyRoute)) failures.push(`Redirect Apache belum mencakup: ${legacyRoute}`);
   }

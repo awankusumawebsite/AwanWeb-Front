@@ -172,17 +172,28 @@ curl_origin() {
 }
 
 health_failed=false
-if ! curl_origin "$production_url/" | grep -Fq 'content="index, follow"'; then
+home_response=''
+robots_response=''
+
+# Capture the complete response before matching it. Piping curl into `grep -q`
+# can make grep close early after a match; curl then exits with code 23 and
+# pipefail incorrectly marks a healthy origin as failed.
+if ! home_response="$(curl_origin "$production_url/")"; then
+  health_failed=true
+elif ! grep -Fq 'content="index, follow"' <<< "$home_response"; then
   health_failed=true
 fi
 
-if ! curl_origin "$production_url/robots.txt" \
-  | grep -Fq 'Sitemap: https://awankusuma.com/sitemap-index.xml'; then
+if ! robots_response="$(curl_origin "$production_url/robots.txt")"; then
   health_failed=true
-fi
-
-if curl_origin "$production_url/robots.txt" | grep -Fxq 'Disallow: /'; then
-  health_failed=true
+else
+  if ! grep -Fq 'Sitemap: https://awankusuma.com/sitemap-index.xml' \
+    <<< "$robots_response"; then
+    health_failed=true
+  fi
+  if grep -Fxq 'Disallow: /' <<< "$robots_response"; then
+    health_failed=true
+  fi
 fi
 
 if [ "$health_failed" = true ]; then
