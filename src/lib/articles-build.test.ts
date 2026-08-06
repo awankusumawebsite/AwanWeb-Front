@@ -65,14 +65,19 @@ describe('fetchArticleSummaries', () => {
     vi.useRealTimers();
   });
 
-  it('melaporkan hanya bentuk respons invalid tanpa membocorkan isi payload', async () => {
+  it('melaporkan pesan error publik tanpa membocorkan nested payload', async () => {
     vi.useFakeTimers();
-    requestOnce.mockResolvedValueOnce({ error: 'private-detail', current_page: 1 });
-    request.mockResolvedValue({ error: 'private-detail', current_page: 1 });
+    const invalidResponse = {
+      message: 'Rate limited\ntry again',
+      data: { token: 'private-detail' },
+      current_page: 1,
+    };
+    requestOnce.mockResolvedValueOnce(invalidResponse);
+    request.mockResolvedValue(invalidResponse);
 
     const build = fetchArticleSummaries('id');
     const assertion = expect(build).rejects.toThrow(
-      'Diagnostic shape: attempt=1:payload=object;data=undefined;keys=current_page,error',
+      'Diagnostic shape: attempt=1:payload=object;data=object;keys=current_page,data,message;message="Rate limited try again"',
     );
     await vi.runAllTimersAsync();
     await assertion;

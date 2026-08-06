@@ -5,6 +5,18 @@ const ARTICLES_PER_PAGE = 9;
 const ARTICLE_FETCH_CONCURRENCY = 2;
 const CMS_RESPONSE_ATTEMPTS = 5;
 
+function describePublicMessage(value: unknown): string {
+  if (typeof value !== 'string') return '';
+
+  const normalized = value
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/[^\p{L}\p{N} .,;:!?()/_-]/gu, '?')
+    .trim()
+    .slice(0, 160);
+
+  return normalized ? `;message=${JSON.stringify(normalized)}` : '';
+}
+
 function describeResponseShape(response: unknown): string {
   if (response === null) return 'payload=null';
   if (Array.isArray(response)) return 'payload=array';
@@ -19,7 +31,7 @@ function describeResponseShape(response: unknown): string {
       : typeof data;
   const keys = Object.keys(record).sort().slice(0, 20).join(',') || 'none';
 
-  return `payload=object;data=${dataType};keys=${keys}`;
+  return `payload=object;data=${dataType};keys=${keys}${describePublicMessage(record.message)}`;
 }
 
 interface DataResponse<T> {
