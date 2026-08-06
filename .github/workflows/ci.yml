@@ -125,6 +125,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           ssh_options=(
+            -4
             -i "$HOME/.ssh/id_staging"
             -o BatchMode=yes
             -o IdentitiesOnly=yes
@@ -145,6 +146,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           ssh_options=(
+            -4
             -i "$HOME/.ssh/id_staging"
             -o BatchMode=yes
             -o IdentitiesOnly=yes
