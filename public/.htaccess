@@ -57,6 +57,17 @@ ErrorDocument 404 /404.html
   RewriteCond %{QUERY_STRING} ^page=([2-9][0-9]*)$
   RewriteRule ^((?:en|zh)/)?info-bisnis/?$ /$1info-bisnis/page/%1 [R=301,L,NE,QSD]
 
+  # Tool dibuat dan diaktifkan dari CMS setelah build Astro. Semua slug tool
+  # yang belum memiliki file static dilayani oleh satu runtime shell; URL asli
+  # tetap dipertahankan agar card CMS dapat langsung dibuka tanpa redeploy.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^tools/([a-z0-9]+(?:-[a-z0-9]+)*)/?$ /tools/runner/index.html [END]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(en|zh)/tools/([a-z0-9]+(?:-[a-z0-9]+)*)/?$ /$1/tools/runner/index.html [END]
+
   # Apache DirectorySlash menambahkan slash pada directory static. Kontrak URL
   # dan canonical Next memakai tanpa slash, jadi normalisasikan versi slash lalu
   # layani index.html secara internal agar URL canonical langsung 200.

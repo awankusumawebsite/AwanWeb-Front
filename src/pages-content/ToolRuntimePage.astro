@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteShell from '../components/layout/SiteShell.astro';
+import ToolDetailIsland from '../islands/ToolDetailIsland';
+import type { Locale } from '../config/site';
+import { backendOrigin } from '../lib/runtime-api';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const runtimeBackendOrigin = import.meta.env.DEV
+  ? '/__cms'
+  : backendOrigin(import.meta.env.PUBLIC_BACKEND_URL);
+---
+
+<BaseLayout
+  title="Tool | Awan Kusuma Utilities"
+  description="Gunakan utilitas Awan Kusuma Legalitas."
+  locale={locale}
+  path="/tools"
+  noindex={true}
+>
+  <SiteShell locale={locale} path="/tools">
+    <main class="min-h-screen w-full bg-gray-50 px-6 pb-20 pt-36 font-sans md:px-12 lg:px-20">
+      <div class="mx-auto max-w-7xl">
+        <ToolDetailIsland client:load backendOrigin={runtimeBackendOrigin} locale={locale} />
+      </div>
+    </main>
+  </SiteShell>
+</BaseLayout>

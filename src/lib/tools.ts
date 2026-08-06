@@ -42,7 +42,3 @@ export async function getActiveTools(): Promise<CmsTool[]> {
   const response = await cms.requestOnce<ToolCollectionResponse>('/tools');
   return normalizeTools(response);
 }
-
-export function findToolBySlug(tools: CmsTool[], slug: string): CmsTool | null {
-  return tools.find((tool) => tool.slug === slug) ?? null;
-}
