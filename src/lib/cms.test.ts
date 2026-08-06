@@ -80,4 +80,30 @@ describe('static CMS client', () => {
       .resolves.toEqual({ data: ['recovered'] });
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
+
+  it('paces request starts to avoid tripping shared-hosting bot protection', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
+    const starts: number[] = [];
+    const fetchImpl = vi.fn(async () => {
+      starts.push(Date.now());
+      return Response.json({ data: ['ok'] });
+    });
+    const client = createCmsClient({
+      fetchImpl: fetchImpl as typeof fetch,
+      maxConcurrentRequests: 1,
+      minRequestIntervalMs: 750,
+    });
+
+    const requests = [
+      client.request('/services/1'),
+      client.request('/services/2'),
+      client.request('/services/3'),
+    ];
+    await vi.runAllTimersAsync();
+    await expect(Promise.all(requests)).resolves.toHaveLength(3);
+
+    expect(starts).toEqual([0, 750, 1_500]);
+    vi.useRealTimers();
+  });
 });

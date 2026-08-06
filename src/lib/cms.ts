@@ -10,6 +10,7 @@ interface CmsClientOptions {
   fetchImpl?: FetchLike;
   timeoutMs?: number;
   maxConcurrentRequests?: number;
+  minRequestIntervalMs?: number;
 }
 
 interface CmsRequestOptions extends RequestInit {
@@ -81,12 +82,35 @@ export function createCmsClient({
   fetchImpl = fetch,
   timeoutMs = Number(import.meta.env.CMS_BUILD_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS,
   maxConcurrentRequests = Number(import.meta.env.CMS_BUILD_CONCURRENCY) || DEFAULT_BUILD_CONCURRENCY,
+  minRequestIntervalMs = Number(import.meta.env.CMS_BUILD_REQUEST_INTERVAL_MS) || 0,
 }: CmsClientOptions = {}) {
   const origin = normalizeBaseUrl(baseUrl);
   const buildRequests = new Map<string, Promise<unknown>>();
   const maxConcurrent = Math.max(1, Math.floor(maxConcurrentRequests));
   let activeRequests = 0;
   const queuedRequests: Array<() => void> = [];
+  const requestInterval = Math.max(0, Math.floor(minRequestIntervalMs));
+  let nextRequestStartAt = 0;
+  let requestStartGate = Promise.resolve();
+
+  async function waitForRequestStart(): Promise<void> {
+    if (requestInterval === 0) return;
+
+    const previousGate = requestStartGate;
+    let releaseGate = () => {};
+    requestStartGate = new Promise<void>((resolve) => {
+      releaseGate = resolve;
+    });
+    await previousGate;
+
+    try {
+      const delay = Math.max(0, nextRequestStartAt - Date.now());
+      if (delay > 0) await wait(delay);
+      nextRequestStartAt = Date.now() + requestInterval;
+    } finally {
+      releaseGate();
+    }
+  }
 
   async function runQueued<T>(operation: () => Promise<T>): Promise<T> {
     if (activeRequests >= maxConcurrent) {
@@ -95,6 +119,7 @@ export function createCmsClient({
 
     activeRequests += 1;
     try {
+      await waitForRequestStart();
       return await operation();
     } finally {
       activeRequests -= 1;

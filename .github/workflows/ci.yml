@@ -29,6 +29,9 @@ jobs:
       CMS_BUILD_TIMEOUT_MS: 30000
       # Keep the cPanel-backed CMS stable while Astro enumerates static routes.
       CMS_BUILD_CONCURRENCY: 1
+      # Imunify360 classifies a tight GitHub Actions request burst as bot traffic.
+      # Pace starts while keeping retries and fail-closed validation intact.
+      CMS_BUILD_REQUEST_INTERVAL_MS: 750
       MIGRATION_NOINDEX: true
       PUBLIC_ANALYTICS_ENABLED: false
     steps:

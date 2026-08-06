@@ -34,6 +34,7 @@ jobs:
       PUBLIC_BACKEND_URL: https://cms.awankusuma.com
       CMS_BUILD_TIMEOUT_MS: 30000
       CMS_BUILD_CONCURRENCY: 1
+      CMS_BUILD_REQUEST_INTERVAL_MS: 750
       MIGRATION_NOINDEX: false
       PUBLIC_ANALYTICS_ENABLED: true
     steps:
