@@ -1,0 +1,14 @@
+---
+import ToolRuntimePage from '../../../pages-content/ToolRuntimePage.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: 'en' }, props: { locale: 'en' as const } },
+    { params: { locale: 'zh' }, props: { locale: 'zh' as const } },
+  ];
+}
+
+const { locale } = Astro.props;
+---
+
+<ToolRuntimePage locale={locale} />

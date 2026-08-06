@@ -23,6 +23,13 @@ function outputExists(pathname) {
 
   const normalized = decoded.replace(/^\/+/, '');
   if (!normalized) return existsSync(join(root, 'index.html'));
+  const dynamicTool = normalized.match(/^(?:(en|zh)\/)?tools\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
+  if (dynamicTool && dynamicTool[2] !== 'runner') {
+    const runner = dynamicTool[1]
+      ? join(root, dynamicTool[1], 'tools', 'runner', 'index.html')
+      : join(root, 'tools', 'runner', 'index.html');
+    return existsSync(runner);
+  }
   const direct = join(root, normalized);
   if (extname(normalized)) return existsSync(direct);
   return existsSync(direct) || existsSync(`${direct}.html`) || existsSync(join(direct, 'index.html'));
@@ -48,6 +55,8 @@ const requiredPages = [
   '/login/', '/en/login/', '/zh/login/',
   '/lacak/', '/en/lacak/', '/zh/lacak/',
   '/mitra/', '/en/mitra/', '/zh/mitra/',
+  '/tools/', '/en/tools/', '/zh/tools/',
+  '/tools/runner/', '/en/tools/runner/', '/zh/tools/runner/',
   '/404.html',
 ];
 
@@ -199,6 +208,7 @@ if (!existsSync(htaccessPath)) {
     'category=',
     'THE_REQUEST',
     'REQUEST_FILENAME}/index.html',
+    'tools/runner/index.html',
   ]) {
     if (!htaccess.includes(legacyRoute)) failures.push(`Redirect Apache belum mencakup: ${legacyRoute}`);
   }

@@ -49,6 +49,15 @@ function resolveRequest(pathname) {
   return null;
 }
 
+function resolveRuntimeTool(pathname) {
+  const match = pathname.match(/^\/(?:en\/|zh\/)?tools\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/);
+  if (!match || pathname.endsWith('/tools/runner') || pathname.endsWith('/tools/runner/')) return null;
+
+  const locale = pathname.match(/^\/(en|zh)\//)?.[1];
+  const runner = resolve(root, locale ? `${locale}/tools/runner/index.html` : 'tools/runner/index.html');
+  return existsSync(runner) ? runner : null;
+}
+
 function cacheControl(extension) {
   if (extension === '.html') return 'public, max-age=0, must-revalidate';
   if (immutable.has(extension)) return 'public, max-age=31536000, immutable';
@@ -72,7 +81,7 @@ if (!existsSync(root)) {
 const server = createServer((request, response) => {
   securityHeaders(response);
   const url = new URL(request.url || '/', `http://${request.headers.host || `${host}:${port}`}`);
-  let file = resolveRequest(url.pathname);
+  let file = resolveRequest(url.pathname) || resolveRuntimeTool(url.pathname);
   let status = 200;
   if (!file) {
     file = resolve(root, '404.html');

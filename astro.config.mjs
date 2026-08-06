@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
 
 const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url));
-const excludedSitemapRoute = /^\/(?:en\/|zh\/)?(?:404|faq|lacak|login|mitra)(?:\/|$)/;
+const excludedSitemapRoute = /^\/(?:en\/|zh\/)?(?:404|faq|lacak|login|mitra|tools\/runner)(?:\/|$)/;
 const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const env = loadEnv(mode, process.cwd(), '');
 const backendOrigin = (env.PUBLIC_BACKEND_URL || 'https://cms.awankusuma.com')
