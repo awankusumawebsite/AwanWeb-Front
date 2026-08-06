@@ -64,4 +64,23 @@ describe('fetchArticleSummaries', () => {
     expect(request).toHaveBeenCalledWith('/blog/articles?locale=id&per_page=100&page=1');
     vi.useRealTimers();
   });
+
+  it('melaporkan hanya bentuk respons invalid tanpa membocorkan isi payload', async () => {
+    vi.useFakeTimers();
+    requestOnce.mockResolvedValueOnce({ error: 'private-detail', current_page: 1 });
+    request.mockResolvedValue({ error: 'private-detail', current_page: 1 });
+
+    const build = fetchArticleSummaries('id');
+    const assertion = expect(build).rejects.toThrow(
+      'Diagnostic shape: attempt=1:payload=object;data=undefined;keys=current_page,error',
+    );
+    await vi.runAllTimersAsync();
+    await assertion;
+    let errorMessage = '';
+    await build.catch((caught: unknown) => {
+      errorMessage = caught instanceof Error ? caught.message : String(caught);
+    });
+    expect(errorMessage).not.toContain('private-detail');
+    vi.useRealTimers();
+  });
 });

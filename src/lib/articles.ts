@@ -5,6 +5,23 @@ const ARTICLES_PER_PAGE = 9;
 const ARTICLE_FETCH_CONCURRENCY = 2;
 const CMS_RESPONSE_ATTEMPTS = 5;
 
+function describeResponseShape(response: unknown): string {
+  if (response === null) return 'payload=null';
+  if (Array.isArray(response)) return 'payload=array';
+  if (typeof response !== 'object') return `payload=${typeof response}`;
+
+  const record = response as Record<string, unknown>;
+  const data = record.data;
+  const dataType = Array.isArray(data)
+    ? 'array'
+    : data === null
+      ? 'null'
+      : typeof data;
+  const keys = Object.keys(record).sort().slice(0, 20).join(',') || 'none';
+
+  return `payload=object;data=${dataType};keys=${keys}`;
+}
+
 interface DataResponse<T> {
   data: T;
 }
@@ -312,6 +329,8 @@ export async function fetchArticleSummaries(locale: Locale): Promise<ArticleSumm
     `/blog/articles?locale=${encodeURIComponent(locale)}&per_page=100&page=${page}`
   );
   async function fetchSummaryPage(page: number): Promise<ArticleSummaryResponse> {
+    const responseDiagnostics: string[] = [];
+
     for (let attempt = 0; attempt < CMS_RESPONSE_ATTEMPTS; attempt += 1) {
       // `requestOnce` deduplicates the normal build path. If the CMS temporarily
       // returns a malformed-but-200 response, bypass the cached result and give
@@ -321,13 +340,18 @@ export async function fetchArticleSummaries(locale: Locale): Promise<ArticleSumm
         : await cms.request<ArticleSummaryResponse>(endpoint(page));
       if (response?.data && Array.isArray(response.data)) return response;
 
+      responseDiagnostics.push(`attempt=${attempt + 1}:${describeResponseShape(response)}`);
+
       if (attempt < CMS_RESPONSE_ATTEMPTS - 1) {
         await new Promise((resolve) => setTimeout(resolve, 1_000 * (2 ** attempt)));
       }
     }
 
     const scope = page === 1 ? `untuk locale ${locale}` : `${locale}/page/${page}`;
-    throw new Error(`CMS tidak mengembalikan ringkasan artikel ${scope}.`);
+    throw new Error(
+      `CMS tidak mengembalikan ringkasan artikel ${scope}. `
+      + `Diagnostic shape: ${responseDiagnostics.join(' | ')}`,
+    );
   }
 
   const firstPage = await fetchSummaryPage(1);
