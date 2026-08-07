@@ -24,6 +24,10 @@ const navItems = [
   { key: 'tools', href: '/tools', literal: 'TOOLS' },
   { key: 'tracking', href: '/lacak' },
 ];
+const mobileNavItems = [
+  ...navItems,
+  { key: 'contact', href: '/kontak' },
+];
 const localeLinks = [
   { code: 'id' as const, label: 'ID', flag: '🇮🇩', name: 'Indonesia' },
   { code: 'en' as const, label: 'EN', flag: '🇬🇧', name: 'English' },
@@ -59,6 +63,7 @@ const authLabels = {
   >
     <a href={localizedPath('/', locale)} class="relative z-50 flex items-center gap-1 focus:outline-none" aria-label="Awan Kusuma Legalitas">
       <img
+        id="site-nav-logo"
         src="/assets/image/logo-160.webp"
         alt="Awan Kusuma Legalitas Logo"
         width="64"
@@ -160,57 +165,167 @@ const authLabels = {
       aria-expanded="false"
     >
       <span class="relative flex h-5 w-6 items-center justify-center" aria-hidden="true">
-        <span class="site-menu-line absolute block h-px w-full -translate-y-1.5 rounded-full bg-current transition-transform duration-500"></span>
-        <span class="site-menu-line absolute block h-px w-4 translate-y-1.5 rounded-full bg-current transition-[width,transform] duration-500"></span>
+        <span class="site-menu-line absolute right-0 block h-[1.5px] w-full rounded-full bg-current"></span>
+        <span class="site-menu-line absolute right-0 block h-[1.5px] w-4 rounded-full bg-current"></span>
       </span>
     </button>
   </nav>
 </header>
 
-<aside id="site-mobile-menu" class="invisible fixed inset-0 z-40 flex translate-y-3 flex-col overflow-y-auto bg-big-stone px-7 pb-10 pt-28 text-white opacity-0 transition-[opacity,visibility,transform] duration-500 lg:hidden" aria-hidden="true">
-  <nav aria-label="Mobile Navigation">
-    <ul class="flex flex-col gap-2">
-      {navItems.map((item) => (
-        <li>
-          <a href={localizedPath(item.href, locale)} class="block border-b border-white/10 py-4 text-xl font-black tracking-wide">
+<aside
+  id="site-mobile-menu"
+  class="invisible fixed inset-0 z-40 flex h-full w-full flex-col overflow-y-auto bg-[#1e2329] px-6 pb-10 pt-24 text-white lg:hidden"
+  aria-hidden="true"
+  data-state="closed"
+  inert
+>
+  <nav class="flex min-h-full flex-1 flex-col" aria-label="Mobile Navigation">
+    <ul class="mt-8 flex flex-col gap-6 text-2xl font-bold uppercase tracking-widest text-white sm:text-3xl">
+      {mobileNavItems.map((item) => (
+        <li class="menu-item">
+          <a
+            href={localizedPath(item.href, locale)}
+            class="flex items-center gap-3 transition-colors hover:text-orange-400 focus-visible:text-orange-400 focus-visible:outline-none"
+          >
+            {item.key === 'tools' && <span class="h-2.5 w-2.5 rotate-45 bg-orange-400" aria-hidden="true"></span>}
             {item.literal ?? translate(messages, `navbar.${item.key}`)}
           </a>
         </li>
       ))}
     </ul>
 
-    <details class="mt-5 rounded-xl border border-white/10 p-4">
-      <summary class="cursor-pointer text-sm font-bold">{translate(messages, 'navbar.services')}</summary>
-      <div class="mt-4 flex flex-col gap-5">
-        {categories.map((group) => (
-          <div>
-            <p class="mb-2 text-[10px] font-black uppercase tracking-widest text-white/50">{group.category}</p>
-            <ul class="flex flex-col gap-2">
-              {group.items.filter((service) => !service.hide_from_menu).map((service) => (
-                <li><a class="text-sm text-white/80" href={localizedPath(`/layanan/${service.slug.split('#')[0]}`, locale)}>{service.name}</a></li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </details>
-
     <LanguageSwitcher links={localeLinks} variant="mobile" />
-    <div class="mt-8 flex flex-col gap-3">
-      <AuthNav
-        variant="mobile"
-        backendOrigin={backendOrigin}
-        loginHref={localizedPath('/login', locale)}
-        customerHref={localizedPath('/lacak', locale)}
-        partnerHref={localizedPath('/mitra', locale)}
-        labels={authLabels}
-      />
-      <a href={localizedPath('/kontak', locale)} class="flex w-full items-center justify-center rounded-full bg-elm px-6 py-4 text-sm font-bold tracking-widest text-white">
-        {translate(messages, 'navbar.contactUs')}
+
+    <div class="mt-10 flex flex-col gap-3">
+      <div class="menu-item">
+        <AuthNav
+          variant="mobile"
+          backendOrigin={backendOrigin}
+          loginHref={localizedPath('/login', locale)}
+          customerHref={localizedPath('/lacak', locale)}
+          partnerHref={localizedPath('/mitra', locale)}
+          labels={authLabels}
+        />
+      </div>
+      <a href={localizedPath('/kontak', locale)} class="menu-item flex w-full items-center justify-center rounded-full bg-elm px-6 py-4 text-sm font-bold tracking-widest text-white">
+        <span>{translate(messages, 'navbar.contactUs')}</span>
+        <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+        </svg>
       </a>
+    </div>
+
+    <div class="mt-10 flex flex-col items-center gap-2 text-[8px] uppercase tracking-widest text-gray-400 sm:text-[10px]">
+      <div class="menu-item flex items-center gap-2">
+        <a href={localizedPath('/kebijakan-privasi', locale)} class="transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none">
+          {translate(messages, 'navbar.privacyPolicy')}
+        </a>
+      </div>
+      <p class="menu-item mt-4">{translate(messages, 'navbar.copyright')}</p>
     </div>
   </nav>
 </aside>
+
+<style is:inline>
+  html.site-menu-open,
+  html.site-menu-open body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  #site-mobile-menu {
+    --menu-origin: calc(100% - 60px) 42px;
+    clip-path: circle(0 at var(--menu-origin));
+    contain: layout paint style;
+    overscroll-behavior: contain;
+    transition: clip-path 600ms cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  #site-mobile-menu[data-state='open'] {
+    clip-path: circle(150% at var(--menu-origin));
+  }
+
+  #site-mobile-menu[data-state='closing'] {
+    clip-path: circle(0 at var(--menu-origin));
+    transition-delay: 150ms;
+  }
+
+  #site-mobile-menu .menu-item {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+  }
+
+  #site-mobile-menu[data-state='open'] .menu-item {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity 400ms ease-out var(--menu-open-delay, 400ms),
+      transform 400ms cubic-bezier(0.16, 1, 0.3, 1) var(--menu-open-delay, 400ms);
+  }
+
+  #site-mobile-menu[data-state='closing'] .menu-item {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+    transition:
+      opacity 220ms ease-in var(--menu-close-delay, 0ms),
+      transform 220ms ease-in var(--menu-close-delay, 0ms);
+  }
+
+  #site-menu-toggle,
+  #site-menu-toggle .site-menu-line,
+  #site-nav-logo {
+    transition-duration: 500ms;
+    transition-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  #site-menu-toggle .site-menu-line {
+    transition-property: width, transform;
+  }
+
+  #site-menu-toggle .site-menu-line:first-child {
+    transform: translateY(-6px);
+  }
+
+  #site-menu-toggle .site-menu-line:last-child {
+    transform: translateY(6px);
+  }
+
+  #site-menu-toggle[aria-expanded='true'] {
+    color: #000;
+    background: #fff;
+    transform: scale(1.05);
+  }
+
+  #site-menu-toggle[aria-expanded='true'] .site-menu-line:first-child {
+    width: 100%;
+    transform: translateY(0) rotate(45deg);
+  }
+
+  #site-menu-toggle[aria-expanded='true'] .site-menu-line:last-child {
+    width: 100%;
+    transform: translateY(0) rotate(-45deg);
+  }
+
+  #site-nav-logo[data-menu-open='true'] {
+    filter: brightness(0) invert(1);
+  }
+
+  #site-menu-toggle:focus-visible {
+    outline: 2px solid #fb923c;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #site-mobile-menu,
+    #site-mobile-menu .menu-item,
+    #site-menu-toggle,
+    #site-menu-toggle .site-menu-line,
+    #site-nav-logo {
+      transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
+    }
+  }
+</style>
 
 <script is:inline>
   (() => {
@@ -218,10 +333,21 @@ const authLabels = {
     const navbar = document.getElementById('site-navbar');
     const toggle = document.getElementById('site-menu-toggle');
     const menu = document.getElementById('site-mobile-menu');
+    const logo = document.getElementById('site-nav-logo');
     const overlay = document.getElementById('site-nav-overlay');
     const servicesTrigger = document.querySelector('.site-services-trigger');
     const servicesMenu = document.querySelector('.site-services-menu');
+    const menuItems = [...(menu?.querySelectorAll('.menu-item') ?? [])];
+    const desktopMedia = window.matchMedia('(min-width: 1024px)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let lastScrollY = window.scrollY;
+    let closeTimer = 0;
+    let settleTimer = 0;
+
+    menuItems.forEach((item, index) => {
+      item.style.setProperty('--menu-open-delay', `${400 + index * 50}ms`);
+      item.style.setProperty('--menu-close-delay', `${(menuItems.length - 1 - index) * 18}ms`);
+    });
 
     const updateHeader = () => {
       const current = window.scrollY;
@@ -234,27 +360,59 @@ const authLabels = {
       lastScrollY = current;
     };
 
-    const closeMenu = () => {
+    const finishClose = () => {
+      if (!menu || menu.dataset.state !== 'closing') return;
+      menu.dataset.state = 'closed';
+      menu.classList.add('invisible');
+      menu.style.removeProperty('will-change');
+    };
+
+    const closeMenu = ({ restoreFocus = false } = {}) => {
+      if (toggle?.getAttribute('aria-expanded') !== 'true') return;
+      window.clearTimeout(closeTimer);
+      window.clearTimeout(settleTimer);
       toggle?.setAttribute('aria-expanded', 'false');
+      toggle?.setAttribute('aria-label', 'Open Menu');
       menu?.setAttribute('aria-hidden', 'true');
-      menu?.classList.add('invisible', 'translate-y-3', 'opacity-0');
-      toggle?.classList.remove('bg-white', 'text-black', 'scale-105');
-      toggle?.classList.add('bg-[#1C2D3C]', 'text-white');
-      document.documentElement.style.overflow = '';
+      menu?.setAttribute('inert', '');
+      if (menu) {
+        menu.dataset.state = 'closing';
+        menu.style.willChange = 'clip-path';
+      }
+      logo?.setAttribute('data-menu-open', 'false');
+      document.documentElement.classList.remove('site-menu-open');
+      closeTimer = window.setTimeout(finishClose, reducedMotion.matches ? 0 : 850);
+      if (restoreFocus) toggle?.focus({ preventScroll: true });
     };
 
     toggle?.addEventListener('click', () => {
       const opening = toggle.getAttribute('aria-expanded') !== 'true';
       if (!opening) return closeMenu();
+      window.clearTimeout(closeTimer);
+      window.clearTimeout(settleTimer);
       toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-label', 'Close Menu');
       menu?.setAttribute('aria-hidden', 'false');
-      menu?.classList.remove('invisible', 'translate-y-3', 'opacity-0');
-      toggle.classList.add('bg-white', 'text-black', 'scale-105');
-      toggle.classList.remove('bg-[#1C2D3C]', 'text-white');
-      document.documentElement.style.overflow = 'hidden';
+      menu?.removeAttribute('inert');
+      menu?.classList.remove('invisible');
+      if (menu) {
+        menu.style.willChange = 'clip-path';
+        menu.dataset.state = 'closed';
+        void menu.offsetWidth;
+        menu.dataset.state = 'open';
+      }
+      logo?.setAttribute('data-menu-open', 'true');
+      document.documentElement.classList.add('site-menu-open');
+      settleTimer = window.setTimeout(() => menu?.style.removeProperty('will-change'), 1400);
     });
 
     menu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeMenu({ restoreFocus: true });
+    });
+    desktopMedia.addEventListener('change', (event) => {
+      if (event.matches) closeMenu();
+    });
     servicesTrigger?.addEventListener('mouseenter', () => {
       servicesMenu?.classList.remove('invisible', 'translate-y-2', 'opacity-0');
       overlay?.classList.remove('opacity-0');
