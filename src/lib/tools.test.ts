@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeTools } from './tools';
+import { getToolIcon } from './tool-icons';
+import { FileText, Scissors } from 'lucide-react';
 
 describe('tools build data', () => {
   it('normalizes only tools with a supported rendering type', () => {
@@ -22,5 +24,11 @@ describe('tools build data', () => {
   it('returns an empty collection for malformed CMS data', () => {
     expect(normalizeTools(null)).toEqual([]);
     expect(normalizeTools({ data: { slug: 'not-a-list' } })).toEqual([]);
+  });
+
+  it('resolves CMS icon names and falls back safely', () => {
+    expect(getToolIcon('Scissors')).toBe(Scissors);
+    expect(getToolIcon('missing-icon')).toBe(FileText);
+    expect(getToolIcon(null)).toBe(FileText);
   });
 });
