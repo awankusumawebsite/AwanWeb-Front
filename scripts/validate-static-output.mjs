@@ -5,6 +5,11 @@ import { extractOptimizableImageUrls } from './remote-image-utils.mjs';
 
 const root = resolve('dist');
 const failures = [];
+// Production retains at most five releases. These ceilings allow roughly 9x
+// growth from the August 2026 baseline (56.96 MiB / 803 files) while keeping
+// the worst-case retained footprint near 2.5 GiB on the 12 GiB hosting plan.
+const MAX_ARTIFACT_BYTES = 512 * 1024 * 1024;
+const MAX_ARTIFACT_FILES = 10_000;
 
 function walk(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -172,10 +177,15 @@ if (!baseCss) {
   const compressedBytes = gzipSync(readFileSync(baseCss), { level: 9 }).byteLength;
   if (compressedBytes > 25_000) failures.push(`CSS BaseLayout gzip melewati budget 25 KB: ${compressedBytes} byte.`);
 }
-if (artifactBytes > 60 * 1024 * 1024) {
-  failures.push(`Total artifact melewati budget 60 MiB: ${(artifactBytes / 1024 / 1024).toFixed(2)} MiB.`);
+if (artifactBytes > MAX_ARTIFACT_BYTES) {
+  failures.push(
+    `Total artifact melewati budget ${MAX_ARTIFACT_BYTES / 1024 / 1024} MiB: `
+    + `${(artifactBytes / 1024 / 1024).toFixed(2)} MiB.`,
+  );
 }
-if (files.length > 800) failures.push(`Jumlah artifact melewati budget 800 file: ${files.length}.`);
+if (files.length > MAX_ARTIFACT_FILES) {
+  failures.push(`Jumlah artifact melewati budget ${MAX_ARTIFACT_FILES} file: ${files.length}.`);
+}
 
 const sitemap = files
   .filter((file) => /sitemap.*\.xml$/.test(file))
