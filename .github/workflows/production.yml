@@ -52,32 +52,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Route CMS build traffic directly to the origin
-        shell: bash
-        env:
-          CMS_ORIGIN_IP: ${{ vars.CMS_ORIGIN_IP }}
-        run: |
-          set -Eeuo pipefail
-          if [[ ! "${CMS_ORIGIN_IP:-}" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-            printf 'Repository variable CMS_ORIGIN_IP bukan IPv4 yang valid.\n' >&2
-            exit 1
-          fi
-          IFS=. read -r -a octets <<< "$CMS_ORIGIN_IP"
-          for octet in "${octets[@]}"; do
-            if (( 10#$octet > 255 )); then
-              printf 'Repository variable CMS_ORIGIN_IP bukan IPv4 yang valid.\n' >&2
-              exit 1
-            fi
-          done
-          printf '%s\t%s\n' "$CMS_ORIGIN_IP" cms.awankusuma.com \
-            | sudo tee -a /etc/hosts >/dev/null
-          curl --fail --silent --show-error --max-time 30 \
-            --header 'Accept: application/json' \
-            --header 'Accept-Language: id-ID,id;q=0.9,en;q=0.8' \
-            --header 'Origin: https://awankusuma.com' \
-            --header 'Referer: https://awankusuma.com/' \
-            --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' \
-            https://cms.awankusuma.com/api/system/status >/dev/null
       - run: npm ci
       - run: npm test
       - run: npm run build
