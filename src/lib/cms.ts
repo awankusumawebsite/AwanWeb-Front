@@ -2,6 +2,8 @@ const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504, 507, 508, 525]);
 const DEFAULT_CMS_ORIGIN = 'https://cms.awankusuma.com';
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_BUILD_CONCURRENCY = 1;
+const BUILD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+  + '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
 
 type FetchLike = typeof fetch;
 
@@ -139,6 +141,10 @@ export function createCmsClient({
         ...options,
         headers: {
           Accept: 'application/json',
+          'Accept-Language': 'id-ID,id;q=0.9,en;q=0.8',
+          Origin: 'https://awankusuma.com',
+          Referer: 'https://awankusuma.com/',
+          'User-Agent': BUILD_USER_AGENT,
           ...options.headers,
         },
         signal: options.signal ?? AbortSignal.timeout(timeoutMs),

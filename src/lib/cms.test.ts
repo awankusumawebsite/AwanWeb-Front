@@ -13,7 +13,14 @@ describe('static CMS client', () => {
     await expect(client.request('/services?locale=id')).resolves.toEqual({ data: ['ok'] });
     expect(fetchImpl).toHaveBeenCalledWith(
       new URL('https://cms.example.test/api/services?locale=id'),
-      expect.objectContaining({ headers: expect.objectContaining({ Accept: 'application/json' }) }),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Accept: 'application/json',
+          Origin: 'https://awankusuma.com',
+          Referer: 'https://awankusuma.com/',
+          'User-Agent': expect.stringContaining('Mozilla/5.0'),
+        }),
+      }),
     );
   });
 

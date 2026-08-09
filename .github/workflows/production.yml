@@ -73,6 +73,10 @@ jobs:
             | sudo tee -a /etc/hosts >/dev/null
           curl --fail --silent --show-error --max-time 30 \
             --header 'Accept: application/json' \
+            --header 'Accept-Language: id-ID,id;q=0.9,en;q=0.8' \
+            --header 'Origin: https://awankusuma.com' \
+            --header 'Referer: https://awankusuma.com/' \
+            --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' \
             https://cms.awankusuma.com/api/system/status >/dev/null
       - run: npm ci
       - run: npm test
