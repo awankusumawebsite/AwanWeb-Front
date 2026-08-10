@@ -18,10 +18,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  quality:
+    name: Test and type-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run check
+
   verify:
-    name: Test, build, and validate static artifact
+    name: Build and validate static artifact
+    if: github.event_name != 'pull_request'
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment:
+      name: staging
     env:
       PUBLIC_BACKEND_URL: https://cms.awankusuma.com
       # Shared hosting can occasionally take longer than 10s to answer a cold
@@ -34,6 +52,11 @@ jobs:
       CMS_BUILD_REQUEST_INTERVAL_MS: 750
       MIGRATION_NOINDEX: true
       PUBLIC_ANALYTICS_ENABLED: false
+      STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+      STAGING_SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+      STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+      STAGING_SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+      STAGING_SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,7 +64,41 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
+
+      - name: Configure pinned SSH host key for CMS build tunnel
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for variable in \
+            STAGING_SSH_HOST \
+            STAGING_SSH_PORT \
+            STAGING_SSH_USER \
+            STAGING_SSH_PRIVATE_KEY \
+            STAGING_SSH_KNOWN_HOSTS
+          do
+            if [ -z "${!variable:-}" ]; then
+              printf 'GitHub Environment staging belum memiliki %s\n' "$variable" >&2
+              exit 1
+            fi
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$STAGING_SSH_PRIVATE_KEY" \
+            | tr -d '\r' > "$HOME/.ssh/id_cms_build"
+          printf '%s\n' "$STAGING_SSH_KNOWN_HOSTS" \
+            | tr -d '\r' > "$HOME/.ssh/known_hosts_cms_build"
+          chmod 600 "$HOME/.ssh/id_cms_build" "$HOME/.ssh/known_hosts_cms_build"
+          ssh-keygen -y -f "$HOME/.ssh/id_cms_build" >/dev/null
+
+      - name: Start encrypted CMS build tunnel
+        shell: bash
+        run: |
+          scripts/start-cms-build-tunnel.sh \
+            "$STAGING_SSH_HOST" \
+            "$STAGING_SSH_PORT" \
+            "$STAGING_SSH_USER" \
+            "$HOME/.ssh/id_cms_build" \
+            "$HOME/.ssh/known_hosts_cms_build"
+
       - run: npm run build
       - run: npm run validate:dist
       - uses: actions/upload-artifact@v4

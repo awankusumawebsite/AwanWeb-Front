@@ -30,6 +30,8 @@ jobs:
     name: Build and validate production artifact
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment:
+      name: production
     env:
       PUBLIC_BACKEND_URL: https://cms.awankusuma.com
       CMS_BUILD_TIMEOUT_MS: 30000
@@ -37,6 +39,11 @@ jobs:
       CMS_BUILD_REQUEST_INTERVAL_MS: 750
       MIGRATION_NOINDEX: false
       PUBLIC_ANALYTICS_ENABLED: true
+      PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+      PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+      PRODUCTION_SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+      PRODUCTION_SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
     steps:
       - name: Validate manual production confirmation
         if: github.event_name == 'workflow_dispatch'
@@ -54,6 +61,41 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+
+      - name: Configure pinned SSH host key for CMS build tunnel
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for variable in \
+            PRODUCTION_SSH_HOST \
+            PRODUCTION_SSH_PORT \
+            PRODUCTION_SSH_USER \
+            PRODUCTION_SSH_PRIVATE_KEY \
+            PRODUCTION_SSH_KNOWN_HOSTS
+          do
+            if [ -z "${!variable:-}" ]; then
+              printf 'GitHub Environment production belum memiliki %s\n' "$variable" >&2
+              exit 1
+            fi
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$PRODUCTION_SSH_PRIVATE_KEY" \
+            | tr -d '\r' > "$HOME/.ssh/id_cms_build"
+          printf '%s\n' "$PRODUCTION_SSH_KNOWN_HOSTS" \
+            | tr -d '\r' > "$HOME/.ssh/known_hosts_cms_build"
+          chmod 600 "$HOME/.ssh/id_cms_build" "$HOME/.ssh/known_hosts_cms_build"
+          ssh-keygen -y -f "$HOME/.ssh/id_cms_build" >/dev/null
+
+      - name: Start encrypted CMS build tunnel
+        shell: bash
+        run: |
+          scripts/start-cms-build-tunnel.sh \
+            "$PRODUCTION_SSH_HOST" \
+            "$PRODUCTION_SSH_PORT" \
+            "$PRODUCTION_SSH_USER" \
+            "$HOME/.ssh/id_cms_build" \
+            "$HOME/.ssh/known_hosts_cms_build"
+
       - run: npm run build
       - run: npm run validate:dist
       - uses: actions/upload-artifact@v4
