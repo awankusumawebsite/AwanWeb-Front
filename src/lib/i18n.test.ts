@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { LOCALES } from '../config/site';
 import {
   alternateLocaleUrls,
   getMessages,
@@ -55,5 +56,16 @@ describe('locale routing parity', () => {
 
     expect(translate(messages, 'footer.copyright', { year: 2026 }))
       .toBe('© 2026 AWAN KUSUMA LEGALITAS');
+  });
+
+  it('keeps the primary brand tagline identical in every locale', async () => {
+    for (const locale of LOCALES) {
+      const messages = await getMessages(locale);
+
+      expect([
+        translate(messages, 'hero.heading1'),
+        translate(messages, 'hero.heading2'),
+      ]).toEqual(['GROW & SECURE', 'BUSINESS WITH US']);
+    }
   });
 });
