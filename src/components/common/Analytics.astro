@@ -5,7 +5,7 @@ const enabled = import.meta.env.PUBLIC_ANALYTICS_ENABLED === 'true';
 {
   enabled && (
     <script is:inline>
-      {`(() => {
+      (() => {
         const loadAnalytics = () => {
           if (window.__awanAnalyticsLoaded) return;
           window.__awanAnalyticsLoaded = true;
@@ -39,7 +39,7 @@ const enabled = import.meta.env.PUBLIC_ANALYTICS_ENABLED === 'true';
             window.setTimeout(loadAnalytics, 1200);
           }
         }, { once: true });
-      })();`}
+      })();
     </script>
   )
 }

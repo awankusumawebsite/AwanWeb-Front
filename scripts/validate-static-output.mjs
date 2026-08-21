@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve, sep } from 'node:path';
+import { runInNewContext } from 'node:vm';
 import { gzipSync } from 'node:zlib';
 import { extractOptimizableImageUrls } from './remote-image-utils.mjs';
 
@@ -64,6 +65,91 @@ const requiredPages = [
   '/tools/runner/', '/en/tools/runner/', '/zh/tools/runner/',
   '/404.html',
 ];
+
+const indexHtmlPath = join(root, 'index.html');
+if (existsSync(indexHtmlPath)) {
+  const indexHtml = readFileSync(indexHtmlPath, 'utf8');
+  const analyticsScripts = [...indexHtml.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
+    .map((match) => match[1])
+    .filter((script) => script.includes('__awanAnalyticsLoaded'));
+  const analyticsEnabled = process.env.PUBLIC_ANALYTICS_ENABLED === 'true';
+
+  if (analyticsEnabled) {
+    if (analyticsScripts.length !== 1) {
+      failures.push(`Script analytics production harus tepat satu, ditemukan ${analyticsScripts.length}.`);
+    } else {
+      const analyticsSource = analyticsScripts[0].trim();
+      if (!analyticsSource.startsWith('(() => {')) {
+        failures.push('Script analytics production tidak berbentuk IIFE yang dapat dieksekusi.');
+      }
+      for (const marker of ['G-9HVB8EFV6S', 'AW-18078361793', '889395174071452']) {
+        if (!analyticsSource.includes(marker)) failures.push(`Script analytics production kehilangan ID ${marker}.`);
+      }
+      try {
+        Function(analyticsSource);
+      } catch {
+        failures.push('Script analytics production memiliki sintaks JavaScript yang tidak valid.');
+      }
+
+      const loadedScripts = [];
+      const window = {
+        addEventListener(event, callback) {
+          if (event === 'load') callback();
+        },
+        requestIdleCallback(callback) {
+          callback();
+        },
+        setTimeout(callback) {
+          callback();
+        },
+      };
+      const document = {
+        createElement() {
+          return {};
+        },
+        head: {
+          appendChild(element) {
+            loadedScripts.push(element.src);
+          },
+        },
+        getElementsByTagName() {
+          return [{
+            parentNode: {
+              insertBefore(element) {
+                loadedScripts.push(element.src);
+              },
+            },
+          }];
+        },
+      };
+
+      try {
+        runInNewContext(analyticsSource, { document, window });
+        const gtagCommands = window.dataLayer?.map((command) => Array.from(command)[0]) || [];
+        const metaCommands = window.fbq?.queue?.map((command) => Array.from(command)[0]) || [];
+        if (window.__awanAnalyticsLoaded !== true || typeof window.gtag !== 'function') {
+          failures.push('Runtime Google Analytics production tidak terinisialisasi.');
+        }
+        if (gtagCommands.join(',') !== 'js,config,config') {
+          failures.push(`Perintah gtag production tidak lengkap: ${gtagCommands.join(',') || '(kosong)'}.`);
+        }
+        if (typeof window.fbq !== 'function' || metaCommands.join(',') !== 'init,track') {
+          failures.push(`Runtime Meta Pixel production tidak lengkap: ${metaCommands.join(',') || '(kosong)'}.`);
+        }
+        for (const loaderUrl of [
+          'https://www.googletagmanager.com/gtag/js?id=G-9HVB8EFV6S',
+          'https://connect.facebook.net/en_US/fbevents.js',
+        ]) {
+          if (!loadedScripts.includes(loaderUrl)) failures.push(`Loader analytics production tidak dipanggil: ${loaderUrl}`);
+        }
+      } catch {
+        failures.push('Script analytics production gagal dieksekusi dalam pemeriksaan runtime.');
+      }
+    }
+  } else if (analyticsScripts.length > 0) {
+    failures.push('Script analytics masuk artifact meskipun PUBLIC_ANALYTICS_ENABLED tidak aktif.');
+  }
+}
 
 for (const page of requiredPages) {
   if (!outputExists(page)) failures.push(`Route wajib tidak dibangun: ${page}`);
