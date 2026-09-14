@@ -54,8 +54,8 @@ jobs:
             printf 'Konfirmasi production harus persis awankusuma.com.\n' >&2
             exit 1
           fi
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -98,7 +98,7 @@ jobs:
 
       - run: npm run build
       - run: npm run validate:dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: astro-production-${{ github.sha }}
           path: dist/
@@ -126,9 +126,9 @@ jobs:
       PRODUCTION_SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
       PRODUCTION_ORIGIN_IP: ${{ secrets.PRODUCTION_ORIGIN_IP }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: astro-production-${{ github.sha }}
           path: dist/
