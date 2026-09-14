@@ -1,34 +1,67 @@
-# Runbook Migrasi Astro ke DomaiNesia
+# Runbook Deploy Astro ke DomaiNesia
 
-Dokumen ini adalah panduan staging, cutover, dan rollback frontend Astro.
+Dokumen ini adalah panduan deployment rutin, staging, dan rollback frontend Astro.
 Workflow staging mengunggah dan mengaktifkan release noindex secara otomatis;
-workflow production hanya berjalan melalui dispatch yang dilindungi Environment
-`production`, atau melalui trigger CMS setelah feature flag sengaja diaktifkan.
+workflow production berjalan melalui dispatch manual atau trigger CMS.
 
-Checklist operator langkah demi langkah tersedia di
+Checklist cutover historis dan prosedur rollback rinci tersedia di
 [`PRODUCTION-CUTOVER-GUIDE.md`](./PRODUCTION-CUTOVER-GUIDE.md).
 
 ## 1. Keadaan Saat Ini
 
-- `awankusuma.com` masih dilayani frontend Next.js dari Vercel.
+- Status berikut diverifikasi pada 14 September 2026.
+- `awankusuma.com` dilayani frontend Astro statis dari DomaiNesia.
 - `cms.awankusuma.com` tetap Laravel di DomaiNesia dan tidak ikut dimigrasikan.
 - `AwanWeb-Astro` menghasilkan file statis pada `dist/`; tidak memerlukan Node.js
   pada shared hosting.
-- Next/Vercel harus tetap hidup sebagai rollback sampai Astro production stabil.
+- Repository canonical adalah `awankusumawebsite/AwanWeb-Front`; nama lama
+  `awankusumawebsite/AwanWeb-FrontStaging` dialihkan oleh GitHub ke repository ini.
+- Branch release adalah `master`. Push atau merge ke `master` menjalankan CI dan
+  atomic deploy ke staging, bukan langsung ke production.
+- Workflow **Astro production release** mengaktifkan release production secara
+  manual atau melalui `repository_dispatch` bertipe `cms-content-changed`.
+- Trigger CMS sudah aktif dan terbukti menghasilkan deployment production
+  otomatis. Event terakhir yang diverifikasi mengaktifkan release
+  `104a5848c4d4913c503b7391000cb972011d5a24-34729807482-1` pada
+  13 September 2026.
 - CI Astro menguji, membangun artifact noindex, dan menyimpannya selama tujuh
   hari. Artifact menyertakan hidden file `.htaccess` secara eksplisit.
-- Remote lokal mengarah ke repository GitHub Astro dan workflow atomic staging
-  sudah aktif. Deployment pertama dengan release ID composite lulus pada commit
-  `b8a539b` tanpa mengubah kontrak noindex staging.
 - `staging.awankusuma.com` sudah dibuat dan merespons HTTPS dari document root
   `/home/ryuumeco/staging.awankusuma.com`.
 - Smoke test dan acceptance staging telah dinyatakan selesai pada 5 Agustus 2026.
-  Production tetap Next/Vercel sampai workflow production mode `activate`, smoke
-  origin, dan perubahan DNS dijalankan pada window cutover.
 
-## 2. Informasi Manual yang Wajib Diverifikasi
+## Alur Push dan Release Rutin
 
-Jangan mengaktifkan deployment sebelum semua kotak berikut terisi.
+1. Pastikan working tree bersih dan sinkronkan `master` dengan `git pull --ff-only`.
+2. Buat branch perubahan. Jangan mengerjakan perubahan langsung pada `master`.
+3. Jalankan gate lokal:
+
+   ```bash
+   npm ci
+   npm test
+   npm run check
+   npm run build
+   npm run validate:dist
+   git diff --check
+   ```
+
+4. Push branch, buka pull request, dan merge hanya setelah gate hijau.
+5. Merge ke `master` memicu **Astro static CI**, membangun artifact noindex, lalu
+   mengaktifkannya secara atomic di `staging.awankusuma.com`.
+6. Smoke staging. Untuk rilis kode segera ke production, jalankan
+   **Astro production release** dari `master`, pilih mode `activate`, dan isi
+   konfirmasi persis `awankusuma.com`.
+7. Verifikasi job berakhir dengan `PRODUCTION_ACTIVATE_OK`, lalu smoke production.
+
+Push ke `master` tidak langsung menjalankan workflow production. Namun perubahan
+konten publik berikutnya di CMS dapat mengirim `repository_dispatch`, yang akan
+membangun dan mengaktifkan commit terbaru di `master`. Dengan demikian, seluruh
+commit pada `master` harus selalu siap production.
+
+## 2. Informasi Infrastruktur
+
+Konfigurasi berikut telah diverifikasi saat cutover. Verifikasi ulang sebelum
+perubahan infrastruktur atau pemulihan insiden.
 
 - [x] Document root aktual domain `awankusuma.com` di cPanel:
       `/home/ryuumeco/awankusuma.com`.
@@ -36,17 +69,20 @@ Jangan mengaktifkan deployment sebelum semua kotak berikut terisi.
 - [x] Document root staging: `/home/ryuumeco/staging.awankusuma.com`.
 - [x] Symlink didukung oleh akun hosting.
 - [x] Repository GitHub tujuan:
-      `awankusumawebsite/AwanWeb-FrontStaging`.
+      `awankusumawebsite/AwanWeb-Front`.
 - [x] Metode transfer: SSH/SCP dengan key khusus deployment staging.
 - [x] Nilai credential staging disimpan sebagai GitHub Environment secret, bukan file.
-- [ ] GitHub Environment `production`, required reviewer, dan enam secret
-      production pada bagian 8 sudah disiapkan.
+- [x] GitHub Environment `production` dan enam secret production sudah disiapkan.
+- [ ] Deployment Environment `production` dibatasi ke branch `master`.
+      Pengaturan ini memerlukan akses admin repository; akun operator yang
+      diverifikasi pada 14 September 2026 menerima HTTP 403 saat mencoba
+      menerapkannya melalui GitHub API.
 - [x] Akses Cloudflare DNS tersedia untuk fase staging/cutover.
 - [x] Origin DomaiNesia staging sudah diverifikasi melalui record DNS dan HTTPS.
 
 Nilai secret, token, password, dan private key tidak boleh ditulis di dokumen ini.
 
-## 3. Struktur Release yang Disarankan
+## 3. Struktur Release
 
 Struktur berikut memisahkan artifact staging dan production secara eksplisit.
 
@@ -70,9 +106,8 @@ Struktur berikut memisahkan artifact staging dan production secara eksplisit.
 Document root staging diarahkan ke symlink stabil yang menuju
 `frontend-staging-current`. Artifact production memakai root terpisah karena
 build staging dan production dari commit yang sama berbeda pada robots, metadata,
-dan analytics. Document root production baru dihubungkan ke `frontend-current`
-saat cutover; path aktualnya harus mengikuti hasil verifikasi cPanel, bukan
-asumsi dari struktur lama.
+dan analytics. Document root production terhubung ke `frontend-current`; path
+aktualnya harus tetap mengikuti hasil verifikasi cPanel.
 
 Release ID memakai `<git-sha>-<github-run-id>-<run-attempt>`, bukan Git SHA saja.
 Hal ini wajib karena event CMS dapat membangun ulang commit yang sama dengan
@@ -272,9 +307,10 @@ Gunakan `curl -I` pada staging dengan host yang benar. Redirect permanen harus
 301; redirect state portal detail sengaja 302 agar representasi dapat diubah di
 masa depan tanpa cache permanen browser.
 
-## 8. Persiapan Cutover Production
+## 8. Cutover Production Historis
 
-Cutover hanya boleh dijadwalkan setelah acceptance staging ditandatangani.
+Bagian ini mencatat prosedur cutover yang sudah selesai. Jangan mengulangi
+bootstrap document root atau perubahan DNS untuk deployment rutin.
 
 Workflow manual `.github/workflows/production.yml` menyediakan dua mode:
 
@@ -302,8 +338,7 @@ halaman lama dari Cloudflare/Vercel.
 
 Setelah stabilisasi ditandatangani, required reviewer dapat dilepas agar
 `repository_dispatch` dari CMS melakukan build dan aktivasi otomatis. Batasi
-deployment environment ke branch `master`; jangan melepas proteksi secret atau
-menyalakan trigger CMS sebelum Astro sudah aktif di production.
+deployment environment ke branch `master` dan jangan melepas proteksi secret.
 
 1. Bekukan perubahan frontend selama window cutover.
 2. Bangun ulang artifact production dengan `MIGRATION_NOINDEX=false` dan analytics
@@ -331,8 +366,10 @@ check. Tidak ada rollback database atau media.
 
 ### Origin/shared hosting bermasalah
 
-Kembalikan DNS/domain ke deployment Next/Vercel yang masih hidup. Karena backend,
-database, dan R2 tidak berubah, rollback tidak memerlukan migrasi data.
+Utamakan release Astro sehat sebelumnya. Kembalikan DNS/domain ke deployment
+Next/Vercel hanya jika jalur legacy tersebut sudah diverifikasi masih hidup.
+Karena backend, database, dan R2 tidak berubah, rollback frontend tidak
+memerlukan migrasi data.
 
 ### Kriteria rollback segera
 
@@ -347,7 +384,7 @@ database, dan R2 tidak berubah, rollback tidak memerlukan migrasi data.
 Jangan memicu build pada setiap autosave atau perubahan draft. Trigger hanya boleh
 berasal dari perubahan konten yang sudah disimpan dan memengaruhi public site.
 
-Kontrak yang disarankan:
+Kontrak yang berlaku:
 
 - Satu secret header; tidak memakai token query string.
 - Payload hanya jenis resource, ID/slug, event, dan timestamp—tanpa konten sensitif.
@@ -357,10 +394,9 @@ Kontrak yang disarankan:
 - Release baru aktif hanya setelah checksum, validator, dan health check lulus.
 - Kegagalan build tidak mengganti symlink aktif.
 
-Source sekarang sudah menyiapkan kontrak ini tanpa mengaktifkan feature flag CMS:
+Implementasi aktif memakai kontrak berikut:
 
-- Model CMS public tetap mengirim revalidasi Next selama fase rollback.
-- Perubahan yang sama hanya menandai pending build Astro bila feature flag aktif.
+- Perubahan konten public yang tersimpan menandai pending build Astro.
 - Redis menggabungkan tag selama 120 detik, dengan batas tunggu maksimum 15 menit.
 - Scheduler `frontend:dispatch-pending-build` berjalan tiap menit dan hanya
   menghapus pending state setelah GitHub merespons sukses.
@@ -373,15 +409,14 @@ Source sekarang sudah menyiapkan kontrak ini tanpa mengaktifkan feature flag CMS
 - Concurrency tidak membatalkan build yang sedang aktif; event yang tiba selama
   build digabung menjadi satu run pending terbaru.
 
-Aktivasi feature flag tetap dilarang sebelum Astro aktif di production dan smoke
-cutover lulus. Setelah itu, buat fine-grained GitHub token yang hanya diarahkan ke
-repository Astro dengan
-permission **Contents: Read and write** (permission minimum endpoint repository
-dispatch), lalu simpan hanya pada `/home/ryuumeco/backend-shared/.env`:
+Konfigurasi production berada hanya pada `/home/ryuumeco/backend-shared/.env`.
+Token harus berupa fine-grained GitHub token yang dibatasi ke repository
+`awankusumawebsite/AwanWeb-Front` dengan permission minimum endpoint repository
+dispatch. Nama variabelnya:
 
 ```dotenv
 FRONTEND_BUILD_DISPATCH_ENABLED=true
-FRONTEND_BUILD_DISPATCH_URL=https://api.github.com/repos/OWNER/REPOSITORY/dispatches
+FRONTEND_BUILD_DISPATCH_URL=https://api.github.com/repos/awankusumawebsite/AwanWeb-Front/dispatches
 FRONTEND_BUILD_DISPATCH_TOKEN=<secret-dari-GitHub>
 FRONTEND_BUILD_EVENT_TYPE=cms-content-changed
 FRONTEND_BUILD_DEBOUNCE_SECONDS=120
@@ -389,11 +424,9 @@ FRONTEND_BUILD_MAX_DELAY_SECONDS=900
 FRONTEND_BUILD_TIMEOUT_SECONDS=8
 ```
 
-Jangan menghapus `NEXTJS_REVALIDATE_*` sebelum Astro production stabil dan masa
-rollback Next berakhir. Token asli tidak boleh ditempel ke issue, chat, log,
-repository, atau Obsidian.
+Token asli tidak boleh ditempel ke issue, chat, log, repository, atau Obsidian.
 
-## 11. Monitoring 24 Jam Pertama
+## 11. Monitoring Production
 
 - Status HTTP dan error log Apache.
 - Broken asset/link dan branded 404 volume.

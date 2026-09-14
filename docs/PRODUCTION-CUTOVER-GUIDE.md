@@ -1,11 +1,17 @@
 # Panduan Lengkap Cutover Production Next.js ke Astro
 
+> **Status:** cutover telah selesai. Sejak verifikasi 14 September 2026,
+> `awankusuma.com` menjalankan Astro statis di DomaiNesia dan trigger CMS ke
+> production aktif. Dokumen ini dipertahankan sebagai catatan prosedur cutover
+> dan referensi rollback. Untuk perubahan rutin, ikuti bagian **Alur Push dan
+> Release Rutin** pada `PRODUCTION-MIGRATION-RUNBOOK.md`.
+
 Dokumen ini adalah checklist operator untuk memindahkan `awankusuma.com` dari
 Next.js/Vercel ke Astro static di DomaiNesia. Ikuti urutan tanpa melompati gate.
 Runbook teknis dan alasan desain tetap tersedia di
 `docs/PRODUCTION-MIGRATION-RUNBOOK.md`.
 
-## 1. Sasaran dan status awal
+## 1. Sasaran dan status historis
 
 Sasaran akhir:
 
@@ -25,18 +31,19 @@ Yang tidak berubah:
 - Vercel tetap hidup selama masa rollback;
 - media R2 tidak dipindah, ditimpa, atau dihapus.
 
-Status sebelum panduan ini dijalankan:
+Status sebelum panduan ini dijalankan pada Agustus 2026:
 
 - production masih Next.js/Vercel;
 - staging Astro sudah lulus smoke dan atomic deployment;
-- repository Astro adalah `awankusumawebsite/AwanWeb-FrontStaging`, branch
+- repository Astro saat itu bernama `awankusumawebsite/AwanWeb-FrontStaging`
+  dan sekarang bernama `awankusumawebsite/AwanWeb-Front`; branch
   production/staging adalah `master`;
 - document root production terverifikasi sebagai
   `/home/ryuumeco/awankusuma.com`;
 - origin DomaiNesia yang terlihat melalui staging pada 5 Agustus 2026 adalah
   `36.50.77.59`, tetapi nilai ini wajib diverifikasi lagi sebelum cutover;
 - trigger build Astro di backend masih harus tetap `false` sampai smoke
-  production selesai.
+  production selesai. Trigger tersebut sekarang sudah aktif.
 
 ## 2. Aturan keselamatan
 
@@ -698,7 +705,7 @@ persetujuan manusia.
 
 Buat fine-grained token yang:
 
-- hanya memiliki akses ke `awankusumawebsite/AwanWeb-FrontStaging`;
+- hanya memiliki akses ke `awankusumawebsite/AwanWeb-Front`;
 - mempunyai permission minimum yang dibutuhkan endpoint repository dispatch,
   saat ini **Contents: Read and write**;
 - memiliki expiry dan owner yang jelas;
@@ -708,7 +715,7 @@ Konfigurasi:
 
 ```dotenv
 FRONTEND_BUILD_DISPATCH_ENABLED=true
-FRONTEND_BUILD_DISPATCH_URL=https://api.github.com/repos/awankusumawebsite/AwanWeb-FrontStaging/dispatches
+FRONTEND_BUILD_DISPATCH_URL=https://api.github.com/repos/awankusumawebsite/AwanWeb-Front/dispatches
 FRONTEND_BUILD_DISPATCH_TOKEN=<SECRET_GITHUB>
 FRONTEND_BUILD_EVENT_TYPE=cms-content-changed
 FRONTEND_BUILD_DEBOUNCE_SECONDS=120
