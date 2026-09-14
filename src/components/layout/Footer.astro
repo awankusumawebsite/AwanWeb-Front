@@ -13,6 +13,7 @@ interface Props {
 
 const { locale, messages, categories = [] } = Astro.props;
 const year = new Date().getFullYear();
+const registrationUrl = 'https://sab.ahu.go.id/cv/pendaftaran/info/no/AHU-0012718-AH.01.14+Tahun+2025/id';
 const serviceLinks = categories.length > 0
   ? categories.slice(0, 4).map((category) => ({
       label: category.category,
@@ -80,9 +81,9 @@ const columns = [
 
   <div class="bg-white px-5 pb-8 pt-20 lg:px-10">
     <div class="flex flex-col gap-10 lg:flex-row lg:gap-0">
-      <div class="flex flex-col justify-end lg:flex-1">
+      <div class="flex flex-col justify-end lg:flex-1 lg:pr-6 xl:pr-10">
         <p class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">{translate(messages, 'footer.companyTagline')}</p>
-        <div class="text-4xl font-black uppercase leading-[0.95] tracking-tight text-big-stone md:text-5xl lg:text-6xl" aria-hidden="true">
+        <div class="text-4xl font-black uppercase leading-[0.95] tracking-tight text-big-stone md:text-5xl lg:text-5xl xl:text-[3.25rem] 2xl:text-6xl" aria-hidden="true">
           <span class="block">
             <SplitTextReveal
               client:visible={{ rootMargin: '600px' }}
@@ -93,7 +94,7 @@ const columns = [
               duration={1}
               stagger={0.04}
               xOffset={30}
-              className="text-4xl font-black uppercase leading-none tracking-tight text-big-stone md:text-5xl lg:text-6xl"
+              className="text-4xl font-black uppercase leading-none tracking-tight text-big-stone md:text-5xl lg:text-5xl xl:text-[3.25rem] 2xl:text-6xl"
             />
           </span>
           <span class="block">
@@ -106,10 +107,22 @@ const columns = [
               duration={1}
               stagger={0.04}
               xOffset={30}
-              className="text-4xl font-black uppercase leading-none tracking-tight text-big-stone md:text-5xl lg:text-6xl"
+              className="text-4xl font-black uppercase leading-none tracking-tight text-big-stone md:text-5xl lg:text-5xl xl:text-[3.25rem] 2xl:text-6xl"
             />
           </span>
         </div>
+
+        <a
+          href={registrationUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="group mt-7 flex max-w-xl items-start gap-3 border-t border-slate-200 pt-4 text-[12px] font-medium leading-relaxed text-slate-500 transition-colors duration-300 hover:border-elm/40 hover:text-big-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-elm focus-visible:ring-offset-4 md:text-[13px]"
+        >
+          <span>{translate(messages, 'footer.registrationStatement')}</span>
+          <svg class="mt-0.5 size-3.5 shrink-0 text-elm transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M5 3h8v8M12.5 3.5 4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"></path>
+          </svg>
+        </a>
       </div>
 
       <div class="grid grid-cols-2 gap-8 md:grid-cols-4 lg:w-[55%] lg:pt-6 xl:w-1/2">
