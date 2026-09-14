@@ -2,7 +2,6 @@
 import type { Locale } from '../../config/site';
 import { getMessages, translate } from '../../lib/i18n';
 import { getSiteShellData, isPageInMaintenance } from '../../lib/site-data';
-import Analytics from '../common/Analytics.astro';
 import Preloader from '../animations/Preloader.astro';
 import TrackingNotice from '../common/TrackingNotice.astro';
 import FloatingWhatsApp from '../global/FloatingWhatsApp.astro';
@@ -92,4 +91,3 @@ const transitionLabels = {
     </>
   )
 }
-<Analytics />
