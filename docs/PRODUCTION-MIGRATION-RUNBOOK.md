@@ -166,6 +166,19 @@ npm run validate:dist
 Production harus menghasilkan metadata indexable, tetapi route login, tracking,
 dan portal tetap noindex serta tidak masuk sitemap.
 
+### Analytics production
+
+- Google Analytics dan Google Ads dimuat melalui container Google Tag Manager
+  `GTM-N9PJ3MLD`: loader ditempatkan di `<head>` dan fallback `noscript` menjadi
+  elemen pertama di `<body>`.
+- Jangan menambahkan kembali loader `gtag.js` atau ID measurement/conversion
+  langsung ke source. Konfigurasi serta publikasi tag Google dikelola di dalam
+  workspace GTM oleh pengelola analytics.
+- Meta Pixel `889395174071452` tetap dimuat langsung dan hanya ketika
+  `PUBLIC_ANALYTICS_ENABLED=true`.
+- `npm run validate:dist` menolak artifact production jika pemasangan GTM tidak
+  lengkap, direct `gtag.js` kembali muncul, atau analytics bocor ke staging.
+
 Jangan mengubah kegagalan CMS menjadi data kosong. Build yang gagal harus
 mempertahankan release aktif.
 

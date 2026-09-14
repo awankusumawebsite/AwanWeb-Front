@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Seo from '../components/Seo.astro';
 import SmoothScroll from '../components/animations/SmoothScroll.astro';
+import Analytics from '../components/common/Analytics.astro';
 import type { Locale } from '../config/site';
 
 interface Props {
@@ -30,6 +31,7 @@ const {
 <!doctype html>
 <html lang={locale}>
   <head>
+    <Analytics placement="head" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
@@ -64,6 +66,7 @@ const {
     <title>{title}</title>
   </head>
   <body>
+    <Analytics placement="body" />
     <SmoothScroll />
     <slot />
   </body>

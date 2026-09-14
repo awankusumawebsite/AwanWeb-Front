@@ -69,26 +69,88 @@ const requiredPages = [
 const indexHtmlPath = join(root, 'index.html');
 if (existsSync(indexHtmlPath)) {
   const indexHtml = readFileSync(indexHtmlPath, 'utf8');
-  const analyticsScripts = [...indexHtml.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
+  const inlineScripts = [...indexHtml.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
     .map((match) => match[1])
-    .filter((script) => script.includes('__awanAnalyticsLoaded'));
+  const gtmScripts = inlineScripts.filter((script) => (
+    script.includes('GTM-N9PJ3MLD')
+    && script.includes('https://www.googletagmanager.com/gtm.js?id=')
+  ));
+  const metaScripts = inlineScripts.filter((script) => script.includes('__awanMetaPixelLoaded'));
+  const gtmNoscriptIframes = [...indexHtml.matchAll(
+    /<noscript>\s*<iframe[^>]*src=["']https:\/\/www\.googletagmanager\.com\/ns\.html\?id=GTM-N9PJ3MLD["'][^>]*>[\s\S]*?<\/iframe>\s*<\/noscript>/gi,
+  )];
   const analyticsEnabled = process.env.PUBLIC_ANALYTICS_ENABLED === 'true';
 
   if (analyticsEnabled) {
-    if (analyticsScripts.length !== 1) {
-      failures.push(`Script analytics production harus tepat satu, ditemukan ${analyticsScripts.length}.`);
-    } else {
-      const analyticsSource = analyticsScripts[0].trim();
-      if (!analyticsSource.startsWith('(() => {')) {
-        failures.push('Script analytics production tidak berbentuk IIFE yang dapat dieksekusi.');
-      }
-      for (const marker of ['G-9HVB8EFV6S', 'AW-18078361793', '889395174071452']) {
-        if (!analyticsSource.includes(marker)) failures.push(`Script analytics production kehilangan ID ${marker}.`);
-      }
+    if (gtmScripts.length !== 1) {
+      failures.push(`Script Google Tag Manager production harus tepat satu, ditemukan ${gtmScripts.length}.`);
+    }
+    if (gtmNoscriptIframes.length !== 1) {
+      failures.push(`Fallback noscript Google Tag Manager harus tepat satu, ditemukan ${gtmNoscriptIframes.length}.`);
+    }
+    if (metaScripts.length !== 1) {
+      failures.push(`Script Meta Pixel production harus tepat satu, ditemukan ${metaScripts.length}.`);
+    }
+    const hasDirectGoogleTagId = inlineScripts.some((script) => (
+      /\b(?:G-[A-Z0-9]{6,}|AW-\d{6,})\b/.test(script)
+    ));
+    if (indexHtml.includes('googletagmanager.com/gtag/js') || hasDirectGoogleTagId) {
+      failures.push('Loader atau konfigurasi gtag direct masih tertinggal setelah migrasi ke GTM.');
+    }
+
+    const headHtml = indexHtml.match(/<head>([\s\S]*?)<\/head>/i)?.[1] || '';
+    const bodyHtml = indexHtml.match(/<body(?:\s[^>]*)?>([\s\S]*?)<\/body>/i)?.[1] || '';
+    if (!headHtml.includes('GTM-N9PJ3MLD') || !headHtml.includes('googletagmanager.com/gtm.js')) {
+      failures.push('Script Google Tag Manager tidak berada di head production.');
+    }
+    if (!/^\s*(?:<!--[^]*?-->\s*)?<noscript>/i.test(bodyHtml)) {
+      failures.push('Fallback noscript Google Tag Manager harus menjadi elemen pertama di body production.');
+    }
+
+    if (gtmScripts.length === 1) {
+      const gtmSource = gtmScripts[0].trim();
       try {
-        Function(analyticsSource);
+        Function(gtmSource);
       } catch {
-        failures.push('Script analytics production memiliki sintaks JavaScript yang tidak valid.');
+        failures.push('Script Google Tag Manager production memiliki sintaks JavaScript yang tidak valid.');
+      }
+
+      const loadedScripts = [];
+      const window = {};
+      const document = {
+        createElement() {
+          return {};
+        },
+        getElementsByTagName() {
+          return [{
+            parentNode: {
+              insertBefore(element) {
+                loadedScripts.push(element.src);
+              },
+            },
+          }];
+        },
+      };
+
+      try {
+        runInNewContext(gtmSource, { document, window });
+        if (window.dataLayer?.length !== 1 || window.dataLayer[0]?.event !== 'gtm.js') {
+          failures.push('Runtime Google Tag Manager tidak menginisialisasi dataLayer dengan benar.');
+        }
+        if (!loadedScripts.includes('https://www.googletagmanager.com/gtm.js?id=GTM-N9PJ3MLD')) {
+          failures.push('Loader Google Tag Manager production tidak dipanggil dengan container yang benar.');
+        }
+      } catch {
+        failures.push('Script Google Tag Manager production gagal dieksekusi dalam pemeriksaan runtime.');
+      }
+    }
+
+    if (metaScripts.length === 1) {
+      const metaSource = metaScripts[0].trim();
+      try {
+        Function(metaSource);
+      } catch {
+        failures.push('Script Meta Pixel production memiliki sintaks JavaScript yang tidak valid.');
       }
 
       const loadedScripts = [];
@@ -107,11 +169,6 @@ if (existsSync(indexHtmlPath)) {
         createElement() {
           return {};
         },
-        head: {
-          appendChild(element) {
-            loadedScripts.push(element.src);
-          },
-        },
         getElementsByTagName() {
           return [{
             parentNode: {
@@ -124,30 +181,22 @@ if (existsSync(indexHtmlPath)) {
       };
 
       try {
-        runInNewContext(analyticsSource, { document, window });
-        const gtagCommands = window.dataLayer?.map((command) => Array.from(command)[0]) || [];
+        runInNewContext(metaSource, { document, window });
         const metaCommands = window.fbq?.queue?.map((command) => Array.from(command)[0]) || [];
-        if (window.__awanAnalyticsLoaded !== true || typeof window.gtag !== 'function') {
-          failures.push('Runtime Google Analytics production tidak terinisialisasi.');
-        }
-        if (gtagCommands.join(',') !== 'js,config,config') {
-          failures.push(`Perintah gtag production tidak lengkap: ${gtagCommands.join(',') || '(kosong)'}.`);
-        }
-        if (typeof window.fbq !== 'function' || metaCommands.join(',') !== 'init,track') {
+        if (window.__awanMetaPixelLoaded !== true
+          || typeof window.fbq !== 'function'
+          || metaCommands.join(',') !== 'init,track') {
           failures.push(`Runtime Meta Pixel production tidak lengkap: ${metaCommands.join(',') || '(kosong)'}.`);
         }
-        for (const loaderUrl of [
-          'https://www.googletagmanager.com/gtag/js?id=G-9HVB8EFV6S',
-          'https://connect.facebook.net/en_US/fbevents.js',
-        ]) {
-          if (!loadedScripts.includes(loaderUrl)) failures.push(`Loader analytics production tidak dipanggil: ${loaderUrl}`);
+        if (!loadedScripts.includes('https://connect.facebook.net/en_US/fbevents.js')) {
+          failures.push('Loader Meta Pixel production tidak dipanggil.');
         }
       } catch {
-        failures.push('Script analytics production gagal dieksekusi dalam pemeriksaan runtime.');
+        failures.push('Script Meta Pixel production gagal dieksekusi dalam pemeriksaan runtime.');
       }
     }
-  } else if (analyticsScripts.length > 0) {
-    failures.push('Script analytics masuk artifact meskipun PUBLIC_ANALYTICS_ENABLED tidak aktif.');
+  } else if (gtmScripts.length > 0 || gtmNoscriptIframes.length > 0 || metaScripts.length > 0) {
+    failures.push('GTM atau Meta Pixel masuk artifact meskipun PUBLIC_ANALYTICS_ENABLED tidak aktif.');
   }
 }
 
